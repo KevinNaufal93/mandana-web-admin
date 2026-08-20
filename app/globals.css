@@ -1,0 +1,75 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+:root {
+  --background: #ebebe9;
+  --foreground: #f0e4d9;
+  --card: #fafafa;
+  --card-foreground: #ffffff;
+  --primary: #1d3b31;
+  --primary-foreground: #25322c;
+  --secondary: #23312b;
+  --secondary-foreground: #356354;
+  --muted: #e0e1dc;
+  --muted-foreground: #4d6b5f;
+  --accent: #dac39a;
+  --accent-foreground: #356354;
+  --destructive: #c0392b;
+  --border: #1d3b31;
+  --ring: #259678;
+  --radius: 0.5rem;
+  --footer: #23312b;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  /* mandana-web/app/globals.css is missing the semicolon after
+     var(--footer) here, which silently merges this with --font-sans and
+     leaves --font-sans unregistered. Fixed here; both tokens now resolve. */
+  --color-footer: var(--footer);
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-gambetta);
+  --radius: var(--radius);
+}
+
+body {
+  background: var(--background);
+  /* --foreground (#f0e4d9 cream) on --background (#ebebe9 off-white) is
+     ~1.05:1 contrast — effectively invisible. mandana-web survives this
+     because every page sets an explicit text-primary. Token *values* stay
+     identical for palette parity with the client site; this app's default
+     text color is --primary instead, so a page that forgets an explicit
+     color is still readable. */
+  color: var(--primary);
+}
+
+@layer utilities {
+  /* Thin, low-contrast scrollbar for horizontally-scrollable data tables. */
+  .scrollbar-subtle {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  .scrollbar-subtle::-webkit-scrollbar { height: 6px; }
+  .scrollbar-subtle::-webkit-scrollbar-track { background: transparent; }
+  .scrollbar-subtle::-webkit-scrollbar-thumb {
+    background-color: var(--border);
+    border-radius: 9999px;
+  }
+  .scrollbar-subtle::-webkit-scrollbar-thumb:hover {
+    background-color: var(--muted-foreground);
+  }
+}
