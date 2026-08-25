@@ -1070,6 +1070,251 @@ export interface paths {
         patch: operations["StorageBookingsAdminController_complete_v1"];
         trace?: never;
     };
+    "/api/v1/event-support/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List active event-support categories (the catalog tabs) */
+        get: operations["EventSupportController_findAllCategories_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/event-support/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List published items, paginated. Pass ?startDate&days for live availableQuantity on GET /items/:slug. */
+        get: operations["EventSupportController_findAllItems_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/event-support/items/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a single published item with full description. Optional ?startDate&days adds availableQuantity. */
+        get: operations["EventSupportController_findOneItem_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/event-support/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Compute an authoritative price for a cart and return a prefilled WhatsApp message. Writes nothing — the actual booking is made over WhatsApp and later recorded by an admin. */
+        post: operations["EventSupportController_quote_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/event-support/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all event-support categories, including inactive */
+        get: operations["EventSupportAdminController_findAllCategories_v1"];
+        put?: never;
+        /** Create an event-support category */
+        post: operations["EventSupportAdminController_createCategory_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/event-support/categories/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a single event-support category */
+        get: operations["EventSupportAdminController_findCategory_v1"];
+        put?: never;
+        post?: never;
+        /** Delete an event-support category (409 if it still has items) */
+        delete: operations["EventSupportAdminController_removeCategory_v1"];
+        options?: never;
+        head?: never;
+        /** Update an event-support category */
+        patch: operations["EventSupportAdminController_updateCategory_v1"];
+        trace?: never;
+    };
+    "/api/v1/admin/event-support/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all event-support items, any status, paginated and filterable */
+        get: operations["EventSupportAdminController_findAllItems_v1"];
+        put?: never;
+        /** Create an event-support item — always starts as draft */
+        post: operations["EventSupportAdminController_createItem_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/event-support/items/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a single event-support item */
+        get: operations["EventSupportAdminController_findItem_v1"];
+        put?: never;
+        post?: never;
+        /** Delete an event-support item (409 if referenced by any booking) */
+        delete: operations["EventSupportAdminController_removeItem_v1"];
+        options?: never;
+        head?: never;
+        /** Update an event-support item — only allowed while it is draft */
+        patch: operations["EventSupportAdminController_updateItem_v1"];
+        trace?: never;
+    };
+    "/api/v1/admin/event-support/items/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Move an item between draft / published / archived. The only way to change status. */
+        patch: operations["EventSupportAdminController_updateItemStatus_v1"];
+        trace?: never;
+    };
+    "/api/v1/admin/event-support/bookings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List event-support bookings (paginated, filterable by status/date range/search) */
+        get: operations["EventBookingsAdminController_findAll_v1"];
+        put?: never;
+        /** Record a booking made over WhatsApp — status starts pending; confirming it is a separate step. Does not reserve stock until confirmed. */
+        post: operations["EventBookingsAdminController_create_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/event-support/bookings/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a single event-support booking with its lines */
+        get: operations["EventBookingsAdminController_findOne_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/event-support/bookings/{id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Confirm a pending booking — atomically re-checks availability; 409 if any line no longer has enough stock */
+        patch: operations["EventBookingsAdminController_confirm_v1"];
+        trace?: never;
+    };
+    "/api/v1/admin/event-support/bookings/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Cancel a pending or confirmed booking — releases any stock it held */
+        patch: operations["EventBookingsAdminController_cancel_v1"];
+        trace?: never;
+    };
+    "/api/v1/admin/event-support/bookings/{id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Mark a confirmed booking as completed (event over, equipment returned) — releases its stock */
+        patch: operations["EventBookingsAdminController_complete_v1"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1131,6 +1376,10 @@ export interface components {
             slug?: string;
             /** @example Villa Canggu Bali */
             title: string;
+            /**
+             * @description Sanitized HTML rich text (allow-listed tags/attributes only — see docs/rich-text-descriptions.md). Images must be uploaded via POST /admin/media and referenced by URL; data: URIs are stripped.
+             * @example <p>Rumah <strong>modern</strong> di BSD dengan akses tol.</p><ul><li>3 kamar tidur</li></ul>
+             */
             description?: string;
             /**
              * @default sale
@@ -1180,6 +1429,10 @@ export interface components {
             slug?: string;
             /** @example Villa Canggu Bali */
             title?: string;
+            /**
+             * @description Sanitized HTML rich text (allow-listed tags/attributes only — see docs/rich-text-descriptions.md). Images must be uploaded via POST /admin/media and referenced by URL; data: URIs are stripped.
+             * @example <p>Rumah <strong>modern</strong> di BSD dengan akses tol.</p><ul><li>3 kamar tidur</li></ul>
+             */
             description?: string;
             /**
              * @default sale
@@ -1275,6 +1528,10 @@ export interface components {
             slug: string;
             /** @example BSD City */
             name: string;
+            /**
+             * @description Sanitized HTML rich text (allow-listed tags/attributes only — see docs/rich-text-descriptions.md). Images must be uploaded via POST /admin/media and referenced by URL; data: URIs are stripped.
+             * @example <p>Rumah <strong>modern</strong> di BSD dengan akses tol.</p><ul><li>3 kamar tidur</li></ul>
+             */
             description?: string;
             /** @description MediaAsset UUID for the cover image */
             coverMediaAssetId?: string;
@@ -1293,6 +1550,10 @@ export interface components {
             slug?: string;
             /** @example BSD City */
             name?: string;
+            /**
+             * @description Sanitized HTML rich text (allow-listed tags/attributes only — see docs/rich-text-descriptions.md). Images must be uploaded via POST /admin/media and referenced by URL; data: URIs are stripped.
+             * @example <p>Rumah <strong>modern</strong> di BSD dengan akses tol.</p><ul><li>3 kamar tidur</li></ul>
+             */
             description?: string;
             /** @description MediaAsset UUID for the cover image */
             coverMediaAssetId?: string;
@@ -1366,6 +1627,7 @@ export interface components {
             slug: string;
             name: string;
             description?: string | null;
+            descriptionText?: string | null;
             capacityKg?: number | null;
             volumeM3?: number | null;
             dimensions?: components["schemas"]["TruckDimensionsDto"] | null;
@@ -1434,7 +1696,10 @@ export interface components {
              * @example pickup-bak
              */
             slug?: string;
-            /** @example Cocok untuk isi kamar kos atau barang ±3 m³ */
+            /**
+             * @description Sanitized HTML rich text (allow-listed tags/attributes only — see docs/rich-text-descriptions.md). Images must be uploaded via POST /admin/media and referenced by URL; data: URIs are stripped.
+             * @example <p>Rumah <strong>modern</strong> di BSD dengan akses tol.</p><ul><li>3 kamar tidur</li></ul>
+             */
             description?: string;
             /** @example 1000 */
             capacityKg?: number;
@@ -1492,7 +1757,10 @@ export interface components {
              * @example pickup-bak
              */
             slug?: string;
-            /** @example Cocok untuk isi kamar kos atau barang ±3 m³ */
+            /**
+             * @description Sanitized HTML rich text (allow-listed tags/attributes only — see docs/rich-text-descriptions.md). Images must be uploaded via POST /admin/media and referenced by URL; data: URIs are stripped.
+             * @example <p>Rumah <strong>modern</strong> di BSD dengan akses tol.</p><ul><li>3 kamar tidur</li></ul>
+             */
             description?: string;
             /** @example 1000 */
             capacityKg?: number;
@@ -1559,6 +1827,7 @@ export interface components {
             slug: string;
             name: string;
             description?: string | null;
+            descriptionText?: string | null;
             volumeM3?: number | null;
             dimensions?: components["schemas"]["StorageDimensionsDto"] | null;
             /** @description Rupiah, integer */
@@ -1576,6 +1845,7 @@ export interface components {
             slug: string;
             name: string;
             description?: string | null;
+            descriptionText?: string | null;
             address?: string | null;
             area?: string | null;
             city?: string | null;
@@ -1695,7 +1965,10 @@ export interface components {
              * @example medium
              */
             slug?: string;
-            /** @example Cocok untuk isi 1 kamar penuh termasuk furnitur kecil */
+            /**
+             * @description Sanitized HTML rich text (allow-listed tags/attributes only — see docs/rich-text-descriptions.md). Images must be uploaded via POST /admin/media and referenced by URL; data: URIs are stripped.
+             * @example <p>Rumah <strong>modern</strong> di BSD dengan akses tol.</p><ul><li>3 kamar tidur</li></ul>
+             */
             description?: string;
             /** @example 5 */
             volumeM3?: number;
@@ -1739,7 +2012,10 @@ export interface components {
              * @example medium
              */
             slug?: string;
-            /** @example Cocok untuk isi 1 kamar penuh termasuk furnitur kecil */
+            /**
+             * @description Sanitized HTML rich text (allow-listed tags/attributes only — see docs/rich-text-descriptions.md). Images must be uploaded via POST /admin/media and referenced by URL; data: URIs are stripped.
+             * @example <p>Rumah <strong>modern</strong> di BSD dengan akses tol.</p><ul><li>3 kamar tidur</li></ul>
+             */
             description?: string;
             /** @example 5 */
             volumeM3?: number;
@@ -1783,7 +2059,10 @@ export interface components {
              * @example bsd-city
              */
             slug?: string;
-            /** @example Fasilitas penyimpanan dengan CCTV 24 jam */
+            /**
+             * @description Sanitized HTML rich text (allow-listed tags/attributes only — see docs/rich-text-descriptions.md). Images must be uploaded via POST /admin/media and referenced by URL; data: URIs are stripped.
+             * @example <p>Rumah <strong>modern</strong> di BSD dengan akses tol.</p><ul><li>3 kamar tidur</li></ul>
+             */
             description?: string;
             /** @example Jl. Letnan Sutopo No. 1, BSD City */
             address?: string;
@@ -1815,7 +2094,10 @@ export interface components {
              * @example bsd-city
              */
             slug?: string;
-            /** @example Fasilitas penyimpanan dengan CCTV 24 jam */
+            /**
+             * @description Sanitized HTML rich text (allow-listed tags/attributes only — see docs/rich-text-descriptions.md). Images must be uploaded via POST /admin/media and referenced by URL; data: URIs are stripped.
+             * @example <p>Rumah <strong>modern</strong> di BSD dengan akses tol.</p><ul><li>3 kamar tidur</li></ul>
+             */
             description?: string;
             /** @example Jl. Letnan Sutopo No. 1, BSD City */
             address?: string;
@@ -2093,6 +2375,351 @@ export interface components {
             /**
              * @description Internal note, not shown to the customer
              * @example Slot dikonfirmasi, kunci diserahkan 1 Sep
+             */
+            adminNote?: string;
+        };
+        EventImageDto: {
+            url: string;
+            srcset: string;
+            alt: string | null;
+            width: number;
+            height: number;
+        };
+        EventCategoryDto: {
+            id: string;
+            slug: string;
+            name: string;
+            description?: string | null;
+            descriptionText?: string | null;
+            image?: components["schemas"]["EventImageDto"] | null;
+            /** @description Count of published items in this category */
+            itemCount: number;
+            isActive: boolean;
+            sortOrder: number;
+        };
+        EventCategoryListResponseDto: {
+            data: components["schemas"]["EventCategoryDto"][];
+        };
+        EventItemListDto: {
+            id: string;
+            slug: string;
+            name: string;
+            /** @enum {string} */
+            kind: "package" | "addon";
+            /** @description Rupiah, integer */
+            pricePerDay: number;
+            image?: components["schemas"]["EventImageDto"] | null;
+        };
+        EventPaginationMetaDto: {
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+        };
+        EventItemListResponseDto: {
+            data: components["schemas"]["EventItemListDto"][];
+            meta: components["schemas"]["EventPaginationMetaDto"];
+        };
+        EventItemDetailDto: {
+            id: string;
+            slug: string;
+            name: string;
+            /** @enum {string} */
+            kind: "package" | "addon";
+            /** @description Rupiah, integer */
+            pricePerDay: number;
+            image?: components["schemas"]["EventImageDto"] | null;
+            description?: string | null;
+            descriptionText?: string | null;
+            categorySlug: string;
+            categoryName: string;
+            stockQuantity: number;
+            /** @description Units still free over the requested ?startDate/?days window; null when no window was given */
+            availableQuantity?: number | null;
+        };
+        EventItemDetailResponseDto: {
+            data: components["schemas"]["EventItemDetailDto"];
+        };
+        QuoteEventSupportItemDto: {
+            /**
+             * @description EventItem.slug
+             * @example medium-venue-package
+             */
+            slug: string;
+            /** @example 1 */
+            quantity: number;
+            /**
+             * @description Overrides the cart-level `days` for this line only
+             * @example 1
+             */
+            days?: number;
+        };
+        QuoteEventSupportDto: {
+            /**
+             * @description ISO 8601 date (YYYY-MM-DD)
+             * @example 2026-03-01
+             */
+            startDate: string;
+            /**
+             * @description Default rental length in days, applied to any line without its own `days`
+             * @example 2
+             */
+            days: number;
+            /** @example Balai Sarbini, Jakarta Selatan */
+            eventLocation?: string;
+            items: components["schemas"]["QuoteEventSupportItemDto"][];
+        };
+        EventQuoteLineDto: {
+            slug: string;
+            name: string;
+            quantity: number;
+            startDate: string;
+            days: number;
+            endDate: string;
+            /** @description Rupiah, integer */
+            pricePerDay: number;
+            /** @description Rupiah, integer */
+            lineTotal: number;
+            /** @description Units still free over this line's date range */
+            availableQuantity: number;
+        };
+        EventQuoteDto: {
+            lines: components["schemas"]["EventQuoteLineDto"][];
+            startDate: string;
+            endDate: string;
+            /** @description Rupiah, integer */
+            subtotal: number;
+            /** @description Rupiah, integer */
+            discountAmount: number;
+            /** @description Rupiah, integer */
+            total: number;
+            /** @example IDR */
+            currency: string;
+            /** @description Prefilled Indonesian WhatsApp message; the FE appends its own number */
+            whatsappMessage: string;
+        };
+        EventQuoteResponseDto: {
+            data: components["schemas"]["EventQuoteDto"];
+        };
+        EventCategoryResponseDto: {
+            data: components["schemas"]["EventCategoryDto"];
+        };
+        CreateEventCategoryDto: {
+            /** @example Sound System */
+            name: string;
+            /**
+             * @description URL-safe slug, unique. Auto-generated from name when omitted.
+             * @example sound-system
+             */
+            slug?: string;
+            /**
+             * @description Sanitized HTML rich text (allow-listed tags/attributes only — see docs/rich-text-descriptions.md). Images must be uploaded via POST /admin/media and referenced by URL; data: URIs are stripped.
+             * @example <p>Rumah <strong>modern</strong> di BSD dengan akses tol.</p><ul><li>3 kamar tidur</li></ul>
+             */
+            description?: string;
+            /** @description Upload an image first via POST /admin/media/upload, then pass its id */
+            mediaAssetId?: string;
+            /** @default true */
+            isActive: boolean;
+            /** @default 0 */
+            sortOrder: number;
+        };
+        UpdateEventCategoryDto: {
+            /** @example Sound System */
+            name?: string;
+            /**
+             * @description URL-safe slug, unique. Auto-generated from name when omitted.
+             * @example sound-system
+             */
+            slug?: string;
+            /**
+             * @description Sanitized HTML rich text (allow-listed tags/attributes only — see docs/rich-text-descriptions.md). Images must be uploaded via POST /admin/media and referenced by URL; data: URIs are stripped.
+             * @example <p>Rumah <strong>modern</strong> di BSD dengan akses tol.</p><ul><li>3 kamar tidur</li></ul>
+             */
+            description?: string;
+            /** @description Upload an image first via POST /admin/media/upload, then pass its id */
+            mediaAssetId?: string;
+            /** @default true */
+            isActive: boolean;
+            /** @default 0 */
+            sortOrder: number;
+        };
+        EventItemAdminDto: {
+            id: string;
+            categoryId: string;
+            categorySlug: string;
+            categoryName: string;
+            name: string;
+            slug: string;
+            /** @enum {string} */
+            kind: "package" | "addon";
+            description?: string | null;
+            descriptionText?: string | null;
+            /** @description Rupiah, integer */
+            pricePerDay: number;
+            stockQuantity: number;
+            /** @enum {string} */
+            status: "draft" | "published" | "archived";
+            image?: components["schemas"]["EventImageDto"] | null;
+            sortOrder: number;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        EventItemAdminListResponseDto: {
+            data: components["schemas"]["EventItemAdminDto"][];
+            meta: components["schemas"]["EventPaginationMetaDto"];
+        };
+        EventItemAdminResponseDto: {
+            data: components["schemas"]["EventItemAdminDto"];
+        };
+        CreateEventItemDto: {
+            /** @description EventCategory UUID */
+            categoryId: string;
+            /** @example Medium Venue Package */
+            name: string;
+            /**
+             * @description URL-safe slug, unique. Auto-generated from name when omitted.
+             * @example medium-venue-package
+             */
+            slug?: string;
+            /**
+             * @default package
+             * @enum {string}
+             */
+            kind: "package" | "addon";
+            /**
+             * @description Sanitized HTML rich text (allow-listed tags/attributes only — see docs/rich-text-descriptions.md). Images must be uploaded via POST /admin/media and referenced by URL; data: URIs are stripped.
+             * @example <p>Rumah <strong>modern</strong> di BSD dengan akses tol.</p><ul><li>3 kamar tidur</li></ul>
+             */
+            description?: string;
+            /**
+             * @description Rupiah, integer
+             * @example 3500000
+             */
+            pricePerDay: number;
+            /** @example 3 */
+            stockQuantity: number;
+            /** @description Upload an image first via POST /admin/media/upload, then pass its id */
+            mediaAssetId?: string;
+            /** @default 0 */
+            sortOrder: number;
+        };
+        UpdateEventItemDto: {
+            /** @description EventCategory UUID */
+            categoryId?: string;
+            /** @example Medium Venue Package */
+            name?: string;
+            /**
+             * @description URL-safe slug, unique. Auto-generated from name when omitted.
+             * @example medium-venue-package
+             */
+            slug?: string;
+            /**
+             * @default package
+             * @enum {string}
+             */
+            kind: "package" | "addon";
+            /**
+             * @description Sanitized HTML rich text (allow-listed tags/attributes only — see docs/rich-text-descriptions.md). Images must be uploaded via POST /admin/media and referenced by URL; data: URIs are stripped.
+             * @example <p>Rumah <strong>modern</strong> di BSD dengan akses tol.</p><ul><li>3 kamar tidur</li></ul>
+             */
+            description?: string;
+            /**
+             * @description Rupiah, integer
+             * @example 3500000
+             */
+            pricePerDay?: number;
+            /** @example 3 */
+            stockQuantity?: number;
+            /** @description Upload an image first via POST /admin/media/upload, then pass its id */
+            mediaAssetId?: string;
+            /** @default 0 */
+            sortOrder: number;
+        };
+        TransitionEventItemStatusDto: {
+            /** @enum {string} */
+            status: "draft" | "published" | "archived";
+        };
+        EventBookingLineDto: {
+            id: string;
+            itemId: string;
+            itemName: string;
+            quantity: number;
+            startDate: string;
+            days: number;
+            endDate: string;
+            /** @description Rupiah, integer */
+            pricePerDay: number;
+            /** @description Rupiah, integer */
+            lineTotal: number;
+        };
+        EventBookingAdminDto: {
+            id: string;
+            reference: string;
+            /** @enum {string} */
+            status: "pending" | "confirmed" | "cancelled" | "completed";
+            customerName: string;
+            phone?: string | null;
+            email?: string | null;
+            eventLocation?: string | null;
+            notes?: string | null;
+            startDate: string;
+            endDate: string;
+            items: components["schemas"]["EventBookingLineDto"][];
+            /** @description Rupiah, integer */
+            subtotal: number;
+            /** @description Rupiah, integer */
+            discountAmount: number;
+            /** @description Rupiah, integer */
+            total: number;
+            adminNote?: string | null;
+            createdByName?: string | null;
+            confirmedAt?: string | null;
+            confirmedByName?: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        EventBookingAdminListResponseDto: {
+            data: components["schemas"]["EventBookingAdminDto"][];
+            meta: components["schemas"]["EventPaginationMetaDto"];
+        };
+        EventBookingAdminResponseDto: {
+            data: components["schemas"]["EventBookingAdminDto"];
+        };
+        CreateEventBookingItemDto: {
+            /** @description EventItem UUID */
+            itemId: string;
+            /** @example 1 */
+            quantity: number;
+            /**
+             * @description ISO 8601 date (YYYY-MM-DD)
+             * @example 2026-03-01
+             */
+            startDate: string;
+            /** @example 2 */
+            days: number;
+        };
+        CreateEventBookingDto: {
+            /** @example Budi Santoso */
+            customerName: string;
+            /** @example +628123456789 */
+            phone?: string;
+            /** @example budi@example.com */
+            email?: string;
+            /** @example Balai Sarbini, Jakarta Selatan */
+            eventLocation?: string;
+            /** @example Perlu akses loading dock jam 08:00 */
+            notes?: string;
+            items: components["schemas"]["CreateEventBookingItemDto"][];
+        };
+        TransitionEventBookingDto: {
+            /**
+             * @description Internal note, not shown to the customer
+             * @example Dikonfirmasi, DP diterima 1 Mar
              */
             adminNote?: string;
         };
@@ -4038,6 +4665,505 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StorageBookingAdminResponseDto"];
+                };
+            };
+        };
+    };
+    EventSupportController_findAllCategories_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventCategoryListResponseDto"];
+                };
+            };
+        };
+    };
+    EventSupportController_findAllItems_v1: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+                /** @description EventCategory.slug */
+                categorySlug?: string;
+                kind?: "package" | "addon";
+                /** @description ISO 8601 date (YYYY-MM-DD) */
+                startDate?: string;
+                days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventItemListResponseDto"];
+                };
+            };
+        };
+    };
+    EventSupportController_findOneItem_v1: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+                /** @description EventCategory.slug */
+                categorySlug?: string;
+                kind?: "package" | "addon";
+                /** @description ISO 8601 date (YYYY-MM-DD) */
+                startDate?: string;
+                days?: number;
+            };
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventItemDetailResponseDto"];
+                };
+            };
+        };
+    };
+    EventSupportController_quote_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuoteEventSupportDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventQuoteResponseDto"];
+                };
+            };
+        };
+    };
+    EventSupportAdminController_findAllCategories_v1: {
+        parameters: {
+            query?: {
+                /** @description Filter by active state. Public endpoints always return active-only regardless of this flag. */
+                isActive?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventCategoryListResponseDto"];
+                };
+            };
+        };
+    };
+    EventSupportAdminController_createCategory_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateEventCategoryDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventCategoryResponseDto"];
+                };
+            };
+        };
+    };
+    EventSupportAdminController_findCategory_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventCategoryResponseDto"];
+                };
+            };
+        };
+    };
+    EventSupportAdminController_removeCategory_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EventSupportAdminController_updateCategory_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateEventCategoryDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventCategoryResponseDto"];
+                };
+            };
+        };
+    };
+    EventSupportAdminController_findAllItems_v1: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+                /** @description Filter by EventCategory UUID */
+                categoryId?: string;
+                kind?: "package" | "addon";
+                status?: "draft" | "published" | "archived";
+                /** @description Search by item name */
+                search?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventItemAdminListResponseDto"];
+                };
+            };
+        };
+    };
+    EventSupportAdminController_createItem_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateEventItemDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventItemAdminResponseDto"];
+                };
+            };
+        };
+    };
+    EventSupportAdminController_findItem_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventItemAdminResponseDto"];
+                };
+            };
+        };
+    };
+    EventSupportAdminController_removeItem_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    EventSupportAdminController_updateItem_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateEventItemDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventItemAdminResponseDto"];
+                };
+            };
+        };
+    };
+    EventSupportAdminController_updateItemStatus_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransitionEventItemStatusDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventItemAdminResponseDto"];
+                };
+            };
+        };
+    };
+    EventBookingsAdminController_findAll_v1: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+                status?: "pending" | "confirmed" | "cancelled" | "completed";
+                /** @description Bookings whose endDate >= from */
+                from?: string;
+                /** @description Bookings whose startDate <= to */
+                to?: string;
+                /** @description Matches booking reference, customer name, or phone */
+                search?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventBookingAdminListResponseDto"];
+                };
+            };
+        };
+    };
+    EventBookingsAdminController_create_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateEventBookingDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventBookingAdminResponseDto"];
+                };
+            };
+        };
+    };
+    EventBookingsAdminController_findOne_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventBookingAdminResponseDto"];
+                };
+            };
+        };
+    };
+    EventBookingsAdminController_confirm_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransitionEventBookingDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventBookingAdminResponseDto"];
+                };
+            };
+        };
+    };
+    EventBookingsAdminController_cancel_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransitionEventBookingDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventBookingAdminResponseDto"];
+                };
+            };
+        };
+    };
+    EventBookingsAdminController_complete_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransitionEventBookingDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventBookingAdminResponseDto"];
                 };
             };
         };

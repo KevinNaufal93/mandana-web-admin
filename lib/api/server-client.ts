@@ -59,3 +59,35 @@ export function unwrap<T>(result: {
   }
   return { ok: true, data: (result.data as { data: T } | undefined)?.data as T };
 }
+
+export interface PageMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface Paginated<T> {
+  items: T[];
+  meta: PageMeta;
+}
+
+/**
+ * Sibling to unwrap<T>() for list endpoints. TransformInterceptor passes
+ * {data, meta} bodies through untouched (see its "already has data and
+ * meta" branch), so paginated admin endpoints reply with
+ * {data: T[], meta: {total, page, limit, totalPages}} instead of the
+ * single-level {data: T} envelope unwrap() expects — meta would otherwise
+ * be silently dropped.
+ */
+export function unwrapPaginated<T>(result: {
+  data?: unknown;
+  error?: unknown;
+  response: Response;
+}): ApiResult<Paginated<T>> {
+  if (!result.response.ok) {
+    return { ok: false, error: parseApiError(result.response.status, result.error ?? result.data) };
+  }
+  const body = result.data as { data: T[]; meta: PageMeta } | undefined;
+  return { ok: true, data: { items: body?.data ?? [], meta: body?.meta as PageMeta } };
+}

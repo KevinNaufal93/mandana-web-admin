@@ -73,3 +73,31 @@ body {
     background-color: var(--muted-foreground);
   }
 }
+
+@layer components {
+  /* Restyles the Quill "snow" theme (components/ui/rich-text-editor.tsx)
+     onto this app's tokens instead of its baked-in light-grey defaults —
+     Quill's DOM (.ql-toolbar/.ql-container/.ql-editor) isn't reachable
+     through component props, only through these class selectors. */
+  .rich-text-editor .ql-toolbar.ql-snow {
+    border-color: var(--primary);
+    border-top-left-radius: var(--radius);
+    border-top-right-radius: var(--radius);
+    background: var(--background);
+  }
+  .rich-text-editor .ql-container.ql-snow {
+    border-color: var(--primary);
+    border-bottom-left-radius: var(--radius);
+    border-bottom-right-radius: var(--radius);
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+  }
+  .rich-text-editor .ql-editor {
+    min-height: 180px;
+    color: var(--primary);
+  }
+  .rich-text-editor .ql-editor.ql-blank::before {
+    color: var(--muted-foreground);
+    font-style: normal;
+  }
+}
