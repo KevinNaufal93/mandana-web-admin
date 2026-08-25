@@ -1,17 +1,50 @@
 import { cn } from "@/lib/utils";
 
+/**
+ * tone communicates what KIND of section this is, not just its content —
+ * the property detail redesign uses this to tell three transaction models
+ * apart at a glance: "default" (view-only content with nothing else going
+ * on), "readonly" (sitting inside an edit flow where its siblings ARE
+ * editable, but this one specifically isn't — e.g. an assigned agent, which
+ * isn't part of the update payload), and "danger" (a destructive action,
+ * matching the treatment event-support's item detail view already
+ * established for its own danger zone). "readonly" and "danger" are meant
+ * to be applied situationally (e.g. only while a page is in edit mode), not
+ * as a permanent property of a card.
+ */
+type DetailCardTone = "default" | "readonly" | "danger";
+
+const TONE_BORDER: Record<DetailCardTone, string> = {
+  default: "border-border",
+  readonly: "border-border/60 bg-muted/40",
+  danger: "border-destructive/30",
+};
+
 export function DetailCard({
   title,
   children,
   className,
+  tone = "default",
+  action,
 }: {
   title: string;
   children: React.ReactNode;
   className?: string;
+  tone?: DetailCardTone;
+  /** Rendered top-right of the header, next to the title — e.g. a small
+   *  lock icon marking a readonly card, or (once a delete endpoint exists)
+   *  a delete button on a danger card. Absent by default, so every
+   *  existing caller is unaffected. */
+  action?: React.ReactNode;
 }) {
   return (
-    <section className={cn("rounded-lg border border-border p-4", className)}>
-      <h2 className="text-sm font-semibold text-primary">{title}</h2>
+    <section className={cn("rounded-lg border p-4", TONE_BORDER[tone], className)}>
+      <div className="flex items-center justify-between gap-2">
+        <h2 className={cn("text-sm font-semibold", tone === "danger" ? "text-destructive" : "text-primary")}>
+          {title}
+        </h2>
+        {action}
+      </div>
       <div className="mt-3 flex flex-col gap-2.5">{children}</div>
     </section>
   );

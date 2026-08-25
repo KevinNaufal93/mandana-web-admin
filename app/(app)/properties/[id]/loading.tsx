@@ -15,9 +15,12 @@ export default function PropertyDetailLoading() {
         </div>
       </div>
 
+      {/* Gambar sits full-width above the grid, same as the real page — this
+          used to be omitted here, so the skeleton→content swap jumped. */}
+      <SkeletonBlock className="aspect-video w-full" />
+
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="flex flex-col gap-6 lg:col-span-2">
-          <SkeletonBlock className="aspect-video w-full" />
           <SkeletonBlock className="h-40 w-full" />
           <SkeletonBlock className="h-32 w-full" />
         </div>
@@ -25,6 +28,7 @@ export default function PropertyDetailLoading() {
           <SkeletonBlock className="h-40 w-full" />
           <SkeletonBlock className="h-28 w-full" />
           <SkeletonBlock className="h-28 w-full" />
+          <SkeletonBlock className="h-20 w-full" />
         </div>
       </div>
     </div>

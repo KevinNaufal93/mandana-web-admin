@@ -3,7 +3,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { LogoutButton } from "@/components/shell/logout-button";
 import { useSidebar } from "@/components/shell/sidebar-provider";
 import { SidebarToggle } from "@/components/shell/sidebar-toggle";
 import { cn } from "@/lib/utils";
@@ -107,8 +106,9 @@ export function AppSidebar() {
                 // Active gets its own fill instead of sharing hover's
                 // bg-card/10 — the two used to be visually identical, so
                 // there was no way to tell "current page" from "page I'm
-                // pointing at". Accent is this app's warm tan token,
-                // otherwise unused anywhere in the shell.
+                // pointing at". Accent is this app's warm tan token; this
+                // is where its "you are here" meaning starts — <PageTitle>
+                // in the topbar reuses the same signal.
                 active
                   ? "bg-accent/18 text-accent"
                   : "text-card/90 hover:bg-card/10 hover:text-card",
@@ -123,15 +123,6 @@ export function AppSidebar() {
           );
         })}
       </nav>
-
-      <div
-        className={cn(
-          "relative z-10 border-t border-card/10 py-4",
-          collapsed ? "px-2" : "px-4",
-        )}
-      >
-        <LogoutButton collapsed={collapsed} />
-      </div>
     </aside>
   );
 }

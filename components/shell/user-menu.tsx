@@ -1,5 +1,5 @@
 import { getCurrentUser } from "@/lib/auth/dal";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { UserMenuDropdown } from "@/components/shell/user-menu-dropdown";
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/);
@@ -13,32 +13,24 @@ function initials(name: string): string {
  * to this single component and rendered inside a <Suspense> in
  * app/(app)/layout.tsx, so a slow GET /auth/me streams in without
  * blocking the sidebar/topbar chrome around it.
+ *
+ * Stays a Server Component for the fetch; the interactive dropdown itself
+ * lives in <UserMenuDropdown>, a client component that receives the
+ * already-fetched identity as plain, serializable props.
  */
 export async function UserMenu() {
   const user = await getCurrentUser();
-  return (
-    <div className="flex items-center gap-3">
-      <div className="hidden text-right sm:block">
-        <p className="text-sm font-medium leading-none text-primary">{user.name}</p>
-        <p className="text-xs text-muted-foreground">{user.email}</p>
-      </div>
-      <Avatar className="size-9">
-        <AvatarFallback className="bg-primary text-card font-medium">
-          {initials(user.name)}
-        </AvatarFallback>
-      </Avatar>
-    </div>
-  );
+  return <UserMenuDropdown name={user.name} email={user.email} initials={initials(user.name)} />;
 }
 
 export function UserMenuSkeleton() {
   return (
     <div className="flex items-center gap-3">
       <div className="hidden sm:block">
-        <div className="h-3.5 w-24 rounded bg-muted" />
-        <div className="mt-1.5 h-3 w-32 rounded bg-muted" />
+        <div className="h-3.5 w-24 rounded bg-card/10" />
+        <div className="mt-1.5 h-3 w-32 rounded bg-card/10" />
       </div>
-      <div className="size-9 rounded-full bg-muted" />
+      <div className="size-9 rounded-full bg-card/10" />
     </div>
   );
 }

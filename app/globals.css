@@ -58,12 +58,14 @@ body {
 }
 
 @layer utilities {
-  /* Thin, low-contrast scrollbar for horizontally-scrollable data tables. */
+  /* Thin, low-contrast scrollbar — originally horizontal-only (data
+     tables), now also used for vertical scroll (RichTextView's
+     `scrollable`), hence both dimensions below. */
   .scrollbar-subtle {
     scrollbar-width: thin;
     scrollbar-color: var(--border) transparent;
   }
-  .scrollbar-subtle::-webkit-scrollbar { height: 6px; }
+  .scrollbar-subtle::-webkit-scrollbar { height: 6px; width: 6px; }
   .scrollbar-subtle::-webkit-scrollbar-track { background: transparent; }
   .scrollbar-subtle::-webkit-scrollbar-thumb {
     background-color: var(--border);
@@ -94,7 +96,23 @@ body {
   }
   .rich-text-editor .ql-editor {
     min-height: 180px;
+    /* Capped so a long description scrolls inside its own card instead of
+       pushing every card below it down the page — see property-detail-view. */
+    max-height: 320px;
+    overflow-y: auto;
     color: var(--primary);
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  .rich-text-editor .ql-editor::-webkit-scrollbar {
+    width: 6px;
+  }
+  .rich-text-editor .ql-editor::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .rich-text-editor .ql-editor::-webkit-scrollbar-thumb {
+    background-color: var(--border);
+    border-radius: 9999px;
   }
   .rich-text-editor .ql-editor.ql-blank::before {
     color: var(--muted-foreground);

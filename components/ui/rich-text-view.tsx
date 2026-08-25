@@ -10,13 +10,25 @@ import { cn } from "@/lib/utils";
  * library" convention) — the small prose ruleset below covers the tags
  * the Quill editor actually emits (see the API's allow-list).
  */
-export function RichTextView({ html }: { html: string | null }) {
+export function RichTextView({
+  html,
+  scrollable,
+}: {
+  html: string | null;
+  /** Caps the block at the same height as the edit-mode Quill editor
+   *  (globals.css's `.rich-text-editor .ql-editor`) and scrolls internally,
+   *  so a long description doesn't push every card below it down the page.
+   *  Opt-in — event-support's two call sites render descriptions as the
+   *  main content of their own page and should stay unbounded. */
+  scrollable?: boolean;
+}) {
   if (!html) return <p className="text-sm text-muted-foreground">Belum ada deskripsi.</p>;
 
   return (
     <div
       className={cn(
         "text-sm leading-relaxed text-primary",
+        scrollable && "max-h-80 overflow-y-auto scrollbar-subtle pr-1",
         "[&_p]:mb-3 [&_p:last-child]:mb-0",
         "[&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:mb-3 [&_ol]:list-decimal [&_ol]:pl-5",
         "[&_h1]:mb-2 [&_h1]:text-lg [&_h1]:font-semibold [&_h2]:mb-2 [&_h2]:text-base [&_h2]:font-semibold",

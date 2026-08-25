@@ -16,13 +16,17 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      // Same surface as <Input> (border-primary/bg-background) so the
-      // filter bar's search box and selects read as one control group —
-      // this app has no `popover`/`popover-foreground` tokens, unlike
-      // shadcn's default template.
-      "flex h-10 items-center justify-between gap-2 whitespace-nowrap rounded-lg border border-primary bg-background px-3 py-2 text-sm text-primary",
+      // Same surface as <Input> (border-border/60/bg-background) so the
+      // filter bar's search box and selects still read as one control
+      // group after Input's border was softened — kept in lockstep on
+      // purpose, see input.tsx. This app has no `popover`/
+      // `popover-foreground` tokens, unlike shadcn's default template.
+      "flex h-10 items-center justify-between gap-2 whitespace-nowrap rounded-lg border border-border/60 bg-background px-3 py-2 text-sm text-primary",
       "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
-      "data-[placeholder]:text-primary [&>span]:line-clamp-1",
+      // text-muted-foreground while showing the placeholder, not
+      // text-primary — same "placeholder must not look like a real value"
+      // fix as Input's placeholder:text-muted-foreground.
+      "data-[placeholder]:text-muted-foreground [&>span]:line-clamp-1",
       className,
     )}
     {...props}
