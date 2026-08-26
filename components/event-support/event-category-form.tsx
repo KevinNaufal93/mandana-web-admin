@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
-import { ImagePicker, type ImagePickerValue } from "@/components/event-support/image-picker";
+import { ImagePicker, type ImagePickerValue } from "@/components/media/image-picker";
 import { createEventCategoryAction, updateEventCategoryAction } from "@/app/actions/event-support";
 import type { AdminEventCategory, EventCategoryInput } from "@/lib/api/event-support";
 

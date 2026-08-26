@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
-import { ImagePicker, type ImagePickerValue } from "@/components/event-support/image-picker";
+import { ImagePicker, type ImagePickerValue } from "@/components/media/image-picker";
 import { createEventItemAction, updateEventItemAction } from "@/app/actions/event-support";
 import { EVENT_ITEM_KINDS, type EventItemKind } from "@/lib/event-support/query";
 import type { AdminEventCategory, AdminEventItem, EventItemCreateInput } from "@/lib/api/event-support";
