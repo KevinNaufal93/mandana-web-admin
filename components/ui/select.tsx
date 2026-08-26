@@ -18,9 +18,10 @@ const SelectTrigger = React.forwardRef<
     className={cn(
       // Same surface as <Input> (border-border/60/bg-background) so the
       // filter bar's search box and selects still read as one control
-      // group after Input's border was softened — kept in lockstep on
-      // purpose, see input.tsx. This app has no `popover`/
-      // `popover-foreground` tokens, unlike shadcn's default template.
+      // group — kept in lockstep on purpose, see input.tsx for why this
+      // stays bg-background (a recessed well) rather than bg-card.
+      // This app has no `popover`/`popover-foreground` tokens, unlike
+      // shadcn's default template.
       "flex h-10 items-center justify-between gap-2 whitespace-nowrap rounded-lg border border-border/60 bg-background px-3 py-2 text-sm text-primary",
       "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
       // text-muted-foreground while showing the placeholder, not

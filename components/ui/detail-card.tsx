@@ -15,9 +15,16 @@ import { cn } from "@/lib/utils";
 type DetailCardTone = "default" | "readonly" | "danger";
 
 const TONE_BORDER: Record<DetailCardTone, string> = {
-  default: "border-border",
+  // bg-card so the card is a genuine elevated panel (same token the login
+  // card and the Select/DropdownMenu popovers already use) rather than
+  // relying on the page's own bg-background showing through — a card with
+  // no fill of its own was why an Input inside it (also bg-background)
+  // used to read as the exact same surface as its container. readonly
+  // stays on bg-muted/40 (dimmer, not white) so it still visibly recedes
+  // next to its now-brighter editable siblings.
+  default: "border-border bg-card",
   readonly: "border-border/60 bg-muted/40",
-  danger: "border-destructive/30",
+  danger: "border-destructive/30 bg-card",
 };
 
 export function DetailCard({
