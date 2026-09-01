@@ -58,17 +58,17 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/media/upload": {
+    "/api/v1/admin/media": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Browse uploaded media assets (admin picker) — filter by purpose or by unused */
+        get: operations["MediaController_findAllAdmin_v1"];
         put?: never;
-        /** Upload an image and generate responsive variants */
-        post: operations["MediaController_upload_v1"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -82,11 +82,49 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Get one media asset */
+        get: operations["MediaController_findOne_v1"];
         put?: never;
         post?: never;
-        /** Delete a media asset and all its storage variants */
+        /**
+         * Delete a media asset and all its storage variants
+         * @description Returns 409 if the asset is still referenced by a hero slide, property image, or any other owning record — detach it first.
+         */
         delete: operations["MediaController_delete_v1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/media/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upload an image (or SVG icon) and generate responsive variants */
+        post: operations["MediaController_upload_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/media/backfill-placeholders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** One-off, idempotent: generate LQIP placeholders for assets uploaded before that column existed */
+        post: operations["MediaController_backfillPlaceholders_v1"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -257,7 +295,11 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Upload and attach an image to a property */
+        /**
+         * Upload and attach an image to a property
+         * @deprecated
+         * @description Superseded by the images field on PATCH /admin/properties/:id, which also supports attaching an asset already uploaded via POST /admin/media/upload.
+         */
         post: operations["PropertiesAdminController_addImage_v1"];
         delete?: never;
         options?: never;
@@ -275,11 +317,19 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** Delete a property image (removes S3 asset too) */
+        /**
+         * Delete a property image (removes S3 asset too)
+         * @deprecated
+         * @description Superseded by the images field on PATCH /admin/properties/:id (omit the image's id from the array to delete it).
+         */
         delete: operations["PropertiesAdminController_removeImage_v1"];
         options?: never;
         head?: never;
-        /** Update image metadata (alt, sortOrder, isCover) */
+        /**
+         * Update image metadata (alt, sortOrder, isCover)
+         * @deprecated
+         * @description Superseded by the images field on PATCH /admin/properties/:id.
+         */
         patch: operations["PropertiesAdminController_updateImage_v1"];
         trace?: never;
     };
@@ -352,25 +402,25 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/hero-slides": {
+    "/api/v1/admin/content-blocks": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** List all hero slides (admin) */
-        get: operations["HeroController_findAll_v1"];
+        /** List content blocks (admin) — hero slides, service cards, etc. Filter with ?type= */
+        get: operations["ContentBlocksController_findAll_v1"];
         put?: never;
-        /** Create a new hero slide */
-        post: operations["HeroController_create_v1"];
+        /** Create a content block */
+        post: operations["ContentBlocksController_create_v1"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/hero-slides/{id}": {
+    "/api/v1/admin/content-blocks/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -380,12 +430,12 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** Delete a hero slide */
-        delete: operations["HeroController_remove_v1"];
+        /** Delete a content block */
+        delete: operations["ContentBlocksController_remove_v1"];
         options?: never;
         head?: never;
-        /** Update a hero slide */
-        patch: operations["HeroController_update_v1"];
+        /** Update a content block */
+        patch: operations["ContentBlocksController_update_v1"];
         trace?: never;
     };
     "/api/v1/collections/{slug}": {
@@ -596,6 +646,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/moving/addons": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List active add-on fees (helper, packaging, waiting, insurance, toll) for the Moving Support page */
+        get: operations["MovingController_findAllAddons_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/moving/pricing-config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Pricing policy (rounding step, ± estimate band, fallback included-km) — fetch these instead of hardcoding them client-side */
+        get: operations["MovingController_getPricingConfig_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/moving/quote": {
         parameters: {
             query?: never;
@@ -605,7 +689,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Compute an authoritative price band for a truck class + road distance */
+        /** Compute an authoritative price band for a truck class + road distance, plus any selected add-ons */
         post: operations["MovingController_quote_v1"];
         delete?: never;
         options?: never;
@@ -648,6 +732,61 @@ export interface paths {
         head?: never;
         /** Update a truck class */
         patch: operations["MovingAdminController_update_v1"];
+        trace?: never;
+    };
+    "/api/v1/admin/moving/addons": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all moving add-ons, including inactive */
+        get: operations["MovingAddonsAdminController_findAll_v1"];
+        put?: never;
+        /** Create a moving add-on */
+        post: operations["MovingAddonsAdminController_create_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/moving/addons/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a single moving add-on */
+        get: operations["MovingAddonsAdminController_findOne_v1"];
+        put?: never;
+        post?: never;
+        /** Delete a moving add-on */
+        delete: operations["MovingAddonsAdminController_remove_v1"];
+        options?: never;
+        head?: never;
+        /** Update a moving add-on */
+        patch: operations["MovingAddonsAdminController_update_v1"];
+        trace?: never;
+    };
+    "/api/v1/admin/moving/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the Moving Support pricing policy */
+        get: operations["MovingSettingsAdminController_get_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update the Moving Support pricing policy */
+        patch: operations["MovingSettingsAdminController_update_v1"];
         trace?: never;
     };
     "/api/v1/storage/unit-types": {
@@ -945,7 +1084,8 @@ export interface paths {
         put?: never;
         /** Add N units of one type to a facility, auto-numbered from the next free sequence */
         post: operations["StorageUnitsController_bulkCreate_v1"];
-        delete?: never;
+        /** Delete multiple storage units by id. Atomic — 404 naming any id(s) not found, nothing is deleted unless all exist. */
+        delete: operations["StorageUnitsController_bulkRemove_v1"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1087,6 +1227,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/event-support/pricing-config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Hourly-pricing policy (threshold, rounding step, minimum hours, ...) — fetch these instead of hardcoding them client-side */
+        get: operations["EventSupportController_getPricingConfig_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/event-support/items": {
         parameters: {
             query?: never;
@@ -1094,7 +1251,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List published items, paginated. Pass ?startDate&days for live availableQuantity on GET /items/:slug. */
+        /** List published items, paginated. Pass ?dropoffAt&pickupAt for each item's live activeRate. */
         get: operations["EventSupportController_findAllItems_v1"];
         put?: never;
         post?: never;
@@ -1111,7 +1268,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get a single published item with full description. Optional ?startDate&days adds availableQuantity. */
+        /** Get a single published item with full description. Optional ?dropoffAt&pickupAt adds availableQuantity and activeRate. */
         get: operations["EventSupportController_findOneItem_v1"];
         put?: never;
         post?: never;
@@ -1315,6 +1472,24 @@ export interface paths {
         patch: operations["EventBookingsAdminController_complete_v1"];
         trace?: never;
     };
+    "/api/v1/admin/event-support/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the Event Support hourly-pricing policy */
+        get: operations["EventSupportSettingsAdminController_get_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update the Event Support hourly-pricing policy */
+        patch: operations["EventSupportSettingsAdminController_update_v1"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1385,7 +1560,17 @@ export interface components {
              * @default sale
              * @enum {string}
              */
-            listingType: "sale" | "rent";
+            listingType: "sale" | "rent" | "new";
+            /**
+             * @description Handover/completion date (YYYY-MM-DD). Only valid when listingType is "new".
+             * @example 2027-06-30
+             */
+            handoverDate?: string;
+            /**
+             * @description Only valid when listingType is "new".
+             * @enum {string}
+             */
+            constructionStatus?: "ready" | "under_construction";
             /**
              * @default draft
              * @enum {string}
@@ -1421,6 +1606,21 @@ export interface components {
             /** @description Amenity UUIDs */
             amenityIds?: string[];
         };
+        PropertyImageInputDto: {
+            /** @description Existing PropertyImage id to update (or no-op, if nothing differs). Mutually exclusive with mediaAssetId. */
+            id?: string;
+            /** @description MediaAsset id from POST /admin/media/upload to attach as a new image. Mutually exclusive with id. */
+            mediaAssetId?: string;
+            /** @description Alt text for accessibility */
+            alt?: string;
+            /** @description Falls back to this entry's index in the array when omitted */
+            sortOrder?: number;
+            /**
+             * @description At most one entry in the array may set this to true
+             * @default false
+             */
+            isCover: boolean;
+        };
         UpdatePropertyDto: {
             /**
              * @description URL-safe slug, unique. Auto-generated from title when omitted.
@@ -1438,7 +1638,17 @@ export interface components {
              * @default sale
              * @enum {string}
              */
-            listingType: "sale" | "rent";
+            listingType: "sale" | "rent" | "new";
+            /**
+             * @description Handover/completion date (YYYY-MM-DD). Only valid when listingType is "new".
+             * @example 2027-06-30
+             */
+            handoverDate?: string;
+            /**
+             * @description Only valid when listingType is "new".
+             * @enum {string}
+             */
+            constructionStatus?: "ready" | "under_construction";
             /**
              * @default draft
              * @enum {string}
@@ -1473,6 +1683,8 @@ export interface components {
             agentId?: string;
             /** @description Amenity UUIDs */
             amenityIds?: string[];
+            /** @description Complete desired image set, applied atomically alongside any field changes on this same request. Omit this field entirely to leave images untouched; pass [] to delete every existing image. An existing image whose id is absent from the array is deleted. */
+            images?: components["schemas"]["PropertyImageInputDto"][];
         };
         UpdatePropertyImageDto: {
             alt?: string;
@@ -1492,33 +1704,52 @@ export interface components {
             /** @description UUID of the property this inquiry relates to */
             propertyId?: string;
         };
-        CreateHeroSlideDto: {
-            /** @description MediaAsset UUID (upload first via POST /admin/media) */
-            mediaAssetId: string;
-            title?: string;
+        CreateContentBlockDto: {
+            /** @enum {string} */
+            type: "hero" | "service_card";
+            /** @description Required regardless of type. */
+            title: string;
+            /** @description Hero: the slide's secondary line. Service card: its description. Same field, same visual role either way. */
             subtitle?: string;
-            /** @example Lihat Properti */
+            /**
+             * @description Hero-only: the CTA button's label. Ignored for other types.
+             * @example Lihat Properti
+             */
             ctaText?: string;
-            /** @example /properties?listingType=sale */
-            ctaLink?: string;
+            /**
+             * @description Hero: the CTA target. Service card: its href. Same field.
+             * @example /properties?listingType=sale
+             */
+            link?: string;
+            /** @description MediaAsset UUID (upload first via POST /admin/media). Required when type=hero — a hero slide with no image is invalid. Optional for every other type. */
+            mediaAssetId?: string;
             /** @default 0 */
             sortOrder: number;
             /** @default true */
             isActive: boolean;
         };
-        UpdateHeroSlideDto: {
-            /** @description MediaAsset UUID (upload first via POST /admin/media) */
-            mediaAssetId?: string;
+        UpdateContentBlockDto: {
+            /** @enum {string} */
+            type?: "hero" | "service_card";
+            /** @description Required regardless of type. */
             title?: string;
+            /** @description Hero: the slide's secondary line. Service card: its description. Same field, same visual role either way. */
             subtitle?: string;
-            /** @example Lihat Properti */
+            /**
+             * @description Hero-only: the CTA button's label. Ignored for other types.
+             * @example Lihat Properti
+             */
             ctaText?: string;
-            /** @example /properties?listingType=sale */
-            ctaLink?: string;
+            /**
+             * @description Hero: the CTA target. Service card: its href. Same field.
+             * @example /properties?listingType=sale
+             */
+            link?: string;
             /** @default 0 */
             sortOrder: number;
             /** @default true */
             isActive: boolean;
+            mediaAssetId?: string | null;
         };
         CreateCollectionDto: {
             /**
@@ -1618,6 +1849,10 @@ export interface components {
         TruckImageDto: {
             url: string;
             srcset: string;
+            /** @description Empty when this asset has no AVIF variants — only hero uploads generate AVIF. */
+            srcsetAvif: string;
+            /** @description ~20px WebP data: URI for an instant blurred paint; null until backfilled for pre-existing assets. */
+            placeholder: string | null;
             alt: string | null;
             width: number;
             height: number;
@@ -1645,6 +1880,56 @@ export interface components {
         TruckClassListResponseDto: {
             data: components["schemas"]["TruckClassDto"][];
         };
+        MovingAddonDto: {
+            id: string;
+            slug: string;
+            name: string;
+            description?: string | null;
+            descriptionText?: string | null;
+            /** @example helper */
+            kind: string;
+            /** @example per_unit */
+            pricingModel: string;
+            /** @description Rupiah, integer */
+            unitPrice: number;
+            percentBps?: number | null;
+            minCharge?: number | null;
+            maxCharge?: number | null;
+            unitLabel?: string | null;
+            minQty: number;
+            maxQty: number;
+            doublesOnRoundTrip: boolean;
+            image?: components["schemas"]["TruckImageDto"] | null;
+            isActive: boolean;
+            sortOrder: number;
+        };
+        MovingAddonListResponseDto: {
+            data: components["schemas"]["MovingAddonDto"][];
+        };
+        MovingSettingsDto: {
+            /** @description Rupiah rounding step applied to the total */
+            roundToIdr: number;
+            /** @description The ± percentage band shown to the customer */
+            bandPct: number;
+            /** @description Fallback included-km when a truck class sets none */
+            defaultIncludedKm: number;
+        };
+        MovingSettingsResponseDto: {
+            data: components["schemas"]["MovingSettingsDto"];
+        };
+        QuoteMovingAddonDto: {
+            /**
+             * @description MovingAddon.slug
+             * @example helper
+             */
+            slug: string;
+            /**
+             * @description Clamped server-side to the addon's min/max quantity; ignored (forced to 1) for `flat`/`percent` addons.
+             * @default 1
+             * @example 2
+             */
+            quantity: number;
+        };
         QuoteMovingDto: {
             /**
              * @description TruckClass.slug
@@ -1656,21 +1941,62 @@ export interface components {
              * @example 151200
              */
             distanceMeters: number;
+            /**
+             * @description Doubles the distance fare (and toll, if applicable) — the truck drives the route twice. Base fare and other add-ons are charged once.
+             * @default false
+             */
+            roundTrip: boolean;
+            /**
+             * @description Whether `distanceMeters` was computed via a toll-road route. Defaults to true, matching the current client Routes call (no `avoidTolls` modifier is sent). IMPORTANT: the caller's Routes request must have sent `routeModifiers.avoidTolls: !tollRoute`, or `distanceMeters` and any toll charge below will describe two different routes.
+             * @default true
+             */
+            tollRoute: boolean;
+            /**
+             * @description Declared value of the goods being moved, in Rupiah. Required when the `insurance` addon (or any `percent`-priced addon) is selected.
+             * @example 50000000
+             */
+            declaredValue?: number;
+            addons?: components["schemas"]["QuoteMovingAddonDto"][];
         };
         MovingQuoteTruckDto: {
             slug: string;
             name: string;
+        };
+        MovingQuoteAddonLineDto: {
+            slug: string;
+            name: string;
+            /** @example helper */
+            kind: string;
+            /** @example per_unit */
+            pricingModel: string;
+            quantity: number;
+            /** @description Rupiah */
+            unitPrice: number;
+            /** @description Rupiah */
+            amount: number;
         };
         MovingQuoteDto: {
             truck: components["schemas"]["MovingQuoteTruckDto"];
             distanceKm: number;
             includedKm: number;
             chargeableKm: number;
+            roundTrip: boolean;
+            /** @description 1 one-way, 2 round trip */
+            tripMultiplier: number;
             /** @description Rupiah */
             baseFare: number;
             /** @description Rupiah */
             distanceFare: number;
+            /** @description Rupiah — baseFare + distanceFare, after minFare */
+            travelSubtotal: number;
+            /** @description Whether distanceMeters was computed via a toll-road route (echoes the request flag) */
+            tollRoute: boolean;
+            /** @description Rupiah — 0 unless an active toll addon applies */
+            tollFare: number;
+            addons: components["schemas"]["MovingQuoteAddonLineDto"][];
             /** @description Rupiah */
+            addonsTotal: number;
+            /** @description Rupiah — travelSubtotal + tollFare + addonsTotal */
             subtotal: number;
             /** @description Rupiah */
             total: number;
@@ -1810,6 +2136,150 @@ export interface components {
             /** @default 0 */
             sortOrder: number;
         };
+        MovingAddonResponseDto: {
+            data: components["schemas"]["MovingAddonDto"];
+        };
+        CreateMovingAddonDto: {
+            /** @example Helper */
+            name: string;
+            /**
+             * @description URL-safe slug, unique. Auto-generated from name when omitted.
+             * @example helper
+             */
+            slug?: string;
+            /**
+             * @description Sanitized HTML rich text (allow-listed tags/attributes only — see docs/rich-text-descriptions.md). Images must be uploaded via POST /admin/media and referenced by URL; data: URIs are stripped.
+             * @example <p>Rumah <strong>modern</strong> di BSD dengan akses tol.</p><ul><li>3 kamar tidur</li></ul>
+             */
+            description?: string;
+            /**
+             * @example helper
+             * @enum {string}
+             */
+            kind: "helper" | "packaging" | "waiting" | "insurance" | "toll" | "other";
+            /**
+             * @example per_unit
+             * @enum {string}
+             */
+            pricingModel: "flat" | "per_unit" | "percent";
+            /**
+             * @description Rupiah, integer. Used by `flat` and `per_unit` models.
+             * @default 0
+             * @example 150000
+             */
+            unitPrice: number;
+            /**
+             * @description Basis points (20 = 0.2%). Required by the `percent` model.
+             * @example 20
+             */
+            percentBps?: number;
+            /**
+             * @description Rupiah floor
+             * @example 50000
+             */
+            minCharge?: number;
+            /** @description Rupiah cap */
+            maxCharge?: number;
+            /**
+             * @description Display-only unit label
+             * @example orang
+             */
+            unitLabel?: string;
+            /** @default 1 */
+            minQty: number;
+            /** @default 10 */
+            maxQty: number;
+            /**
+             * @description Doubles this add-on's amount when the quote has roundTrip: true.
+             * @default false
+             */
+            doublesOnRoundTrip: boolean;
+            /** @description Upload an image first via POST /admin/media/upload, then pass its id */
+            mediaAssetId?: string;
+            /** @default true */
+            isActive: boolean;
+            /** @default 0 */
+            sortOrder: number;
+        };
+        UpdateMovingAddonDto: {
+            /** @example Helper */
+            name?: string;
+            /**
+             * @description URL-safe slug, unique. Auto-generated from name when omitted.
+             * @example helper
+             */
+            slug?: string;
+            /**
+             * @description Sanitized HTML rich text (allow-listed tags/attributes only — see docs/rich-text-descriptions.md). Images must be uploaded via POST /admin/media and referenced by URL; data: URIs are stripped.
+             * @example <p>Rumah <strong>modern</strong> di BSD dengan akses tol.</p><ul><li>3 kamar tidur</li></ul>
+             */
+            description?: string;
+            /**
+             * @example helper
+             * @enum {string}
+             */
+            kind?: "helper" | "packaging" | "waiting" | "insurance" | "toll" | "other";
+            /**
+             * @example per_unit
+             * @enum {string}
+             */
+            pricingModel?: "flat" | "per_unit" | "percent";
+            /**
+             * @description Rupiah, integer. Used by `flat` and `per_unit` models.
+             * @default 0
+             * @example 150000
+             */
+            unitPrice: number;
+            /**
+             * @description Basis points (20 = 0.2%). Required by the `percent` model.
+             * @example 20
+             */
+            percentBps?: number;
+            /**
+             * @description Rupiah floor
+             * @example 50000
+             */
+            minCharge?: number;
+            /** @description Rupiah cap */
+            maxCharge?: number;
+            /**
+             * @description Display-only unit label
+             * @example orang
+             */
+            unitLabel?: string;
+            /** @default 1 */
+            minQty: number;
+            /** @default 10 */
+            maxQty: number;
+            /**
+             * @description Doubles this add-on's amount when the quote has roundTrip: true.
+             * @default false
+             */
+            doublesOnRoundTrip: boolean;
+            /** @description Upload an image first via POST /admin/media/upload, then pass its id */
+            mediaAssetId?: string;
+            /** @default true */
+            isActive: boolean;
+            /** @default 0 */
+            sortOrder: number;
+        };
+        UpdateMovingSettingsDto: {
+            /**
+             * @description Rounding step applied to the quote total, in Rupiah.
+             * @example 10000
+             */
+            roundToIdr?: number;
+            /**
+             * @description The ± percentage band shown to the customer around the total. 0 = exact price.
+             * @example 10
+             */
+            bandPct?: number;
+            /**
+             * @description Fallback included-km used when a truck class does not set its own includedKm.
+             * @example 5
+             */
+            defaultIncludedKm?: number;
+        };
         StorageDimensionsDto: {
             lengthCm: number;
             widthCm: number;
@@ -1818,6 +2288,10 @@ export interface components {
         StorageImageDto: {
             url: string;
             srcset: string;
+            /** @description Empty when this asset has no AVIF variants — only hero uploads generate AVIF. */
+            srcsetAvif: string;
+            /** @description ~20px WebP data: URI for an instant blurred paint; null until backfilled for pre-existing assets. */
+            placeholder: string | null;
             alt: string | null;
             width: number;
             height: number;
@@ -2265,6 +2739,10 @@ export interface components {
             /** @default true */
             isActive: boolean;
         };
+        BulkDeleteStorageUnitsDto: {
+            /** @description StorageUnit ids to delete */
+            ids: string[];
+        };
         CreateStorageBookingDto: {
             /** @example Budi Santoso */
             customerName: string;
@@ -2381,6 +2859,10 @@ export interface components {
         EventImageDto: {
             url: string;
             srcset: string;
+            /** @description Empty when this asset has no AVIF variants — only hero uploads generate AVIF. */
+            srcsetAvif: string;
+            /** @description ~20px WebP data: URI for an instant blurred paint; null until backfilled for pre-existing assets. */
+            placeholder: string | null;
             alt: string | null;
             width: number;
             height: number;
@@ -2400,6 +2882,34 @@ export interface components {
         EventCategoryListResponseDto: {
             data: components["schemas"]["EventCategoryDto"][];
         };
+        EventSupportSettingsDto: {
+            /** @description The hourly/daily cutoff, in hours */
+            hourlyThresholdHours: number;
+            /** @description Whether a window exactly at hourlyThresholdHours still bills hourly (<=) or falls to daily (<) */
+            hourlyThresholdInclusive: boolean;
+            /** @description Fallback minimum billable hours when an item sets no minimumHours of its own */
+            defaultMinimumHours: number;
+            /** @description Billable-hours rounding step, in minutes */
+            roundingUnitMinutes: number;
+            /** @description When true, an hourly line total never exceeds pricePerDay * quantity */
+            capHourlyAtDailyRate: boolean;
+            /** @enum {string} */
+            overThresholdMode: "whole_days" | "day_plus_hourly";
+            /** @description Whether pricePerDay/hourlyRate already include Jabodetabek delivery */
+            priceIncludesJabodetabekDelivery: boolean;
+            outsideJabodetabekNote?: string | null;
+        };
+        EventSupportSettingsResponseDto: {
+            data: components["schemas"]["EventSupportSettingsDto"];
+        };
+        EventActiveRateDto: {
+            /** @description Rupiah, integer */
+            amount: number;
+            /** @enum {string} */
+            unit: "hour" | "day";
+            /** @example jam */
+            label: string;
+        };
         EventItemListDto: {
             id: string;
             slug: string;
@@ -2409,6 +2919,8 @@ export interface components {
             /** @description Rupiah, integer */
             pricePerDay: number;
             image?: components["schemas"]["EventImageDto"] | null;
+            /** @description The rate applicable over ?dropoffAt/?pickupAt. Omitted when no window was given. */
+            activeRate?: components["schemas"]["EventActiveRateDto"];
         };
         EventPaginationMetaDto: {
             total: number;
@@ -2429,12 +2941,14 @@ export interface components {
             /** @description Rupiah, integer */
             pricePerDay: number;
             image?: components["schemas"]["EventImageDto"] | null;
+            /** @description The rate applicable over ?dropoffAt/?pickupAt. Omitted when no window was given. */
+            activeRate?: components["schemas"]["EventActiveRateDto"];
             description?: string | null;
             descriptionText?: string | null;
             categorySlug: string;
             categoryName: string;
             stockQuantity: number;
-            /** @description Units still free over the requested ?startDate/?days window; null when no window was given */
+            /** @description Units still free over the requested ?dropoffAt/?pickupAt window; null when no window was given */
             availableQuantity?: number | null;
         };
         EventItemDetailResponseDto: {
@@ -2449,22 +2963,27 @@ export interface components {
             /** @example 1 */
             quantity: number;
             /**
-             * @description Overrides the cart-level `days` for this line only
-             * @example 1
+             * @description Overrides the cart-level dropoffAt for this line only. Must be paired with pickupAt.
+             * @example 2026-03-01T09:00
              */
-            days?: number;
+            dropoffAt?: string;
+            /**
+             * @description Overrides the cart-level pickupAt for this line only. Must be paired with dropoffAt.
+             * @example 2026-03-01T17:00
+             */
+            pickupAt?: string;
         };
         QuoteEventSupportDto: {
             /**
-             * @description ISO 8601 date (YYYY-MM-DD)
-             * @example 2026-03-01
+             * @description Drop-off timestamp, naive local datetime (Asia/Jakarta)
+             * @example 2026-03-01T09:00
              */
-            startDate: string;
+            dropoffAt: string;
             /**
-             * @description Default rental length in days, applied to any line without its own `days`
-             * @example 2
+             * @description Pickup timestamp, naive local datetime (Asia/Jakarta)
+             * @example 2026-03-01T17:00
              */
-            days: number;
+            pickupAt: string;
             /** @example Balai Sarbini, Jakarta Selatan */
             eventLocation?: string;
             items: components["schemas"]["QuoteEventSupportItemDto"][];
@@ -2473,11 +2992,23 @@ export interface components {
             slug: string;
             name: string;
             quantity: number;
+            dropoffAt: string;
+            pickupAt: string;
+            /** @description Derived calendar span the item is held */
             startDate: string;
-            days: number;
             endDate: string;
+            /** @enum {string} */
+            billingMode: "hourly" | "daily";
+            /** @description Rupiah, integer — the rate actually applied */
+            unitPrice: number;
+            /** @enum {string} */
+            unitLabel: "jam" | "hari";
+            /** @description Hours (billingMode: hourly) or days (billingMode: daily). Fractional when the rounding step is under 60 minutes. */
+            billableUnits: number;
+            /** @description Only set under the day_plus_hourly over-threshold mode */
+            extraHours?: number | null;
             /** @description Rupiah, integer */
-            pricePerDay: number;
+            extraHoursTotal?: number | null;
             /** @description Rupiah, integer */
             lineTotal: number;
             /** @description Units still free over this line's date range */
@@ -2485,8 +3016,13 @@ export interface components {
         };
         EventQuoteDto: {
             lines: components["schemas"]["EventQuoteLineDto"][];
+            dropoffAt: string;
+            pickupAt: string;
+            /** @description Derived cart-wide calendar span */
             startDate: string;
             endDate: string;
+            /** @description true when the lines were priced under different billingModes */
+            isMixedBilling: boolean;
             /** @description Rupiah, integer */
             subtotal: number;
             /** @description Rupiah, integer */
@@ -2557,6 +3093,10 @@ export interface components {
             descriptionText?: string | null;
             /** @description Rupiah, integer */
             pricePerDay: number;
+            /** @description Rupiah, integer */
+            hourlyRate?: number | null;
+            supportsHourly: boolean;
+            minimumHours?: number | null;
             stockQuantity: number;
             /** @enum {string} */
             status: "draft" | "published" | "archived";
@@ -2601,6 +3141,18 @@ export interface components {
             pricePerDay: number;
             /** @example 3 */
             stockQuantity: number;
+            /**
+             * @description Rupiah, integer. Independent of pricePerDay — never derived from it. Required (and must be > 0) when supportsHourly is true.
+             * @example 75000
+             */
+            hourlyRate?: number;
+            /**
+             * @description Opts this item into hourly pricing for windows at/under the pricing-policy threshold. Requires a positive hourlyRate.
+             * @default false
+             */
+            supportsHourly: boolean;
+            /** @description Smallest billable hourly block for this item. Omit to use the pricing-policy default (EventSupportSettings.defaultMinimumHours). */
+            minimumHours?: number;
             /** @description Upload an image first via POST /admin/media/upload, then pass its id */
             mediaAssetId?: string;
             /** @default 0 */
@@ -2633,6 +3185,18 @@ export interface components {
             pricePerDay?: number;
             /** @example 3 */
             stockQuantity?: number;
+            /**
+             * @description Rupiah, integer. Independent of pricePerDay — never derived from it. Required (and must be > 0) when supportsHourly is true.
+             * @example 75000
+             */
+            hourlyRate?: number;
+            /**
+             * @description Opts this item into hourly pricing for windows at/under the pricing-policy threshold. Requires a positive hourlyRate.
+             * @default false
+             */
+            supportsHourly: boolean;
+            /** @description Smallest billable hourly block for this item. Omit to use the pricing-policy default (EventSupportSettings.defaultMinimumHours). */
+            minimumHours?: number;
             /** @description Upload an image first via POST /admin/media/upload, then pass its id */
             mediaAssetId?: string;
             /** @default 0 */
@@ -2647,11 +3211,24 @@ export interface components {
             itemId: string;
             itemName: string;
             quantity: number;
+            dropoffAt?: string | null;
+            pickupAt?: string | null;
             startDate: string;
+            /** @description Calendar days held (endDate - startDate + 1) */
             days: number;
             endDate: string;
+            /** @enum {string} */
+            billingMode: "hourly" | "daily";
             /** @description Rupiah, integer */
             pricePerDay: number;
+            /** @description Rupiah, integer — the rate actually applied */
+            unitPrice: number;
+            /** @enum {string} */
+            unitLabel: "jam" | "hari";
+            billableUnits: number;
+            extraHours?: number | null;
+            /** @description Rupiah, integer */
+            extraHoursTotal?: number | null;
             /** @description Rupiah, integer */
             lineTotal: number;
         };
@@ -2665,6 +3242,8 @@ export interface components {
             email?: string | null;
             eventLocation?: string | null;
             notes?: string | null;
+            dropoffAt?: string | null;
+            pickupAt?: string | null;
             startDate: string;
             endDate: string;
             items: components["schemas"]["EventBookingLineDto"][];
@@ -2696,12 +3275,15 @@ export interface components {
             /** @example 1 */
             quantity: number;
             /**
-             * @description ISO 8601 date (YYYY-MM-DD)
-             * @example 2026-03-01
+             * @description Drop-off timestamp, naive local datetime (Asia/Jakarta)
+             * @example 2026-03-01T09:00
              */
-            startDate: string;
-            /** @example 2 */
-            days: number;
+            dropoffAt: string;
+            /**
+             * @description Pickup timestamp, naive local datetime (Asia/Jakarta)
+             * @example 2026-03-01T17:00
+             */
+            pickupAt: string;
         };
         CreateEventBookingDto: {
             /** @example Budi Santoso */
@@ -2722,6 +3304,48 @@ export interface components {
              * @example Dikonfirmasi, DP diterima 1 Mar
              */
             adminNote?: string;
+        };
+        UpdateEventSupportSettingsDto: {
+            /**
+             * @description The hourly/daily cutoff, in hours (§6.1).
+             * @example 24
+             */
+            hourlyThresholdHours?: number;
+            /**
+             * @description Whether a window exactly at hourlyThresholdHours still bills hourly (<=) or falls to daily (<).
+             * @example true
+             */
+            hourlyThresholdInclusive?: boolean;
+            /**
+             * @description Fallback minimum billable hours when an item sets no minimumHours of its own (§6.3).
+             * @example 2
+             */
+            defaultMinimumHours?: number;
+            /**
+             * @description Billable-hours rounding step, in minutes (§6.4).
+             * @example 30
+             */
+            roundingUnitMinutes?: number;
+            /**
+             * @description When true, an hourly line total never exceeds pricePerDay * quantity (§6.2).
+             * @example true
+             */
+            capHourlyAtDailyRate?: boolean;
+            /**
+             * @description How a daily-billed window that is not a whole number of days prices (§6.5).
+             * @enum {string}
+             */
+            overThresholdMode?: "whole_days" | "day_plus_hourly";
+            /**
+             * @description Whether pricePerDay/hourlyRate already include Jabodetabek delivery (§6.6).
+             * @example true
+             */
+            priceIncludesJabodetabekDelivery?: boolean;
+            /**
+             * @description Shown on the quote when eventLocation looks like it is outside Jabodetabek. Null clears it.
+             * @example Lokasi di luar Jabodetabek dikenakan biaya pengiriman tambahan.
+             */
+            outsideJabodetabekNote?: Record<string, never>;
         };
     };
     responses: never;
@@ -2860,33 +3484,43 @@ export interface operations {
             };
         };
     };
-    MediaController_upload_v1: {
+    MediaController_findAllAdmin_v1: {
         parameters: {
-            query?: never;
+            query?: {
+                page?: number;
+                limit?: number;
+                purpose?: "hero" | "cover" | "icon";
+                /** @description Only assets not referenced by any owning entity — the "safe to delete" view for the admin picker. */
+                unused?: boolean;
+                /** @description Include a usage count per asset (one extra batched query for the page, not N+1). */
+                withUsage?: boolean;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "multipart/form-data": {
-                    /**
-                     * Format: binary
-                     * @description Image file (JPEG, PNG, or WebP, max 20 MB)
-                     */
-                    file: string;
-                    /**
-                     * @description Determines which responsive widths are generated
-                     * @enum {string}
-                     */
-                    purpose: "hero" | "cover";
-                    /** @description Alt text for accessibility */
-                    alt?: string;
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
                 };
+                content?: never;
             };
         };
+    };
+    MediaController_findOne_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
-            201: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2906,6 +3540,57 @@ export interface operations {
         requestBody?: never;
         responses: {
             204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MediaController_upload_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /**
+                     * Format: binary
+                     * @description Image file. JPEG/PNG/WebP up to 20 MB for any purpose; SVG up to 512 KB, icon purpose only (rasterized on upload — see purpose).
+                     */
+                    file: string;
+                    /**
+                     * @description Determines the generated width ladder and formats. SVG is only accepted when purpose=icon.
+                     * @enum {string}
+                     */
+                    purpose: "hero" | "cover" | "icon";
+                    /** @description Alt text for accessibility */
+                    alt?: string;
+                };
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MediaController_backfillPlaceholders_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2996,7 +3681,7 @@ export interface operations {
                 limit?: number;
                 /** @description Full-text search across title, description, address, area, city, province */
                 search?: string;
-                listingType?: "sale" | "rent";
+                listingType?: "sale" | "rent" | "new";
                 city?: string;
                 propertyTypeSlug?: string;
                 minPrice?: number;
@@ -3066,7 +3751,7 @@ export interface operations {
                 page?: number;
                 limit?: number;
                 status?: "draft" | "published" | "archived";
-                listingType?: "sale" | "rent";
+                listingType?: "sale" | "rent" | "new";
                 /** @description Full-text search across title, description, address, area, city, province */
                 search?: string;
                 /** @description Filter by PropertyType UUID */
@@ -3348,9 +4033,12 @@ export interface operations {
             };
         };
     };
-    HeroController_findAll_v1: {
+    ContentBlocksController_findAll_v1: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Omit to list every type together. */
+                type?: "hero" | "service_card";
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -3365,7 +4053,7 @@ export interface operations {
             };
         };
     };
-    HeroController_create_v1: {
+    ContentBlocksController_create_v1: {
         parameters: {
             query?: never;
             header?: never;
@@ -3374,7 +4062,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CreateHeroSlideDto"];
+                "application/json": components["schemas"]["CreateContentBlockDto"];
             };
         };
         responses: {
@@ -3386,7 +4074,7 @@ export interface operations {
             };
         };
     };
-    HeroController_remove_v1: {
+    ContentBlocksController_remove_v1: {
         parameters: {
             query?: never;
             header?: never;
@@ -3405,7 +4093,7 @@ export interface operations {
             };
         };
     };
-    HeroController_update_v1: {
+    ContentBlocksController_update_v1: {
         parameters: {
             query?: never;
             header?: never;
@@ -3416,7 +4104,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UpdateHeroSlideDto"];
+                "application/json": components["schemas"]["UpdateContentBlockDto"];
             };
         };
         responses: {
@@ -3741,6 +4429,44 @@ export interface operations {
             };
         };
     };
+    MovingController_findAllAddons_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovingAddonListResponseDto"];
+                };
+            };
+        };
+    };
+    MovingController_getPricingConfig_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovingSettingsResponseDto"];
+                };
+            };
+        };
+    };
     MovingController_quote_v1: {
         parameters: {
             query?: never;
@@ -3870,6 +4596,158 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TruckClassResponseDto"];
+                };
+            };
+        };
+    };
+    MovingAddonsAdminController_findAll_v1: {
+        parameters: {
+            query?: {
+                /** @description Filter by active state. Public endpoint always returns active-only regardless of this flag. */
+                isActive?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovingAddonListResponseDto"];
+                };
+            };
+        };
+    };
+    MovingAddonsAdminController_create_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateMovingAddonDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovingAddonResponseDto"];
+                };
+            };
+        };
+    };
+    MovingAddonsAdminController_findOne_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovingAddonResponseDto"];
+                };
+            };
+        };
+    };
+    MovingAddonsAdminController_remove_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MovingAddonsAdminController_update_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateMovingAddonDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovingAddonResponseDto"];
+                };
+            };
+        };
+    };
+    MovingSettingsAdminController_get_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovingSettingsResponseDto"];
+                };
+            };
+        };
+    };
+    MovingSettingsAdminController_update_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateMovingSettingsDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovingSettingsResponseDto"];
                 };
             };
         };
@@ -4498,6 +5376,27 @@ export interface operations {
             };
         };
     };
+    StorageUnitsController_bulkRemove_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BulkDeleteStorageUnitsDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     StorageBookingsController_create_v1: {
         parameters: {
             query?: never;
@@ -4688,6 +5587,25 @@ export interface operations {
             };
         };
     };
+    EventSupportController_getPricingConfig_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventSupportSettingsResponseDto"];
+                };
+            };
+        };
+    };
     EventSupportController_findAllItems_v1: {
         parameters: {
             query?: {
@@ -4696,9 +5614,10 @@ export interface operations {
                 /** @description EventCategory.slug */
                 categorySlug?: string;
                 kind?: "package" | "addon";
-                /** @description ISO 8601 date (YYYY-MM-DD) */
-                startDate?: string;
-                days?: number;
+                /** @description Drop-off timestamp, naive local datetime (Asia/Jakarta). Must be paired with pickupAt. */
+                dropoffAt?: string;
+                /** @description Pickup timestamp, naive local datetime (Asia/Jakarta). Must be paired with dropoffAt. */
+                pickupAt?: string;
             };
             header?: never;
             path?: never;
@@ -4724,9 +5643,10 @@ export interface operations {
                 /** @description EventCategory.slug */
                 categorySlug?: string;
                 kind?: "package" | "addon";
-                /** @description ISO 8601 date (YYYY-MM-DD) */
-                startDate?: string;
-                days?: number;
+                /** @description Drop-off timestamp, naive local datetime (Asia/Jakarta). Must be paired with pickupAt. */
+                dropoffAt?: string;
+                /** @description Pickup timestamp, naive local datetime (Asia/Jakarta). Must be paired with dropoffAt. */
+                pickupAt?: string;
             };
             header?: never;
             path: {
@@ -5164,6 +6084,48 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EventBookingAdminResponseDto"];
+                };
+            };
+        };
+    };
+    EventSupportSettingsAdminController_get_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventSupportSettingsResponseDto"];
+                };
+            };
+        };
+    };
+    EventSupportSettingsAdminController_update_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateEventSupportSettingsDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventSupportSettingsResponseDto"];
                 };
             };
         };

@@ -49,12 +49,19 @@ export function ImagePicker({
   purpose = "cover",
   disabled,
   label = "Gambar",
+  allowClear = true,
 }: {
   value: ImagePickerValue;
   onChange: (next: ImagePickerValue) => void;
   purpose?: MediaPurpose;
   disabled?: boolean;
   label?: string;
+  /** Hides "Hapus gambar" when this type can't be saved without an image
+   *  (e.g. a hero content block — see content-blocks-admin-integration.md
+   *  §4). The "Ganti" upload button stays available either way, since
+   *  replacing sends the new id in the same PATCH and never leaves the
+   *  entity imageless in between. */
+  allowClear?: boolean;
 }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -162,16 +169,18 @@ export function ImagePicker({
                 unoptimized={value.preview.url.startsWith("blob:")}
               />
             </div>
-            <Button
-              type="button"
-              variant="outlineSecondary"
-              size="sm"
-              onClick={handleRemove}
-              disabled={disabledAll}
-            >
-              <X className="size-3.5" />
-              Hapus gambar
-            </Button>
+            {allowClear && (
+              <Button
+                type="button"
+                variant="outlineSecondary"
+                size="sm"
+                onClick={handleRemove}
+                disabled={disabledAll}
+              >
+                <X className="size-3.5" />
+                Hapus gambar
+              </Button>
+            )}
           </div>
         ) : (
           <div className="flex aspect-video max-w-xs items-center justify-center rounded-lg border border-dashed border-border text-muted-foreground">

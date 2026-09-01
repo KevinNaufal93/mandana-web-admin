@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/auth/dal";
 import { getStorageAvailability } from "@/lib/api/storage-availability";
 import { listStorageUnitTypes } from "@/lib/api/storage";
 import { StorageAvailabilityOverview } from "@/components/storage/storage-availability-overview";
+import { StorageRetryPanel } from "@/components/storage/storage-retry-panel";
 import type { ApiError } from "@/lib/api/errors";
 
 export const metadata: Metadata = { title: "Smart Storage — Mandana Admin" };
@@ -21,7 +22,8 @@ export default async function StorageOverviewPage() {
   const [availabilityResult, unitTypesResult] = await Promise.all([getStorageAvailability(), listStorageUnitTypes()]);
 
   if (!availabilityResult.ok) {
-    return <ErrorPanel message={errorMessage(availabilityResult.error)} />;
+    const { message, transient } = describeError(availabilityResult.error);
+    return <StorageRetryPanel message={message} transient={transient} />;
   }
 
   return (
@@ -32,16 +34,24 @@ export default async function StorageOverviewPage() {
   );
 }
 
-function errorMessage(error: ApiError): string {
-  if (error.kind === "network") return "Tidak dapat terhubung ke server.";
-  if (error.messages.length > 0) return error.messages.join(" ");
-  return "Gagal memuat ketersediaan.";
-}
-
-function ErrorPanel({ message }: { message: string }) {
-  return (
-    <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
-      {message}
-    </div>
-  );
+/**
+ * `transient` flags failures a retry can plausibly fix on its own — a
+ * dropped connection, or the API's single dev-box origin (see
+ * mandana-api/docs/deployment.md §8 — a manually stopped/started EC2
+ * instance with no auto-healing) answering with a gateway error while it
+ * restarts or recovers. A 4xx (bad auth, bad request) won't change on
+ * retry, so it's shown without the "try again shortly" hint.
+ */
+function describeError(error: ApiError): { message: string; transient: boolean } {
+  if (error.kind === "network") {
+    return { message: "Tidak dapat terhubung ke server.", transient: true };
+  }
+  if (error.kind === "server" && [502, 503, 504].includes(error.status)) {
+    const detail = error.messages.length > 0 ? error.messages.join(" ") : "Server sedang tidak merespons.";
+    return { message: detail, transient: true };
+  }
+  if (error.messages.length > 0) {
+    return { message: error.messages.join(" "), transient: false };
+  }
+  return { message: "Gagal memuat ketersediaan.", transient: false };
 }

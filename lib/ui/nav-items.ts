@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { LayoutDashboard, Building2, PartyPopper, Warehouse } from "lucide-react";
+import { LayoutDashboard, Building2, PartyPopper, Warehouse, Images } from "lucide-react";
 
 export interface NavItem {
   href: string;
@@ -17,6 +17,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/properties", label: "Property Management", icon: Building2 },
   { href: "/event-support", label: "Event Support", icon: PartyPopper },
   { href: "/storage", label: "Smart Storage", icon: Warehouse },
+  { href: "/content-media", label: "Content Media Management", icon: Images },
 ];
 
 /**
