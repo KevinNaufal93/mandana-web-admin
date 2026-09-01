@@ -35,6 +35,12 @@ export interface ContentBlockTypeDef {
   /** Which arrangement <ContentBlockList>/<ContentBlockPreview> render:
    *  a vertical carousel stack, or a card grid. */
   layout: "stack" | "grid";
+  /** Whether this type can be flagged `imageOnly` — the public site then
+   *  renders just the image (its artwork already has the title/description
+   *  baked in) and skips the text overlay. Service cards only: a hero
+   *  slide's dark-gradient treatment assumes live text, so it's not
+   *  offered there. */
+  supportsImageOnly: boolean;
 }
 
 export const CONTENT_BLOCK_TYPES: ContentBlockTypeDef[] = [
@@ -50,6 +56,7 @@ export const CONTENT_BLOCK_TYPES: ContentBlockTypeDef[] = [
     linkLabel: "Target CTA",
     linkPlaceholder: "/properties?listingType=sale",
     layout: "stack",
+    supportsImageOnly: false,
   },
   {
     type: "service_card",
@@ -63,6 +70,7 @@ export const CONTENT_BLOCK_TYPES: ContentBlockTypeDef[] = [
     linkLabel: "Tautan kartu",
     linkPlaceholder: "/moving",
     layout: "grid",
+    supportsImageOnly: true,
   },
 ];
 

@@ -15,6 +15,10 @@ export interface ContentBlockPreviewData {
   subtitle: string | null;
   ctaText: string | null;
   isActive: boolean;
+  /** Service card only — see ContentBlockTypeDef.supportsImageOnly's doc
+   *  comment. When true, the card renders image-only, matching what the
+   *  public site actually does. */
+  imageOnly: boolean;
   image: { url: string; alt: string | null } | null;
 }
 
@@ -137,10 +141,15 @@ function ServiceCardPreview({ data, className }: { data: ContentBlockPreviewData
       )}
     >
       <InactiveBadge isActive={data.isActive} />
-      <div>
-        <h3 className="font-semibold text-primary">{data.title || "Judul kartu"}</h3>
-        {data.subtitle && <p className="mt-1 text-sm text-muted-foreground">{data.subtitle}</p>}
-      </div>
+      {/* Image-only: the artwork already has the title/description baked
+          in, so the public site skips this text layer entirely — mirror
+          that here rather than showing text visitors will never see. */}
+      {!data.imageOnly && (
+        <div>
+          <h3 className="font-semibold text-primary">{data.title || "Judul kartu"}</h3>
+          {data.subtitle && <p className="mt-1 text-sm text-muted-foreground">{data.subtitle}</p>}
+        </div>
+      )}
       <div className="relative mt-auto aspect-[4/3] w-full overflow-hidden rounded-md bg-muted">
         <PreviewImage image={data.image} alt={data.title} fit="contain" />
       </div>

@@ -23,6 +23,7 @@ function Field({ label, htmlFor, children }: { label: string; htmlFor?: string; 
 }
 
 const HERO_IMAGE_COPY = "Slide hero wajib memiliki gambar. Unggah gambar terlebih dahulu.";
+const IMAGE_ONLY_COPY = "Mode gambar saja membutuhkan gambar. Unggah gambar terlebih dahulu.";
 
 type ContentBlockFormProps =
   | { mode: "create"; typeDef: ContentBlockTypeDef; nextSortOrder: number }
@@ -46,6 +47,7 @@ export function ContentBlockForm(props: ContentBlockFormProps) {
   const [ctaText, setCtaText] = useState(block?.ctaText ?? "");
   const [link, setLink] = useState(block?.link ?? "");
   const [isActive, setIsActive] = useState(block?.isActive ?? true);
+  const [imageOnly, setImageOnly] = useState(block?.imageOnly ?? false);
   const [image, setImage] = useState<ImagePickerValue>({
     mediaAssetId: null,
     preview: block?.image ? { url: block.image.url, alt: block.image.alt } : null,
@@ -78,6 +80,10 @@ export function ContentBlockForm(props: ContentBlockFormProps) {
       setError(HERO_IMAGE_COPY);
       return;
     }
+    if (imageOnly && !willHaveImage) {
+      setError(IMAGE_ONLY_COPY);
+      return;
+    }
 
     const input: ContentBlockInput = {
       title: title.trim(),
@@ -85,6 +91,7 @@ export function ContentBlockForm(props: ContentBlockFormProps) {
       ...(typeDef.usesCtaText ? { ctaText: ctaText.trim() || undefined } : {}),
       link: link.trim() || undefined,
       isActive,
+      ...(typeDef.supportsImageOnly ? { imageOnly } : {}),
       ...(image.mediaAssetId ? { mediaAssetId: image.mediaAssetId } : cleared ? { mediaAssetId: null } : {}),
     };
 
@@ -145,6 +152,12 @@ export function ContentBlockForm(props: ContentBlockFormProps) {
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-3 rounded-lg border border-border p-4">
+            {imageOnly && (
+              <p className="text-xs text-muted-foreground">
+                Mode gambar saja aktif — judul dan deskripsi tidak tampil di halaman utama, hanya dipakai sebagai
+                label internal dan teks alternatif gambar.
+              </p>
+            )}
             <Field label="Judul" htmlFor="block-title">
               <Input id="block-title" value={title} onChange={(e) => setTitle(e.target.value)} disabled={pending} />
             </Field>
@@ -210,6 +223,25 @@ export function ContentBlockForm(props: ContentBlockFormProps) {
             </label>
           </div>
 
+          {typeDef.supportsImageOnly && (
+            <div className="rounded-lg border border-border p-4">
+              <label className="flex items-center gap-2 text-sm text-primary">
+                <input
+                  type="checkbox"
+                  className="accent-primary"
+                  checked={imageOnly}
+                  onChange={(e) => setImageOnly(e.target.checked)}
+                  disabled={pending}
+                />
+                Tampilkan sebagai gambar saja
+              </label>
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                Judul dan deskripsi tidak akan tampil di halaman utama — gunakan gambar yang sudah memuat teksnya
+                sendiri.
+              </p>
+            </div>
+          )}
+
           <div className="flex items-center gap-2">
             <Button variant="secondary" onClick={handleSubmit} disabled={pending}>
               {props.mode === "edit"
@@ -253,6 +285,7 @@ export function ContentBlockForm(props: ContentBlockFormProps) {
               subtitle: subtitle || null,
               ctaText: typeDef.usesCtaText ? ctaText || null : null,
               isActive,
+              imageOnly: typeDef.supportsImageOnly && imageOnly,
               image: image.preview,
             }}
           />

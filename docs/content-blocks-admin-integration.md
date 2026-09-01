@@ -33,7 +33,8 @@ body.
 | `subtitle` | Secondary line under the title | Card description |
 | `ctaText` | CTA button label | *unused — omit it* |
 | `link` | CTA target, e.g. `/properties?listingType=sale` | Card href, e.g. `/moving` |
-| `mediaAssetId` | **Required** — a hero with no image is invalid | Optional — the 4 seeded cards ship with none |
+| `mediaAssetId` | **Required** — a hero with no image is invalid | Optional — the 4 seeded cards ship with none, **required when `imageOnly: true`** |
+| `imageOnly` | *unused — always `false`* | Optional (default `false`) — when `true`, the public site renders only the image, skipping the title/description text overlay, because the artwork already has that copy baked in |
 
 `sortOrder` and `isActive` apply to both — see §6.
 

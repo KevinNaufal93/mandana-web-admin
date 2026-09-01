@@ -32,6 +32,7 @@ export function ContentBlockList({ typeDef, rows }: { typeDef: ContentBlockTypeD
               subtitle: block.subtitle,
               ctaText: block.ctaText,
               isActive: block.isActive,
+              imageOnly: block.imageOnly,
               image: block.image ? { url: block.image.url, alt: block.image.alt } : null,
             }}
           />

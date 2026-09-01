@@ -49,6 +49,9 @@ export interface AdminContentBlock {
   image: ContentBlockImage | null;
   sortOrder: number;
   isActive: boolean;
+  /** Service card only — see ContentBlockTypeDef.supportsImageOnly's doc
+   *  comment. Always `false` for a hero. */
+  imageOnly: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -65,6 +68,7 @@ export interface ContentBlockInput {
   mediaAssetId?: string | null;
   sortOrder?: number;
   isActive?: boolean;
+  imageOnly?: boolean;
 }
 
 /**
