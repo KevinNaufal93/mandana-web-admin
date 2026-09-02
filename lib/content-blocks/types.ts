@@ -37,9 +37,17 @@ export interface ContentBlockTypeDef {
   layout: "stack" | "grid";
   /** Whether this type can be flagged `imageOnly` — the public site then
    *  renders just the image (its artwork already has the title/description
-   *  baked in) and skips the text overlay. Service cards only: a hero
-   *  slide's dark-gradient treatment assumes live text, so it's not
-   *  offered there. */
+   *  baked in) and skips the text overlay.
+   *
+   *  Hero: as of this admin module's build, the deployed API's
+   *  `imageOnly` field is documented as unused/always-`false` for hero
+   *  rows, and the public hero component always renders the dark-gradient
+   *  title/subtitle overlay — see docs/content-blocks-admin-integration.md
+   *  §2. Flagging it `true` here so admins CAN set image-only slides is
+   *  the admin-panel half of the change; it has no visible effect on the
+   *  public homepage until the backend persists/honors this field for
+   *  `type: "hero"` and the public hero component is updated to skip its
+   *  text overlay when set. Track that as a follow-up outside this repo. */
   supportsImageOnly: boolean;
 }
 
@@ -56,7 +64,7 @@ export const CONTENT_BLOCK_TYPES: ContentBlockTypeDef[] = [
     linkLabel: "Target CTA",
     linkPlaceholder: "/properties?listingType=sale",
     layout: "stack",
-    supportsImageOnly: false,
+    supportsImageOnly: true,
   },
   {
     type: "service_card",

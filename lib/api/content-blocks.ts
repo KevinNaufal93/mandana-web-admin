@@ -49,8 +49,11 @@ export interface AdminContentBlock {
   image: ContentBlockImage | null;
   sortOrder: number;
   isActive: boolean;
-  /** Service card only — see ContentBlockTypeDef.supportsImageOnly's doc
-   *  comment. Always `false` for a hero. */
+  /** See ContentBlockTypeDef.supportsImageOnly's doc comment — as of this
+   *  admin module's build the deployed API documents this as unused/
+   *  always-`false` for `type: "hero"` (docs/content-blocks-admin-
+   *  integration.md §2); the admin form still lets it be set on a hero so
+   *  the toggle is ready once the backend/public site honor it there. */
   imageOnly: boolean;
   createdAt: string;
   updatedAt: string;

@@ -112,21 +112,31 @@ function HeroPreview({ data, className }: { data: ContentBlockPreviewData; class
     >
       <InactiveBadge isActive={data.isActive} />
       <PreviewImage image={data.image} alt={data.title} fit="cover" />
-      {/* Left-to-right dark-to-transparent treatment matching the public
-          hero (see the client screenshot in the integration doc) — text
-          sits over the deep-green side, the image breathes on the right. */}
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/85 via-primary/35 to-transparent" />
-      <div className="absolute inset-0 flex flex-col justify-center gap-2 px-6 sm:px-10">
-        <h3 className="max-w-md font-serif text-xl font-medium leading-tight text-card sm:text-3xl">
-          {data.title || "Judul slide"}
-        </h3>
-        {data.subtitle && <p className="max-w-sm text-xs text-card/85 sm:text-sm">{data.subtitle}</p>}
-        {data.ctaText && (
-          <span className="mt-2 inline-flex w-fit items-center rounded-full bg-accent px-4 py-1.5 text-xs font-semibold text-accent-foreground">
-            {data.ctaText}
-          </span>
-        )}
-      </div>
+      {/* Image-only: the artwork already has the title/subtitle baked in,
+          so skip the dark-gradient text overlay entirely and show a plain
+          full-bleed image — mirrors ServiceCardPreview's imageOnly branch.
+          NOTE: this reflects the intended public behavior once the
+          backend/public hero component honor this flag for hero rows —
+          see ContentBlockTypeDef.supportsImageOnly's doc comment. */}
+      {!data.imageOnly && (
+        <>
+          {/* Left-to-right dark-to-transparent treatment matching the public
+              hero (see the client screenshot in the integration doc) — text
+              sits over the deep-green side, the image breathes on the right. */}
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/85 via-primary/35 to-transparent" />
+          <div className="absolute inset-0 flex flex-col justify-center gap-2 px-6 sm:px-10">
+            <h3 className="max-w-md font-serif text-xl font-medium leading-tight text-card sm:text-3xl">
+              {data.title || "Judul slide"}
+            </h3>
+            {data.subtitle && <p className="max-w-sm text-xs text-card/85 sm:text-sm">{data.subtitle}</p>}
+            {data.ctaText && (
+              <span className="mt-2 inline-flex w-fit items-center rounded-full bg-accent px-4 py-1.5 text-xs font-semibold text-accent-foreground">
+                {data.ctaText}
+              </span>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }
