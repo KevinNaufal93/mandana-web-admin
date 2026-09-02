@@ -37,6 +37,10 @@ export interface CurrentUser {
   phone: string | null;
   whatsapp: string | null;
   photoMediaAssetId: string | null;
+  /** Same shape and source as AdminUser['photo'] in lib/api/users.ts —
+   *  GET /auth/me now runs through the same UsersMapper. Renders in the
+   *  topbar avatar (components/shell/user-menu-dropdown.tsx). */
+  photo: { url: string; alt: string | null } | null;
 }
 
 /**

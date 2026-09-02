@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { ChevronDown, LogOut } from "lucide-react";
 import { logout } from "@/app/actions/auth";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -14,6 +15,7 @@ interface UserMenuDropdownProps {
   name: string;
   email: string;
   initials: string;
+  photo: { url: string; alt: string | null } | null;
 }
 
 /**
@@ -26,7 +28,7 @@ interface UserMenuDropdownProps {
  * itself is fetched server-side in <UserMenu> and handed down as plain,
  * serializable props.
  */
-export function UserMenuDropdown({ name, email, initials }: UserMenuDropdownProps) {
+export function UserMenuDropdown({ name, email, initials, photo }: UserMenuDropdownProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -45,16 +47,22 @@ export function UserMenuDropdown({ name, email, initials }: UserMenuDropdownProp
             <p className="text-sm font-medium leading-none text-card">{name}</p>
             <p className="mt-1.5 text-xs text-card/70">{email}</p>
           </div>
-          <Avatar className="size-9">
-            {/* Flipped from the old bg-primary/text-card (a dark circle
-                popping against a light bar) to a light circle popping
-                against this dark one. Not bg-accent: accent is already
-                spent once on <PageTitle>'s "current location" signal —
-                doubling it here would dilute that into decoration. */}
-            <AvatarFallback className="bg-card text-primary font-medium">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
+          {photo ? (
+            <div className="relative size-9 shrink-0 overflow-hidden rounded-full bg-card/10">
+              <Image src={photo.url} alt={photo.alt ?? name} fill className="object-cover" sizes="36px" />
+            </div>
+          ) : (
+            <Avatar className="size-9">
+              {/* Flipped from the old bg-primary/text-card (a dark circle
+                  popping against a light bar) to a light circle popping
+                  against this dark one. Not bg-accent: accent is already
+                  spent once on <PageTitle>'s "current location" signal —
+                  doubling it here would dilute that into decoration. */}
+              <AvatarFallback className="bg-card text-primary font-medium">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+          )}
           <ChevronDown className="size-4 shrink-0 text-card/70 transition-transform group-data-[state=open]:rotate-180" />
         </button>
       </DropdownMenuTrigger>

@@ -1,12 +1,6 @@
 import { getCurrentUser } from "@/lib/auth/dal";
 import { UserMenuDropdown } from "@/components/shell/user-menu-dropdown";
-
-function initials(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  const first = parts[0]?.[0] ?? "";
-  const last = parts.length > 1 ? parts[parts.length - 1][0] : "";
-  return (first + last).toUpperCase() || "?";
-}
+import { initials } from "@/lib/format";
 
 /**
  * The one session-dependent piece of the (app) shell — deliberately kept
@@ -20,7 +14,9 @@ function initials(name: string): string {
  */
 export async function UserMenu() {
   const user = await getCurrentUser();
-  return <UserMenuDropdown name={user.name} email={user.email} initials={initials(user.name)} />;
+  return (
+    <UserMenuDropdown name={user.name} email={user.email} initials={initials(user.name)} photo={user.photo} />
+  );
 }
 
 export function UserMenuSkeleton() {

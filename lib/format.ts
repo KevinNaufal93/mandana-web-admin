@@ -40,6 +40,16 @@ export function formatIDRFull(v: number): string {
   return `Rp ${Math.round(v).toLocaleString("id-ID")}`;
 }
 
+/** "Erwan Editor" → "EE". First + last word's initial, uppercased; falls
+ *  back to "?" for an empty/whitespace-only name. Used wherever a person
+ *  is represented without a photo (header menu, user photo card). */
+export function initials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  const first = parts[0]?.[0] ?? "";
+  const last = parts.length > 1 ? parts[parts.length - 1][0] : "";
+  return (first + last).toUpperCase() || "?";
+}
+
 /** Normalizes a phone number for a `wa.me` link: "+628…"/"08…" → "628…". */
 export function toWaNumber(raw: string): string {
   const digits = raw.replace(/\D/g, "");

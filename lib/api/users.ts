@@ -13,9 +13,10 @@ export type { UserRole };
  * schema.d.ts (every UsersAdminController_* op is `content?: never`), same
  * situation as lib/api/auth-endpoints.ts — so the read shape below is
  * hand-written, not aliased to components["schemas"][...]. It mirrors
- * CurrentUser in lib/api/auth-endpoints.ts exactly, because both come off
- * the same serialized User entity (ClassSerializerInterceptor @Excludes
- * passwordHash/hashedRefreshToken either way).
+ * CurrentUser in lib/api/auth-endpoints.ts exactly for every field but
+ * `photo`/`photoMediaAssetId`, because both come off the same serialized
+ * User entity (ClassSerializerInterceptor @Excludes passwordHash/
+ * hashedRefreshToken either way).
  *
  * The USER_ROLES/UserRole enum itself lives in lib/users/roles.ts (no
  * `server-only`), not here, so client components can import the role list
@@ -32,13 +33,20 @@ export interface AdminUser {
   title: string | null;
   phone: string | null;
   whatsapp: string | null;
-  /**
-   * Bare uuid — photoMediaAsset is `eager: false` and no service method
-   * loads the relation, so there is no renderable {url, srcset, ...} on
-   * ANY /admin/users response, including the response to the upload
-   * itself. Presence only; do not attempt to render this as an image URL.
-   */
+  /** Presence signal — set whenever a photo has ever been uploaded, even
+   *  on the rare response where `photo` below comes back null. Prefer
+   *  `photo` for rendering; use this one only to ask "is there a photo at
+   *  all" (e.g. the "Ganti foto" vs "Unggah foto" button label). */
   photoMediaAssetId: string | null;
+  /**
+   * Every /admin/users read path (list, single GET, PATCH, and the photo
+   * upload's own response) now loads the photoMediaAsset relation and
+   * serializes it through MediaService's buildImageDto() on the API side
+   * (mandana-api's UsersMapper) — same shape and mechanism as
+   * AdminPropertyAgent's `photo` in lib/api/properties.ts. null when no
+   * photo has been uploaded.
+   */
+  photo: { url: string; srcset: string; alt: string | null; width: number; height: number } | null;
 }
 
 export async function listUsers(): Promise<ApiResult<AdminUser[]>> {
@@ -112,8 +120,8 @@ export async function deleteUser(id: string): Promise<ApiResult<void>> {
  * multipart body's `file` field isn't representable as real FormData in
  * the generated schema's types. `formData` must contain a `file` field
  * (JPEG/PNG/WebP, max 20MB — a 415 comes back otherwise). Returns the
- * updated user, but per AdminUser's doc comment, its photoMediaAssetId
- * is the only proof of success available — there is still no URL.
+ * updated user with `photo` already pointing at the newly uploaded image
+ * (see AdminUser's doc comment) — no follow-up fetch needed to render it.
  */
 export async function setUserPhoto(id: string, formData: FormData): Promise<ApiResult<AdminUser>> {
   const { accessToken } = await verifySession();

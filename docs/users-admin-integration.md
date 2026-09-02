@@ -56,8 +56,9 @@ then pass the returned id" flow every other admin module uses.
 
 ## 4. Response shape
 
-Raw `User` entity through `ClassSerializerInterceptor`
-(`passwordHash` / `hashedRefreshToken` are excluded):
+Mapped through `UsersMapper` (not the raw `User` entity directly --
+`passwordHash` / `hashedRefreshToken` were already excluded via
+`ClassSerializerInterceptor`, but the mapper is what adds `photo`):
 
 ```jsonc
 { "data": {
@@ -65,18 +66,19 @@ Raw `User` entity through `ClassSerializerInterceptor`
   "email": "editor@mandana.com", "name": "Budi Editor",
   "role": "editor", "isActive": true,
   "title": null, "phone": null, "whatsapp": null,
-  "photoMediaAssetId": null
+  "photoMediaAssetId": null, "photo": null
 } }
 ```
 
-**There is no renderable image on any `/admin/users` response.**
-`photoMediaAsset` is `eager: false` and no service method loads the
-relation, so every response -- including the response to the photo
-upload itself -- carries only the bare `photoMediaAssetId` uuid, never a
-`{url, srcset, ...}` object. The admin UI can upload a photo but cannot
-currently display the one already on file. Fixing this needs a backend
-change (load the relation and serialize it through `MediaService`'s
-`buildImageDto`, the way `properties.agent.photo` does).
+**Every response carries a renderable `photo`.** `findAll`/`findOne`/
+`updateUser` load the `photoMediaAsset` relation (`findById`'s
+`withPhoto` option -- off by default, since `findById` doubles as every
+JWT strategy's per-request lookup and shouldn't pay for the join there),
+and `setPhoto` attaches the just-uploaded asset in memory instead of a
+second round-trip. `UsersMapper.toDto` then serializes it through
+`MediaService.buildImageDto()`, same as `properties.agent.photo`. `photo`
+is `null` when no photo has been uploaded; `photoMediaAssetId` stays as a
+cheap presence check that doesn't require rendering anything.
 
 ## 5. Hard delete, and what it does not protect against
 
@@ -108,10 +110,11 @@ worth knowing before wiring a delete button:
 
 ## 7. Known gaps (tracked, not blocking)
 
-1. No renderable photo on user responses (see §4) -- blocks showing an
-   existing avatar in the admin UI.
-2. No pagination, search, or filtering on `GET /admin/users` -- fine
+1. No pagination, search, or filtering on `GET /admin/users` -- fine
    while the user count stays small, will need backend work once it
    doesn't.
-3. No last-admin guard and no self-demote/self-deactivate guard
+2. No last-admin guard and no self-demote/self-deactivate guard
    server-side -- the admin UI's guards are advisory only.
+
+Resolved: renderable photos on user responses (see §4) -- previously
+listed here as gap 1.

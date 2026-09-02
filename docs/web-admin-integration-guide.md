@@ -238,7 +238,7 @@ with a user token — you generally can't, and shouldn't try to.
 | Collections | `/admin/collections` | via `/homepage` + `/collections/:slug` | [homepage-integration.md](homepage-integration.md) |
 | Media library (upload/browse/delete) | `/admin/media` | — (never public) | §2 above |
 | Properties (multi-image, own staging system) | `/admin/properties` | `/properties*` | out of scope here — see `lib/properties/image-staging.ts` |
-| Users (agent photo — write-only, see doc) | `/admin/users` | via property `agent.photo` only | [users-admin-integration.md](users-admin-integration.md) |
+| Users (agent photo) | `/admin/users` | via property `agent.photo` only (no public `/users` route) | [users-admin-integration.md](users-admin-integration.md) |
 
 ## 10. Checklist for onboarding a new asset type
 
