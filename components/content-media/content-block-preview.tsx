@@ -71,12 +71,13 @@ function PreviewImage({
 }: {
   image: { url: string; alt: string | null } | null;
   alt: string;
-  /** "cover" crops to fill — right for a full-bleed hero photo, which is
-   *  meant to bleed off-frame either way. "contain" letterboxes on the
-   *  container's own bg-muted instead — right for a service-card
-   *  illustration, whose aspect ratio and composition (often with a
-   *  headline baked into the graphic itself) can't survive an arbitrary
-   *  crop the way a photo can. */
+  /** "contain" letterboxes on the container's own background instead of
+   *  cropping — right for a hero photo (see HeroPreview's own comment on
+   *  why it uses this too) and for a service-card illustration, whose
+   *  aspect ratio and composition (often with a headline baked into the
+   *  graphic itself) can't survive an arbitrary crop the way a photo can.
+   *  "cover" crops to fill — kept for a caller that specifically wants a
+   *  full-bleed, no-empty-space treatment and can accept the crop. */
   fit: "cover" | "contain";
 }) {
   if (!image) {
@@ -105,13 +106,24 @@ function HeroPreview({ data, className }: { data: ContentBlockPreviewData; class
   return (
     <div
       className={cn(
-        "relative aspect-video w-full overflow-hidden rounded-lg bg-muted transition-opacity",
+        "relative aspect-video w-full overflow-hidden rounded-lg transition-opacity",
+        // bg-primary, not bg-muted, whenever there's a photo to show: "contain"
+        // below means the photo doesn't necessarily fill the box, and this is
+        // what shows through the gap — matching mandana-web's actual <section
+        // bg-primary> (components/sections/hero.tsx), the same reasoning
+        // PreviewImage's fit prop follows the real public hero for. Only the
+        // true empty state (no image at all) keeps the neutral bg-muted the
+        // ImageOff icon below was styled for.
+        data.image ? "bg-primary" : "bg-muted",
         !data.isActive && "opacity-50",
         className,
       )}
     >
       <InactiveBadge isActive={data.isActive} />
-      <PreviewImage image={data.image} alt={data.title} fit="cover" />
+      {/* "contain": a full crop can trim off part of the building/composition
+          an admin specifically chose — see mandana-web/components/sections/
+          hero.tsx, which now fits its admin-driven slides the same way. */}
+      <PreviewImage image={data.image} alt={data.title} fit="contain" />
       {/* Image-only: the artwork already has the title/subtitle baked in,
           so skip the dark-gradient text overlay entirely and show a plain
           full-bleed image — mirrors ServiceCardPreview's imageOnly branch.
