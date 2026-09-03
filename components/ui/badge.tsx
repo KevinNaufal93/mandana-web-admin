@@ -13,6 +13,7 @@ const badgeVariants = cva(
         outline: "border border-primary text-primary",
         dijual: "bg-ring text-background",
         disewa: "bg-accent text-primary",
+        baru: "bg-primary text-card",
         "dijual-cepat": "bg-destructive text-white",
       },
     },

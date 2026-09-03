@@ -3,10 +3,9 @@ import { verifySession } from "@/lib/auth/dal";
 import { parseApiError, type ApiResult } from "@/lib/api/errors";
 
 /**
- * Raw fetch, same rationale as addPropertyImage in lib/api/properties.ts:
- * a multipart body's `file` field isn't representable as real FormData in
- * the generated schema's types, so openapi-fetch fights us here no matter
- * what the schema says.
+ * Raw fetch: a multipart body's `file` field isn't representable as real
+ * FormData in the generated schema's types, so openapi-fetch fights us
+ * here no matter what the schema says.
  *
  * POST /admin/media/upload's 201 body is `{data: <raw MediaAsset entity>}`
  * — verified against mandana-api/src/modules/media/{media.controller,

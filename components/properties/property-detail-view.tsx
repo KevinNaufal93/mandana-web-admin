@@ -15,13 +15,15 @@ import {
   AmenitiesField,
   SpecFields,
   LocationFields,
+  NewPropertyFields,
+  CONSTRUCTION_STATUS_LABEL,
 } from "@/components/properties/property-edit-fields";
 import { DetailCard, DetailRow } from "@/components/ui/detail-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { updatePropertyAction } from "@/app/actions/properties";
 import { usePropertyDraft } from "@/lib/properties/use-property-draft";
-import { composeLocation, formatIDRFull, toWaNumber } from "@/lib/format";
+import { composeLocation, formatIDRFull, formatDateID, toWaNumber } from "@/lib/format";
 import type { AdminPropertyDetail, AdminPropertyAmenity, PropertyTypeOption } from "@/lib/api/properties";
 import type { PropertyStatus } from "@/lib/properties/query";
 
@@ -49,16 +51,7 @@ export function PropertyDetailView({
     setMode("view");
   }
 
-  // Fires on a partial save failure (see use-property-draft.ts) — the
-  // property updates to reflect whatever DID land, but mode stays "edit"
-  // so the user sees the error and the still-in-progress draft, not a
-  // silent jump back to view.
-  function handleSyncProperty(fresh: AdminPropertyDetail) {
-    setProperty(fresh);
-    setSyncedUpdatedAt(fresh.updatedAt);
-  }
-
-  const draft = usePropertyDraft(handleSaved, handleSyncProperty);
+  const draft = usePropertyDraft(handleSaved);
 
   // Published listings are live on the public site — editing fields or
   // images out from under a published property is the guard this whole
@@ -307,6 +300,25 @@ export function PropertyDetailView({
               </>
             )}
           </DetailCard>
+
+          {(editingFields ? editingFields.listingType : property.listingType) === "new" && (
+            <DetailCard title="Properti baru">
+              {editingFields ? (
+                <NewPropertyFields fields={editingFields} updateField={draft.updateField} pending={draft.pending} />
+              ) : (
+                <>
+                  <DetailRow
+                    label="Tanggal serah terima"
+                    value={property.handoverDate ? formatDateID(property.handoverDate) : "—"}
+                  />
+                  <DetailRow
+                    label="Status konstruksi"
+                    value={property.constructionStatus ? CONSTRUCTION_STATUS_LABEL[property.constructionStatus] : "—"}
+                  />
+                </>
+              )}
+            </DetailCard>
+          )}
 
           {/* Neither of these two cards is part of AdminPropertyUpdateInput
               — agent assignment and the created/updated timestamps aren't

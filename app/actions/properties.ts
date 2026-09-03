@@ -4,12 +4,10 @@ import { revalidatePath } from "next/cache";
 import {
   getAdminProperty,
   updateProperty,
-  addPropertyImage,
-  updatePropertyImage,
-  deletePropertyImage,
+  createProperty,
   type AdminPropertyDetail,
   type AdminPropertyUpdateInput,
-  type AdminPropertyImageUpdateInput,
+  type CreatePropertyInput,
 } from "@/lib/api/properties";
 import type { ApiError } from "@/lib/api/errors";
 import { createLogger } from "@/lib/logger";
@@ -26,21 +24,33 @@ function errorMessage(error: ApiError): string {
   return "Gagal menyimpan perubahan.";
 }
 
-/**
- * Every write endpoint below returns a differently-shaped (or empty) body
- * — PATCH /admin/properties/:id returns the raw saved entity (not the
- * mapped detail shape adminFindOne returns), the image endpoints return
- * 200/204 with no useful payload. Rather than reconcile three ad-hoc
- * response shapes client-side, every mutation re-fetches through the one
- * read path that's already correct (getAdminProperty →
- * PropertyMapper.toDetail) and hands the caller that.
- */
+/** POST /admin/properties returns the raw saved entity, not the mapped
+ *  detail shape (no images/propertyType/agent relations, price as a
+ *  numeric string) — re-fetch through the one read path that's already
+ *  correct (getAdminProperty → PropertyMapper.toDetail) and hand the
+ *  caller that instead. */
 async function refreshed(id: string): Promise<PropertyMutationResult> {
   const result = await getAdminProperty(id);
   if (!result.ok) return { ok: false, error: errorMessage(result.error) };
   return { ok: true, data: result.data };
 }
 
+export async function createPropertyAction(input: CreatePropertyInput): Promise<PropertyMutationResult> {
+  const result = await createProperty(input);
+  if (!result.ok) {
+    log.warn("Create property failed", { kind: result.error.kind });
+    return { ok: false, error: errorMessage(result.error) };
+  }
+  revalidatePath("/properties");
+  return refreshed(result.data.id);
+}
+
+/**
+ * PATCH /admin/properties/:id now returns the full mapped detail shape
+ * (properties.service.ts's update()) — no re-fetch needed, unlike create
+ * above and unlike this action itself before the atomic images batch
+ * shipped.
+ */
 export async function updatePropertyAction(
   id: string,
   patch: AdminPropertyUpdateInput,
@@ -52,48 +62,5 @@ export async function updatePropertyAction(
   }
   revalidatePath(`/properties/${id}`);
   revalidatePath("/properties");
-  return refreshed(id);
-}
-
-export async function uploadPropertyImageAction(
-  id: string,
-  formData: FormData,
-): Promise<PropertyMutationResult> {
-  const result = await addPropertyImage(id, formData);
-  if (!result.ok) {
-    log.warn("Upload property image failed", { id, kind: result.error.kind });
-    return { ok: false, error: errorMessage(result.error) };
-  }
-  revalidatePath(`/properties/${id}`);
-  revalidatePath("/properties");
-  return refreshed(id);
-}
-
-export async function updatePropertyImageAction(
-  propertyId: string,
-  imageId: string,
-  patch: AdminPropertyImageUpdateInput,
-): Promise<PropertyMutationResult> {
-  const result = await updatePropertyImage(propertyId, imageId, patch);
-  if (!result.ok) {
-    log.warn("Update property image failed", { propertyId, imageId, kind: result.error.kind });
-    return { ok: false, error: errorMessage(result.error) };
-  }
-  revalidatePath(`/properties/${propertyId}`);
-  revalidatePath("/properties");
-  return refreshed(propertyId);
-}
-
-export async function deletePropertyImageAction(
-  propertyId: string,
-  imageId: string,
-): Promise<PropertyMutationResult> {
-  const result = await deletePropertyImage(propertyId, imageId);
-  if (!result.ok) {
-    log.warn("Delete property image failed", { propertyId, imageId, kind: result.error.kind });
-    return { ok: false, error: errorMessage(result.error) };
-  }
-  revalidatePath(`/properties/${propertyId}`);
-  revalidatePath("/properties");
-  return refreshed(propertyId);
+  return { ok: true, data: result.data };
 }

@@ -1,17 +1,20 @@
-import type { AdminPropertyImage, AdminPropertyImageUpdateInput } from "@/lib/api/properties";
+import type { AdminPropertyImage, PropertyImageInputEntry } from "@/lib/api/properties";
 
 /**
- * Client-side staging for the property image field — see
- * docs/api-property-images.md for why this exists (the write API has no
- * batch/desired-state endpoint, so a save has to be sequenced as several
- * calls) and for the API change that would let this module go away.
+ * Client-side staging for the property image field. Purely local state —
+ * nothing here reaches the network or a mediaAssetId until the caller
+ * asks for one. Pure and framework-free on purpose (no React, no
+ * fetch): every function takes a draft in, returns a new draft out.
+ * `usePropertyDraft` / `useCreatePropertyDraft` are the only callers.
  *
- * Pure and framework-free on purpose: this is the single riskiest piece of
- * the property detail redesign (sequencing real network calls, recovering
- * from a call landing partway through a batch), so it's kept out of React
- * entirely — every function here takes a draft in, returns a new draft out,
- * nothing reaches into state or fires a request. `usePropertyDraft` is the
- * only caller.
+ * The commit shape used to be a multi-step sequenced plan (upload each
+ * new file, patch each changed existing image, delete each removed one,
+ * in that order, with partial-failure recovery folded back into the
+ * draft) — see docs/api-property-images.md for why. That API gap has
+ * since closed: PATCH /admin/properties/:id now accepts a single
+ * `images` array describing the complete desired end state, applied
+ * atomically alongside any field changes. `buildImagesPayload` below
+ * replaces the whole plan/commit machinery with one pure mapping.
  */
 
 export type ImageSlot =
@@ -46,18 +49,21 @@ export function initImageDraft(images: AdminPropertyImage[]): ImageDraft {
   return { slots, coverKey: cover?.id ?? null };
 }
 
-/** Revokes every "new" slot's object URL — call on cancel and on unmount.
- *  Not needed for slots that got converted to "existing" by commitUpload
- *  (that conversion already revokes the URL it's retiring). */
+/** An empty draft for the create form — no existing images to seed from. */
+export function emptyImageDraft(): ImageDraft {
+  return { slots: [], coverKey: null };
+}
+
+/** Revokes every "new" slot's object URL — call on cancel and on unmount. */
 export function revokeAllPreviewUrls(draft: ImageDraft): void {
   for (const slot of draft.slots) {
     if (slot.kind === "new") URL.revokeObjectURL(slot.previewUrl);
   }
 }
 
-/** Slots the UI should actually render — removed-but-not-yet-deleted
- *  existing slots stay in `draft.slots` (planCommit still needs them) but
- *  disappear from view immediately. */
+/** Slots the UI should actually render — removed-but-not-yet-committed
+ *  existing slots stay in `draft.slots` (buildImagesPayload still needs
+ *  their absence to mean "delete") but disappear from view immediately. */
 export function visibleSlots(draft: ImageDraft): ImageSlot[] {
   return draft.slots.filter((s) => !(s.kind === "existing" && s.removed));
 }
@@ -104,126 +110,64 @@ export function setCover(draft: ImageDraft, key: string): ImageDraft {
   return exists ? { ...draft, coverKey: key } : draft;
 }
 
-/** Called right after `op.key`'s upload succeeds — folds the now-real
- *  server image back into the draft in place, converting that one slot
- *  from "new" to "existing" so a retried save (after a later step in the
- *  same batch fails) won't try to upload it a second time. Revokes the
- *  preview URL, since the slot now has a real, permanent one. */
-export function commitUpload(draft: ImageDraft, key: string, serverImage: AdminPropertyImage): ImageDraft {
-  return {
-    ...draft,
-    slots: draft.slots.map((s) => {
-      if (s.key !== key || s.kind !== "new") return s;
-      URL.revokeObjectURL(s.previewUrl);
-      return { key, kind: "existing", image: serverImage, alt: s.alt, removed: false };
-    }),
-  };
+/** Whether the draft differs from its initial (or last-saved) state in
+ *  any way that would produce a non-empty `images` write. Since a save
+ *  is now atomic and either fully lands or fully doesn't, there's no
+ *  partial-progress bookkeeping to fold back in — a successful save just
+ *  clears the whole draft (see usePropertyDraft/useCreatePropertyDraft),
+ *  so `slot.image` here always reflects the true original snapshot. */
+export function hasImageChanges(draft: ImageDraft): boolean {
+  for (const slot of draft.slots) {
+    if (slot.kind === "new") return true;
+    if (slot.removed) return true;
+    if (slot.alt.trim() !== (slot.image.alt ?? "")) return true;
+    if (slot.image.isCover !== (slot.key === draft.coverKey)) return true;
+  }
+  return false;
 }
 
-/** Called right after `imageId`'s delete succeeds — drops that slot for
- *  good, same reason as commitUpload: a retry must not re-attempt it. */
-export function commitDelete(draft: ImageDraft, imageId: string): ImageDraft {
-  return { ...draft, slots: draft.slots.filter((s) => !(s.kind === "existing" && s.image.id === imageId)) };
-}
-
-/** Called right after `key`'s alt/cover patch succeeds — folds the applied
- *  change back into the slot's stored `.image` snapshot. Without this, a
- *  retry (after a LATER step in the same batch fails) would keep diffing
- *  against the pre-edit-session snapshot and re-send an already-applied
- *  patch — harmless (idempotent) but wasteful, and the kind of drift this
- *  module exists specifically to avoid. */
-export function commitExistingPatch(draft: ImageDraft, key: string, patch: AdminPropertyImageUpdateInput): ImageDraft {
-  return {
-    ...draft,
-    slots: draft.slots.map((s) => (s.key === key && s.kind === "existing" ? { ...s, image: { ...s.image, ...patch } } : s)),
-  };
-}
-
-// ─── Commit planning ────────────────────────────────────────────────────────
-
-export interface ImageUploadOp {
-  key: string;
-  file: File;
-  alt: string;
-  isCover: boolean;
-  sortOrder: number;
-}
-export interface ImageExistingPatchOp {
-  key: string;
-  imageId: string;
-  patch: AdminPropertyImageUpdateInput;
-}
-export interface ImageDeleteOp {
-  key: string;
-  imageId: string;
-}
-export interface ImageCommitPlan {
-  uploads: ImageUploadOp[];
-  existingPatches: ImageExistingPatchOp[];
-  deletes: ImageDeleteOp[];
-}
-
-export function hasPendingWork(plan: ImageCommitPlan): boolean {
-  return plan.uploads.length > 0 || plan.existingPatches.length > 0 || plan.deletes.length > 0;
+/** `file`/`purpose`/`alt` for the caller to POST to /admin/media/upload
+ *  ahead of the property write — property photos always use the "cover"
+ *  purpose (the width ladder tuned for gallery/detail images; "hero" and
+ *  "icon" are for other surfaces, and only "icon" accepts SVG). */
+export function buildMediaUploadFormData(file: File, alt: string): FormData {
+  const formData = new FormData();
+  formData.set("file", file);
+  formData.set("purpose", "cover");
+  if (alt) formData.set("alt", alt);
+  return formData;
 }
 
 /**
- * Diffs the current draft against the slots as they stood when editing
- * began (or as they stood after the last successful step, on a retry — see
- * commitUpload/commitDelete above) and produces an ordered plan.
+ * Maps the draft's visible slots to the complete desired-state array the
+ * atomic PATCH expects. `mediaIdByKey` supplies the mediaAssetId for
+ * every "new" slot — the caller must have already uploaded those files
+ * (via buildMediaUploadFormData + POST /admin/media/upload) and built
+ * this map before calling here; a "new" slot with no entry is a caller
+ * bug, not a state this function tries to paper over.
  *
- * Order matters and is deliberate: uploads (additive, safe) → patches
- * (modifications to data that already exists) → deletes (destructive, last
- * — see docs/api-property-images.md). Cover changes are folded into
- * existingPatches rather than being a separate step: picking a new cover
- * is "patch the new cover to isCover:true" plus "patch whichever existing
- * image currently has isCover:true — if it isn't the new cover — to
- * false", which is the same shape as any other existing-image patch.
+ * alt is a full replacement, not a diff: the server sets
+ * `entry.alt ?? null` per entry, so an entry that omits alt clears it
+ * even if the underlying image previously had one. Sending `undefined`
+ * here for a blank alt is therefore correct, not merely "no change".
+ *
+ * An existing image whose id doesn't appear in this array (because its
+ * slot was removed) is deleted server-side — there is no separate
+ * delete op to build.
  */
-export function planImageCommit(draft: ImageDraft): ImageCommitPlan {
-  const visible = visibleSlots(draft);
-  const uploads: ImageUploadOp[] = [];
-  const existingPatches: ImageExistingPatchOp[] = [];
-  const deletes: ImageDeleteOp[] = [];
-
-  let nextSortOrder = draft.slots.filter((s) => s.kind === "existing" && !s.removed).length;
-
-  for (const slot of visible) {
+export function buildImagesPayload(draft: ImageDraft, mediaIdByKey: Map<string, string>): PropertyImageInputEntry[] {
+  return visibleSlots(draft).map((slot, index) => {
+    const alt = slot.alt.trim() || undefined;
     const isCover = slot.key === draft.coverKey;
 
-    if (slot.kind === "new") {
-      uploads.push({ key: slot.key, file: slot.file, alt: slot.alt.trim(), isCover, sortOrder: nextSortOrder });
-      nextSortOrder += 1;
-      continue;
+    if (slot.kind === "existing") {
+      return { id: slot.image.id, alt, sortOrder: index, isCover };
     }
 
-    const patch: AdminPropertyImageUpdateInput = {};
-    const altTrimmed = slot.alt.trim();
-    if (altTrimmed !== (slot.image.alt ?? "")) patch.alt = altTrimmed || null;
-    // Explicit false, not just "omit" — see docs/api-property-images.md's
-    // "cover exclusivity" note on why this doesn't trust the API to unset
-    // a previous cover on its own.
-    if (slot.image.isCover !== isCover) patch.isCover = isCover;
-
-    if (Object.keys(patch).length > 0) {
-      existingPatches.push({ key: slot.key, imageId: slot.image.id, patch });
+    const mediaAssetId = mediaIdByKey.get(slot.key);
+    if (!mediaAssetId) {
+      throw new Error(`Missing uploaded mediaAssetId for staged image "${slot.key}"`);
     }
-  }
-
-  for (const slot of draft.slots) {
-    if (slot.kind === "existing" && slot.removed) {
-      deletes.push({ key: slot.key, imageId: slot.image.id });
-    }
-  }
-
-  return { uploads, existingPatches, deletes };
-}
-
-export function buildUploadFormData(op: ImageUploadOp): FormData {
-  const formData = new FormData();
-  formData.set("file", op.file);
-  if (op.alt) formData.set("alt", op.alt);
-  formData.set("sortOrder", String(op.sortOrder));
-  formData.set("isCover", String(op.isCover));
-  return formData;
+    return { mediaAssetId, alt, sortOrder: index, isCover };
+  });
 }

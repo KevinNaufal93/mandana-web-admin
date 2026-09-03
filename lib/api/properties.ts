@@ -1,10 +1,9 @@
 import "server-only";
 import { cache } from "react";
 import { serverApi, unwrapPaginated, unwrap, type Paginated } from "@/lib/api/server-client";
-import { verifySession } from "@/lib/auth/dal";
-import { parseApiError, type ApiResult } from "@/lib/api/errors";
+import type { ApiResult } from "@/lib/api/errors";
 import type { components } from "@/lib/api/schema";
-import type { PropertyQuery } from "@/lib/properties/query";
+import type { PropertyQuery, ListingType, PropertyStatus } from "@/lib/properties/query";
 
 /**
  * Hand-written response types, same rationale as lib/api/auth-endpoints.ts:
@@ -36,7 +35,7 @@ export interface AdminPropertyRow {
   id: string;
   slug: string;
   title: string;
-  listingType: "sale" | "rent";
+  listingType: ListingType;
   status: "draft" | "published" | "archived";
   price: string | number;
   currency: string;
@@ -76,6 +75,8 @@ export interface AdminPropertyAgent {
   photo: { url: string; srcset: string; alt: string | null; width: number; height: number } | null;
 }
 
+export type ConstructionStatus = "ready" | "under_construction";
+
 /**
  * adminFindOne runs PropertyMapper.toDetail(property, {exact: true}) —
  * unlike adminFindAll above, this DOES go through toCard/toDetail, so
@@ -90,7 +91,11 @@ export interface AdminPropertyDetail {
   title: string;
   description: string | null;
   descriptionText: string | null;
-  listingType: "sale" | "rent";
+  listingType: ListingType;
+  /** Only meaningful when listingType is "new" — null otherwise. */
+  handoverDate: string | null;
+  /** Only meaningful when listingType is "new" — null otherwise. */
+  constructionStatus: ConstructionStatus | null;
   status: "draft" | "published" | "archived";
   price: number | null;
   currency: string;
@@ -158,6 +163,23 @@ export async function listAmenities(): Promise<ApiResult<AdminPropertyAmenity[]>
 // ─── Mutations ──────────────────────────────────────────────────────────────
 
 /**
+ * One entry in AdminPropertyUpdateInput.images — the complete desired end
+ * state of a single property image. Exactly one of id/mediaAssetId must be
+ * present, and at most one entry across the array may set isCover: true;
+ * both rules are enforced server-side (ValidPropertyImagesBatch) with a 400
+ * on violation. An existing image whose id is absent from the array is
+ * deleted — there is no separate delete op. Mirrors PropertyImageInputDto.
+ */
+export interface PropertyImageInputEntry {
+  id?: string;
+  mediaAssetId?: string;
+  /** Full replacement, not a merge — omitting this resets alt to null. */
+  alt?: string;
+  sortOrder?: number;
+  isCover?: boolean;
+}
+
+/**
  * Mirrors UpdatePropertyDto (PartialType<CreatePropertyDto>), but with
  * `| null` added on every nullable-in-the-database field — the generated
  * schema types those as `?: number`/`?: string` (optional, not nullable),
@@ -165,12 +187,19 @@ export async function listAmenities(): Promise<ApiResult<AdminPropertyAmenity[]>
  * properties.service.ts's update() does accept null on every one of these
  * to clear the column (`dto.field !== undefined && {field: dto.field ?? null}`).
  * `undefined` (an omitted key) leaves the field untouched; `null` clears it.
+ *
+ * handoverDate/constructionStatus are the exception: the server 400s
+ * (assertNewOnlyFields) if either is sent while the effective listingType
+ * isn't "new", so callers must omit both keys entirely rather than send
+ * null, unless listingType is (or is being set to) "new".
  */
 export interface AdminPropertyUpdateInput {
   title?: string;
   description?: string | null;
-  listingType?: "sale" | "rent";
-  status?: "draft" | "published" | "archived";
+  listingType?: ListingType;
+  handoverDate?: string;
+  constructionStatus?: ConstructionStatus;
+  status?: PropertyStatus;
   price?: number;
   currency?: string;
   bedrooms?: number | null;
@@ -184,10 +213,22 @@ export interface AdminPropertyUpdateInput {
   longitude?: number | null;
   isFeatured?: boolean;
   propertyTypeId?: string | null;
+  agentId?: string;
   amenityIds?: string[];
+  /** Omit to leave images untouched; [] deletes every existing image. */
+  images?: PropertyImageInputEntry[];
 }
 
-export async function updateProperty(id: string, patch: AdminPropertyUpdateInput): Promise<ApiResult<void>> {
+/**
+ * properties.service.ts's update() (mandana-api) returns the full detail
+ * shape (PropertyMapper.toDetail — same as adminFindOne/GET :id), not the
+ * raw saved entity, so callers don't need a follow-up fetch to see current
+ * images/propertyType/agent.
+ */
+export async function updateProperty(
+  id: string,
+  patch: AdminPropertyUpdateInput,
+): Promise<ApiResult<AdminPropertyDetail>> {
   const api = await serverApi();
   const result = await api.PATCH("/admin/properties/{id}", {
     params: { path: { id } },
@@ -196,61 +237,56 @@ export async function updateProperty(id: string, patch: AdminPropertyUpdateInput
     // @IsOptional() fields accept null at runtime.
     body: patch as unknown as components["schemas"]["UpdatePropertyDto"],
   });
-  return unwrap<void>(result);
-}
-
-export interface AdminPropertyImageUpdateInput {
-  alt?: string | null;
-  sortOrder?: number;
-  isCover?: boolean;
-}
-
-export async function updatePropertyImage(
-  propertyId: string,
-  imageId: string,
-  patch: AdminPropertyImageUpdateInput,
-): Promise<ApiResult<void>> {
-  const api = await serverApi();
-  const result = await api.PATCH("/admin/properties/{id}/images/{imageId}", {
-    params: { path: { id: propertyId, imageId } },
-    body: patch as unknown as components["schemas"]["UpdatePropertyImageDto"],
-  });
-  return unwrap<void>(result);
-}
-
-export async function deletePropertyImage(propertyId: string, imageId: string): Promise<ApiResult<void>> {
-  const api = await serverApi();
-  const result = await api.DELETE("/admin/properties/{id}/images/{imageId}", {
-    params: { path: { id: propertyId, imageId } },
-  });
-  return unwrap<void>(result);
+  return unwrap<AdminPropertyDetail>(result);
 }
 
 /**
- * Deliberately NOT on openapi-fetch, unlike every other function here: the
- * generated schema types this multipart body as `{file: string, ...}` (a
- * binary-format placeholder, not FormData), so a real FormData instance
- * fights the types. Raw fetch instead, same rationale as
- * lib/api/auth-endpoints.ts. `formData` is built by the caller (client
- * component) with `file`, and optionally `alt` / `sortOrder` / `isCover`.
+ * Mirrors CreatePropertyDto. title and price are the only two fields the
+ * server requires; everything else (including slug, which is
+ * auto-generated from title and deduped with a -2/-3 suffix on collision)
+ * is optional. Note there is no `images` field here — CreatePropertyDto
+ * doesn't accept one (the global ValidationPipe runs
+ * forbidNonWhitelisted:true, so sending one would 400) — attach photos
+ * with a follow-up updateProperty(id, { images }) call instead.
  */
-export async function addPropertyImage(propertyId: string, formData: FormData): Promise<ApiResult<void>> {
-  const { accessToken } = await verifySession();
-  const baseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "").replace(/\/$/, "");
+export interface CreatePropertyInput {
+  title: string;
+  price: number;
+  slug?: string;
+  description?: string;
+  listingType?: ListingType;
+  handoverDate?: string;
+  constructionStatus?: ConstructionStatus;
+  status?: PropertyStatus;
+  currency?: string;
+  bedrooms?: number;
+  bathrooms?: number;
+  areaSqm?: number;
+  address?: string;
+  area?: string;
+  city?: string;
+  province?: string;
+  latitude?: number;
+  longitude?: number;
+  isFeatured?: boolean;
+  propertyTypeId?: string;
+  agentId?: string;
+  amenityIds?: string[];
+}
 
-  let response: Response;
-  try {
-    response = await fetch(`${baseUrl}/admin/properties/${propertyId}/images`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${accessToken}` },
-      body: formData,
-      cache: "no-store",
-    });
-  } catch {
-    return { ok: false, error: { kind: "network" } };
-  }
-
-  const body = await response.json().catch(() => null);
-  if (!response.ok) return { ok: false, error: parseApiError(response.status, body) };
-  return { ok: true, data: undefined };
+/**
+ * POST /admin/properties returns the raw saved entity (no @ApiOkResponse
+ * on this route either — same content?:never gap as everywhere else in
+ * this file), and unlike the PATCH response above it does NOT go through
+ * PropertyMapper: no images/propertyType/agent relations loaded, and
+ * price comes back as a Postgres numeric-as-string. Only `id` is used
+ * here; the caller re-fetches via getAdminProperty for the real detail
+ * shape once images (if any) have been attached.
+ */
+export async function createProperty(input: CreatePropertyInput): Promise<ApiResult<{ id: string }>> {
+  const api = await serverApi();
+  const result = await api.POST("/admin/properties", {
+    body: input as unknown as components["schemas"]["CreatePropertyDto"],
+  });
+  return unwrap<{ id: string }>(result);
 }

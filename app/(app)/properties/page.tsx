@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { Plus } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth/dal";
 import { listAdminProperties, listPropertyTypes } from "@/lib/api/properties";
 import { parsePropertyQuery } from "@/lib/properties/query";
 import { PropertyFilters } from "@/components/properties/property-filters";
 import { PropertiesTable } from "@/components/properties/properties-table";
 import { PropertiesPagination } from "@/components/properties/properties-pagination";
+import { Button } from "@/components/ui/button";
 import type { ApiError } from "@/lib/api/errors";
 
 export const metadata: Metadata = { title: "Manajemen Properti — Mandana Admin" };
@@ -33,9 +36,17 @@ export default async function PropertiesPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-primary">Manajemen Properti</h1>
-        <p className="text-sm text-muted-foreground">Daftar seluruh listing properti Mandana.</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold text-primary">Manajemen Properti</h1>
+          <p className="text-sm text-muted-foreground">Daftar seluruh listing properti Mandana.</p>
+        </div>
+        <Button variant="secondary" asChild>
+          <Link href="/properties/new">
+            <Plus className="size-4" />
+            Properti baru
+          </Link>
+        </Button>
       </div>
 
       <PropertyFilters query={query} propertyTypes={propertyTypes} />

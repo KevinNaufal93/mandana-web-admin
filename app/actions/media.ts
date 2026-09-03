@@ -15,7 +15,8 @@ function errorMessage(error: ApiError): string {
 export type MediaUploadResult = { ok: true; data: UploadedMedia } | { ok: false; error: string };
 
 // FormData arg — the documented multipart exception to "typed args, not
-// FormData" (see uploadPropertyImageAction in app/actions/properties.ts).
+// FormData". Also the upload half of the property image flow: see
+// lib/properties/image-staging.ts's buildMediaUploadFormData.
 export async function uploadMediaAction(formData: FormData): Promise<MediaUploadResult> {
   const result = await uploadMedia(formData);
   if (!result.ok) {

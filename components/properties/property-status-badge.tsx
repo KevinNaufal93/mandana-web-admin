@@ -20,11 +20,13 @@ export function PropertyStatusBadge({ status }: { status: PropertyStatus }) {
 export const LISTING_LABEL: Record<ListingType, string> = {
   sale: "Dijual",
   rent: "Disewa",
+  new: "Baru",
 };
 
-const LISTING_VARIANT: Record<ListingType, "dijual" | "disewa"> = {
+const LISTING_VARIANT: Record<ListingType, "dijual" | "disewa" | "baru"> = {
   sale: "dijual",
   rent: "disewa",
+  new: "baru",
 };
 
 export function ListingTypeBadge({ listingType }: { listingType: ListingType }) {

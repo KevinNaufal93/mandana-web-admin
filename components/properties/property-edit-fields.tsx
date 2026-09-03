@@ -7,10 +7,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { STATUS_LABEL, LISTING_LABEL } from "@/components/properties/property-status-badge";
 import { PROPERTY_STATUSES, LISTING_TYPES } from "@/lib/properties/query";
-import type { DraftFields } from "@/lib/properties/use-property-draft";
+import { NONE, type DraftFields } from "@/lib/properties/draft-fields";
 import type { AdminPropertyAmenity, PropertyTypeOption } from "@/lib/api/properties";
 
-const NONE = "none";
+export const CONSTRUCTION_STATUS_LABEL: Record<string, string> = {
+  ready: "Siap huni",
+  under_construction: "Dalam konstruksi",
+};
 
 /** Every field group below takes the same three things: the live draft
  *  values, a setter, and whether a save is in flight (to disable inputs).
@@ -294,6 +297,42 @@ export function LocationFields({ fields, updateField, pending }: FieldsProps) {
           />
         </Field>
       </div>
+    </div>
+  );
+}
+
+/** Body of the "Properti baru" DetailCard in edit mode — only rendered
+ *  while fields.listingType === "new" (see property-detail-view.tsx /
+ *  property-create-form.tsx). Both fields are cleared server-side the
+ *  moment listingType changes away from "new" (properties.service.ts's
+ *  assertNewOnlyFields), so there's nothing to reset here on the way out. */
+export function NewPropertyFields({ fields, updateField, pending }: FieldsProps) {
+  return (
+    <div className="flex flex-col gap-3">
+      <Field label="Tanggal serah terima" htmlFor="edit-handover-date">
+        <Input
+          id="edit-handover-date"
+          type="date"
+          value={fields.handoverDate}
+          onChange={(e) => updateField("handoverDate", e.target.value)}
+          disabled={pending}
+        />
+      </Field>
+      <Field label="Status konstruksi" htmlFor="edit-construction-status">
+        <Select
+          value={fields.constructionStatus}
+          onValueChange={(v) => updateField("constructionStatus", v)}
+        >
+          <SelectTrigger id="edit-construction-status" className="w-full" disabled={pending}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={NONE}>Belum ditentukan</SelectItem>
+            <SelectItem value="ready">{CONSTRUCTION_STATUS_LABEL.ready}</SelectItem>
+            <SelectItem value="under_construction">{CONSTRUCTION_STATUS_LABEL.under_construction}</SelectItem>
+          </SelectContent>
+        </Select>
+      </Field>
     </div>
   );
 }

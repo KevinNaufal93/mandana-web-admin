@@ -1,181 +1,75 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import {
-  updatePropertyAction,
-  uploadPropertyImageAction,
-  updatePropertyImageAction,
-  deletePropertyImageAction,
-} from "@/app/actions/properties";
+import { updatePropertyAction } from "@/app/actions/properties";
+import { uploadMediaAction } from "@/app/actions/media";
 import {
   initImageDraft,
   addFile as addImageFile,
   removeSlot as removeImageSlot,
   setAlt as setImageSlotAlt,
   setCover as setImageSlotCover,
-  commitUpload,
-  commitDelete,
-  commitExistingPatch,
-  planImageCommit,
-  buildUploadFormData,
+  buildMediaUploadFormData,
+  buildImagesPayload,
+  hasImageChanges,
   revokeAllPreviewUrls,
   type ImageDraft,
 } from "@/lib/properties/image-staging";
-import type { PropertyStatus, ListingType } from "@/lib/properties/query";
-import type { AdminPropertyDetail, AdminPropertyUpdateInput } from "@/lib/api/properties";
+import {
+  fieldsFromProperty,
+  validateFields,
+  isFieldsDirty,
+  buildUpdatePatch,
+  type DraftFields,
+} from "@/lib/properties/draft-fields";
+import type { AdminPropertyDetail } from "@/lib/api/properties";
 
-const NONE = "none";
-
-export interface DraftFields {
-  title: string;
-  description: string;
-  listingType: ListingType;
-  status: PropertyStatus;
-  price: string;
-  currency: string;
-  bedrooms: string;
-  bathrooms: string;
-  areaSqm: string;
-  address: string;
-  area: string;
-  city: string;
-  province: string;
-  latitude: string;
-  longitude: string;
-  isFeatured: boolean;
-  propertyTypeId: string; // NONE sentinel, or a real id
-  amenityIds: Set<string>;
-}
-
-function fieldsFromProperty(property: AdminPropertyDetail): DraftFields {
-  return {
-    title: property.title,
-    description: property.description ?? "",
-    listingType: property.listingType,
-    status: property.status,
-    price: property.price !== null ? String(property.price) : "",
-    currency: property.currency,
-    bedrooms: property.bedrooms !== null ? String(property.bedrooms) : "",
-    bathrooms: property.bathrooms !== null ? String(property.bathrooms) : "",
-    areaSqm: property.areaSqm !== null ? String(property.areaSqm) : "",
-    address: property.address ?? "",
-    area: property.area ?? "",
-    city: property.city ?? "",
-    province: property.province ?? "",
-    latitude: property.latitude !== null ? String(property.latitude) : "",
-    longitude: property.longitude !== null ? String(property.longitude) : "",
-    isFeatured: property.isFeatured,
-    propertyTypeId: property.propertyType?.id ?? NONE,
-    amenityIds: new Set(property.amenities.map((a) => a.id)),
-  };
-}
-
-function toNullableNumber(v: string): number | null {
-  return v.trim() === "" ? null : Number(v);
-}
-
-function buildPatch(fields: DraftFields): AdminPropertyUpdateInput {
-  return {
-    title: fields.title.trim(),
-    description: fields.description || null,
-    listingType: fields.listingType,
-    status: fields.status,
-    price: Number(fields.price),
-    currency: fields.currency.trim() || "IDR",
-    bedrooms: toNullableNumber(fields.bedrooms),
-    bathrooms: toNullableNumber(fields.bathrooms),
-    areaSqm: toNullableNumber(fields.areaSqm),
-    address: fields.address.trim() || null,
-    area: fields.area.trim() || null,
-    city: fields.city.trim() || null,
-    province: fields.province.trim() || null,
-    latitude: toNullableNumber(fields.latitude),
-    longitude: toNullableNumber(fields.longitude),
-    isFeatured: fields.isFeatured,
-    propertyTypeId: fields.propertyTypeId === NONE ? null : fields.propertyTypeId,
-    amenityIds: [...fields.amenityIds],
-  };
-}
-
-function validateFields(fields: DraftFields): string | null {
-  if (fields.title.trim().length < 2) return "Judul minimal 2 karakter.";
-  const priceNumber = Number(fields.price);
-  if (fields.price.trim() === "" || Number.isNaN(priceNumber) || priceNumber < 0) {
-    return "Harga wajib diisi dengan angka yang valid.";
-  }
-  return null;
-}
-
-function isFieldsDirty(fields: DraftFields, baseline: DraftFields): boolean {
-  if (
-    fields.title !== baseline.title ||
-    fields.description !== baseline.description ||
-    fields.listingType !== baseline.listingType ||
-    fields.status !== baseline.status ||
-    fields.price !== baseline.price ||
-    fields.currency !== baseline.currency ||
-    fields.bedrooms !== baseline.bedrooms ||
-    fields.bathrooms !== baseline.bathrooms ||
-    fields.areaSqm !== baseline.areaSqm ||
-    fields.address !== baseline.address ||
-    fields.area !== baseline.area ||
-    fields.city !== baseline.city ||
-    fields.province !== baseline.province ||
-    fields.latitude !== baseline.latitude ||
-    fields.longitude !== baseline.longitude ||
-    fields.isFeatured !== baseline.isFeatured ||
-    fields.propertyTypeId !== baseline.propertyTypeId
-  ) {
-    return true;
-  }
-  if (fields.amenityIds.size !== baseline.amenityIds.size) return true;
-  for (const id of fields.amenityIds) if (!baseline.amenityIds.has(id)) return true;
-  return false;
-}
+export type { DraftFields };
 
 /**
  * Owns every piece of state the property detail page's edit mode needs:
- * field values, the staged image list, validation, dirty-tracking, and the
- * save sequence itself (see docs/api-property-images.md for why a save is
- * several ordered network calls instead of one).
+ * field values, the staged image list, validation, dirty-tracking, and
+ * the save itself.
+ *
+ * Save used to be several sequenced network calls (see
+ * docs/api-property-images.md for the history) with partial-failure
+ * recovery folded back into the draft, because the write API had no
+ * batch/desired-state endpoint for images. That gap has closed — PATCH
+ * /admin/properties/:id now accepts a complete-desired-state `images`
+ * array and applies it atomically alongside any field changes — so save()
+ * is now: upload any newly-staged files to /admin/media/upload in
+ * parallel, then one PATCH carrying both the field patch and the images
+ * array. A failed PATCH leaves the server untouched (it's a single
+ * transaction); the only thing worth remembering across a retry is which
+ * files already made it to a mediaAssetId, so a second Save doesn't
+ * re-upload (and orphan) them.
  *
  * Deliberately does NOT track `property` as a prop the way most hooks
  * would — reseeding is 100% explicit via beginEdit(property), never
- * ambient. The property detail page's own "a fresher property arrived from
- * the server, drop any local edit" resync (see property-detail-view.tsx)
- * already forces `mode` back to "view" whenever that happens, which is the
- * only case an ambient re-seed here would ever need to handle — so an
- * ambient watcher would be solving a problem that can't actually occur,
- * while adding a real one: it would also fire on THIS hook's own partial-
- * failure sync (see save() below), silently wiping whatever the user was
- * mid-edit on. Explicit beginEdit sidesteps that class of bug entirely.
+ * ambient. See property-detail-view.tsx's resync-forces-view-mode
+ * behavior for why an ambient watcher here would be solving a problem
+ * that can't occur.
  */
-export function usePropertyDraft(onSaved: (fresh: AdminPropertyDetail) => void, onSyncProperty: (fresh: AdminPropertyDetail) => void) {
+export function usePropertyDraft(onSaved: (fresh: AdminPropertyDetail) => void) {
   const [fields, setFields] = useState<DraftFields | null>(null);
   const [imageDraft, setImageDraft] = useState<ImageDraft | null>(null);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [justSaved, setJustSaved] = useState(false);
-  // The property this draft is diffed against — set by beginEdit, advanced
-  // (without touching `fields`/`imageDraft`) after a partial save failure,
-  // so a retry only re-attempts what didn't already land. A plain ref: it's
-  // only ever read from inside save()/beginEdit()/cancelEdit(), never
-  // during render, so it doesn't need to trigger a re-render on its own.
   const baselineRef = useRef<AdminPropertyDetail | null>(null);
-  // baselineFields, unlike baselineRef above, DOES feed a value rendered
-  // during this render (isDirty, which the Save button's disabled state
-  // depends on) — so it has to be state, not a ref, or the UI could go
-  // stale after a change that doesn't otherwise trigger a re-render.
   const [baselineFields, setBaselineFields] = useState<DraftFields | null>(null);
 
-  // Cancel and the various commit* paths already revoke object URLs for
-  // the specific slots they retire. This covers the one path those don't:
-  // navigating away entirely while mid-edit with an un-saved staged file,
-  // which unmounts this hook without ever calling cancelEdit(). A ref kept
-  // in sync via effect (not written during render — see the isDirty
-  // comment above for why that distinction matters here) so the
-  // unmount-only cleanup below always sees the latest draft, not whatever
-  // was current on first mount.
+  // Survives across a failed-then-retried save: key -> mediaAssetId for
+  // every staged file that has already been uploaded. Cleared whenever a
+  // fresh edit session begins or ends. A ref, not state — it's only read
+  // from inside save(), never during render.
+  const uploadedRef = useRef<Map<string, string>>(new Map());
+
+  // Cancel and beginEdit both clear this explicitly. This covers the one
+  // path those don't: navigating away entirely while mid-edit with an
+  // un-saved staged file, which unmounts this hook without ever calling
+  // cancelEdit(). Kept in sync via effect (not written during render) so
+  // the unmount-only cleanup always sees the latest draft.
   const imageDraftRef = useRef(imageDraft);
   useEffect(() => {
     imageDraftRef.current = imageDraft;
@@ -195,6 +89,7 @@ export function usePropertyDraft(onSaved: (fresh: AdminPropertyDetail) => void, 
     setBaselineFields(fieldsFromProperty(property));
     setFields(fieldsFromProperty(property));
     setImageDraft(initImageDraft(property.images));
+    uploadedRef.current = new Map();
     setError(null);
     setJustSaved(false);
   }
@@ -206,6 +101,7 @@ export function usePropertyDraft(onSaved: (fresh: AdminPropertyDetail) => void, 
     setError(null);
     baselineRef.current = null;
     setBaselineFields(null);
+    uploadedRef.current = new Map();
   }
 
   function updateField<K extends keyof DraftFields>(key: K, value: DraftFields[K]) {
@@ -245,88 +141,44 @@ export function usePropertyDraft(onSaved: (fresh: AdminPropertyDetail) => void, 
 
     setError(null);
     startTransition(async () => {
-      let latest = baselineRef.current!;
-      let workingDraft = imageDraft;
+      const id = baselineRef.current!.id;
 
-      if (baselineFields && isFieldsDirty(fields, baselineFields)) {
-        const result = await updatePropertyAction(latest.id, buildPatch(fields));
-        if (!result.ok) {
-          setError(result.error);
-          return; // Nothing image-related attempted yet — draft untouched.
+      // Upload any staged files not already uploaded from a prior failed
+      // attempt. Parallel — these are independent, unrelated requests.
+      const toUpload = imageDraft.slots.filter((s) => s.kind === "new" && !uploadedRef.current.has(s.key));
+      const uploadResults = await Promise.all(
+        toUpload.map(async (slot) => {
+          if (slot.kind !== "new") return null; // narrows for TS; filter above already guarantees this
+          const result = await uploadMediaAction(buildMediaUploadFormData(slot.file, slot.alt.trim()));
+          return { key: slot.key, result };
+        }),
+      );
+      for (const entry of uploadResults) {
+        if (!entry) continue;
+        if (!entry.result.ok) {
+          setError(entry.result.error);
+          return;
         }
-        latest = result.data;
+        uploadedRef.current.set(entry.key, entry.result.data.id);
       }
 
-      const plan = planImageCommit(workingDraft);
-      let failure: string | null = null;
+      const patch = {
+        ...buildUpdatePatch(fields),
+        images: isImagesDirty ? buildImagesPayload(imageDraft, uploadedRef.current) : undefined,
+      };
 
-      for (const op of plan.uploads) {
-        const knownIds = new Set(latest.images.map((img) => img.id));
-        const result = await uploadPropertyImageAction(latest.id, buildUploadFormData(op));
-        if (!result.ok) {
-          failure = result.error;
-          break;
-        }
-        latest = result.data;
-        // Identify which of the returned images is the one just uploaded
-        // so the "new" slot can become "existing" — see the module doc
-        // comment in image-staging.ts (commitUpload) for why this matters
-        // for retry-safety. If exactly one new id doesn't appear (e.g. a
-        // concurrent edit from elsewhere), leave the slot as-is rather
-        // than guessing which one is "ours".
-        const appeared = latest.images.filter((img) => !knownIds.has(img.id));
-        if (appeared.length === 1) {
-          workingDraft = commitUpload(workingDraft, op.key, appeared[0]);
-        }
-      }
-
-      if (!failure) {
-        for (const op of plan.existingPatches) {
-          const result = await updatePropertyImageAction(latest.id, op.imageId, op.patch);
-          if (!result.ok) {
-            failure = result.error;
-            break;
-          }
-          latest = result.data;
-          workingDraft = commitExistingPatch(workingDraft, op.key, op.patch);
-        }
-      }
-
-      if (!failure) {
-        for (const op of plan.deletes) {
-          const result = await deletePropertyImageAction(latest.id, op.imageId);
-          if (!result.ok) {
-            failure = result.error;
-            break;
-          }
-          latest = result.data;
-          workingDraft = commitDelete(workingDraft, op.imageId);
-        }
-      }
-
-      if (failure) {
-        // Advance the baseline to whatever DID land, but leave the user's
-        // remaining draft (fields + not-yet-committed image ops) exactly
-        // as they left it — they're still in edit mode, looking at an
-        // error, and a second Save click should only retry what's left.
-        // baselineFields specifically has to advance too: if the field
-        // patch succeeded before an image step failed, `fields` (still the
-        // same values the user typed) must now be compared against THIS
-        // new baseline, or a retry would re-send an already-applied field
-        // patch.
-        baselineRef.current = latest;
-        setBaselineFields(fieldsFromProperty(latest));
-        setImageDraft(workingDraft);
-        setError(failure);
-        onSyncProperty(latest);
+      const result = await updatePropertyAction(id, patch);
+      if (!result.ok) {
+        setError(result.error);
         return;
       }
 
-      onSaved(latest);
+      onSaved(result.data);
       setFields(null);
       setImageDraft(null);
       baselineRef.current = null;
       setBaselineFields(null);
+      uploadedRef.current = new Map();
       setJustSaved(true);
       window.setTimeout(() => setJustSaved(false), 3000);
     });
@@ -350,9 +202,4 @@ export function usePropertyDraft(onSaved: (fresh: AdminPropertyDetail) => void, 
     cancelEdit,
     save,
   };
-}
-
-function hasImageChanges(draft: ImageDraft): boolean {
-  const plan = planImageCommit(draft);
-  return plan.uploads.length > 0 || plan.existingPatches.length > 0 || plan.deletes.length > 0;
 }

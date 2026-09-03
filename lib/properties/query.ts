@@ -7,7 +7,7 @@
  */
 
 export const PROPERTY_STATUSES = ["draft", "published", "archived"] as const;
-export const LISTING_TYPES = ["sale", "rent"] as const;
+export const LISTING_TYPES = ["sale", "rent", "new"] as const;
 
 export type PropertyStatus = (typeof PROPERTY_STATUSES)[number];
 export type ListingType = (typeof LISTING_TYPES)[number];

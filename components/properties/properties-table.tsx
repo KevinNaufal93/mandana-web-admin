@@ -43,7 +43,7 @@ export function PropertiesTable({
           <TableEmpty colSpan={COLUMN_COUNT}>
             {hasActiveFilters
               ? "Tidak ada properti yang cocok dengan filter ini."
-              : "Belum ada properti. Properti yang ditambahkan akan muncul di sini."}
+              : "Belum ada properti. Klik \"Properti baru\" di atas untuk menambahkan yang pertama."}
           </TableEmpty>
         ) : (
           rows.map((row) => <PropertyRow key={row.id} row={row} />)
