@@ -789,6 +789,58 @@ export interface paths {
         patch: operations["MovingSettingsAdminController_update_v1"];
         trace?: never;
     };
+    "/api/v1/moving/leads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Capture a Moving Support lead — persists the configured order (truck, pickup, destinations, add-ons, price) the moment the customer commits to it, before the real conversation happens over WhatsApp. */
+        post: operations["MovingLeadsController_create_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/moving/leads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Moving Support leads (paginated; filter by status, capture-date range, and free-text search over reference / customer name / phone) */
+        get: operations["MovingLeadsAdminController_findAll_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/moving/leads/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a single Moving Support lead with its destinations and add-on lines */
+        get: operations["MovingLeadsAdminController_findOne_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update a lead’s triage status and/or internal note — no confirm/reject flow, nothing here is reserved */
+        patch: operations["MovingLeadsAdminController_update_v1"];
+        trace?: never;
+    };
     "/api/v1/storage/unit-types": {
         parameters: {
             query?: never;
@@ -1721,12 +1773,17 @@ export interface components {
              * @example /properties?listingType=sale
              */
             link?: string;
-            /** @description MediaAsset UUID (upload first via POST /admin/media). Required when type=hero — a hero slide with no image is invalid. Optional for every other type. */
+            /** @description MediaAsset UUID (upload first via POST /admin/media). Required when type=hero, or when imageOnly=true — either case renders nothing without an image. Optional otherwise. */
             mediaAssetId?: string;
             /** @default 0 */
             sortOrder: number;
             /** @default true */
             isActive: boolean;
+            /**
+             * @description Hero or service card: when true, the public site renders just the image (the artwork already has the title/description baked in) and skips the text overlay. Requires mediaAssetId.
+             * @default false
+             */
+            imageOnly: boolean;
         };
         UpdateContentBlockDto: {
             /** @enum {string} */
@@ -1749,6 +1806,11 @@ export interface components {
             sortOrder: number;
             /** @default true */
             isActive: boolean;
+            /**
+             * @description Hero or service card: when true, the public site renders just the image (the artwork already has the title/description baked in) and skips the text overlay. Requires mediaAssetId.
+             * @default false
+             */
+            imageOnly: boolean;
             mediaAssetId?: string | null;
         };
         CreateCollectionDto: {
@@ -1873,6 +1935,8 @@ export interface components {
             perKmFare: number;
             includedKm?: number | null;
             minFare?: number | null;
+            /** @description Raw id of the attached asset — what an admin edit form binds its image picker to. `image` below is the rendered projection of the same row. */
+            mediaAssetId?: string | null;
             image?: components["schemas"]["TruckImageDto"] | null;
             isActive: boolean;
             sortOrder: number;
@@ -1899,6 +1963,8 @@ export interface components {
             minQty: number;
             maxQty: number;
             doublesOnRoundTrip: boolean;
+            /** @description Raw id of the attached asset — what an admin edit form binds its image picker to. `image` below is the rendered projection of the same row. */
+            mediaAssetId?: string | null;
             image?: components["schemas"]["TruckImageDto"] | null;
             isActive: boolean;
             sortOrder: number;
@@ -1916,6 +1982,13 @@ export interface components {
         };
         MovingSettingsResponseDto: {
             data: components["schemas"]["MovingSettingsDto"];
+        };
+        QuoteMovingLegDto: {
+            /**
+             * @description Road distance in meters for this leg only (pickup→stop1, stop1→stop2, ...). 5,000,000 m = 5,000 km, wider than Indonesia.
+             * @example 20000
+             */
+            distanceMeters: number;
         };
         QuoteMovingAddonDto: {
             /**
@@ -1936,13 +2009,10 @@ export interface components {
              * @example pickup-bak
              */
             truckSlug: string;
+            /** @description Ordered legs of the trip — one entry per hop (pickup→stop1, stop1→stop2, ...). Each leg is priced independently against the truck's rate card and the leg subtotals are summed; a leg under includedKm still pays that leg's full flat baseFare (no proration). Send one entry for a single destination — reproduces today's math exactly. IMPORTANT: roundTrip does NOT auto-double distance once legs.length > 1 — include the actual return leg as its own explicit entry here if you want it priced (see moving-integration.md). */
+            legs: components["schemas"]["QuoteMovingLegDto"][];
             /**
-             * @description Road distance in meters (from the client Routes call). 5,000,000 m = 5,000 km, wider than Indonesia.
-             * @example 151200
-             */
-            distanceMeters: number;
-            /**
-             * @description Doubles the distance fare (and toll, if applicable) — the truck drives the route twice. Base fare and other add-ons are charged once.
+             * @description Doubles the distance fare (and toll, if applicable) — the truck drives the route twice. Base fare and other add-ons are charged once. IMPORTANT: the distance-doubling part only applies when legs has exactly one entry (a single destination) — on a multi-leg (legs.length > 1) request this does NOT auto-double any leg's distance fare; include the actual return leg as its own entry in legs[] instead. Toll/add-on doubling (doublesOnRoundTrip) is unaffected either way. See moving-integration.md's "Round trip + multiple legs" section.
              * @default false
              */
             roundTrip: boolean;
@@ -1975,6 +2045,17 @@ export interface components {
             /** @description Rupiah */
             amount: number;
         };
+        MovingQuoteLegDto: {
+            distanceKm: number;
+            includedKm: number;
+            chargeableKm: number;
+            /** @description Rupiah */
+            baseFare: number;
+            /** @description Rupiah */
+            distanceFare: number;
+            /** @description Rupiah — baseFare + distanceFare for this leg only */
+            subtotal: number;
+        };
         MovingQuoteDto: {
             truck: components["schemas"]["MovingQuoteTruckDto"];
             distanceKm: number;
@@ -2005,6 +2086,8 @@ export interface components {
             lowEstimate: number;
             /** @description Rupiah */
             highEstimate: number;
+            /** @description Per-leg breakdown, in request order. Unrounded — only the top-level total/lowEstimate/highEstimate are rounded. No per-leg minFareApplied by design (minFare floors the trip-wide sum once, not per leg). */
+            legs: components["schemas"]["MovingQuoteLegDto"][];
             /** @example IDR */
             currency: string;
         };
@@ -2279,6 +2362,209 @@ export interface components {
              * @example 5
              */
             defaultIncludedKm?: number;
+        };
+        MovingPointDto: {
+            /** @example Jl. Sudirman No. 1, Jakarta Selatan */
+            address?: string;
+            /** @example -6.2088 */
+            lat: number;
+            /** @example 106.8456 */
+            lng: number;
+        };
+        CreateMovingLeadDto: {
+            /**
+             * @description TruckClass.slug
+             * @example pickup-bak
+             */
+            truckSlug: string;
+            /** @description Ordered legs of the trip — one entry per hop (pickup→stop1, stop1→stop2, ...). Each leg is priced independently against the truck's rate card and the leg subtotals are summed; a leg under includedKm still pays that leg's full flat baseFare (no proration). Send one entry for a single destination — reproduces today's math exactly. IMPORTANT: roundTrip does NOT auto-double distance once legs.length > 1 — include the actual return leg as its own explicit entry here if you want it priced (see moving-integration.md). */
+            legs: components["schemas"]["QuoteMovingLegDto"][];
+            /**
+             * @description Doubles the distance fare (and toll, if applicable) — the truck drives the route twice. Base fare and other add-ons are charged once. IMPORTANT: the distance-doubling part only applies when legs has exactly one entry (a single destination) — on a multi-leg (legs.length > 1) request this does NOT auto-double any leg's distance fare; include the actual return leg as its own entry in legs[] instead. Toll/add-on doubling (doublesOnRoundTrip) is unaffected either way. See moving-integration.md's "Round trip + multiple legs" section.
+             * @default false
+             */
+            roundTrip: boolean;
+            /**
+             * @description Whether `distanceMeters` was computed via a toll-road route. Defaults to true, matching the current client Routes call (no `avoidTolls` modifier is sent). IMPORTANT: the caller's Routes request must have sent `routeModifiers.avoidTolls: !tollRoute`, or `distanceMeters` and any toll charge below will describe two different routes.
+             * @default true
+             */
+            tollRoute: boolean;
+            /**
+             * @description Declared value of the goods being moved, in Rupiah. Required when the `insurance` addon (or any `percent`-priced addon) is selected.
+             * @example 50000000
+             */
+            declaredValue?: number;
+            addons?: components["schemas"]["QuoteMovingAddonDto"][];
+            pickup: components["schemas"]["MovingPointDto"];
+            /** @description Ordered drop-off stops — 1 or more, no product limit. The 25 cap is an abuse guard, mirroring the `addons` field’s own ArrayMaxSize convention. */
+            destinations: components["schemas"]["MovingPointDto"][];
+            /**
+             * @description Not collected by the Moving Support page today — optional, future-proofing.
+             * @example Budi Santoso
+             */
+            customerName?: string;
+            /** @example +628123456789 */
+            phone?: string;
+            /** @example budi@example.com */
+            email?: string;
+            /**
+             * @description Customer-provided additional notes/instructions — the web form’s "Additional notes" field.
+             * @example Barang mudah pecah, tolong hati-hati. Butuh 2 orang angkat ke lantai 3.
+             */
+            notes?: string;
+        };
+        MovingLeadStopDto: {
+            /** @description 0-based route order */
+            stopIndex: number;
+            address?: string | null;
+            lat: number;
+            lng: number;
+        };
+        MovingLeadAddonLineDto: {
+            slug: string;
+            name: string;
+            quantity: number;
+            /** @description Rupiah */
+            unitPrice: number;
+            /** @description Rupiah */
+            amount: number;
+        };
+        MovingLeadLegDto: {
+            distanceKm: number;
+            includedKm: number;
+            chargeableKm: number;
+            /** @description Rupiah */
+            baseFare: number;
+            /** @description Rupiah */
+            distanceFare: number;
+            /** @description Rupiah */
+            subtotal: number;
+        };
+        MovingLeadDto: {
+            id: string;
+            /** @example MDN-MOV-A7K92X */
+            reference: string;
+            /** @enum {string} */
+            status: "new" | "contacted" | "converted" | "lost";
+            truckSlug: string;
+            truckName: string;
+            pickupAddress?: string | null;
+            pickupLat: number;
+            pickupLng: number;
+            destinations: components["schemas"]["MovingLeadStopDto"][];
+            distanceKm: number;
+            includedKm: number;
+            chargeableKm: number;
+            roundTrip: boolean;
+            tollRoute: boolean;
+            declaredValue?: number | null;
+            /** @description Rupiah */
+            baseFare: number;
+            /** @description Rupiah */
+            distanceFare: number;
+            /** @description Rupiah */
+            travelSubtotal: number;
+            /** @description Rupiah */
+            tollFare: number;
+            addons: components["schemas"]["MovingLeadAddonLineDto"][];
+            /** @description Rupiah */
+            addonsTotal: number;
+            /** @description Rupiah */
+            subtotal: number;
+            /** @description Rupiah */
+            total: number;
+            minFareApplied: boolean;
+            /** @description Rupiah */
+            lowEstimate: number;
+            /** @description Rupiah */
+            highEstimate: number;
+            legs: components["schemas"]["MovingLeadLegDto"][];
+            /** @example IDR */
+            currency: string;
+            customerName?: string | null;
+            phone?: string | null;
+            email?: string | null;
+            /** @description Customer-provided additional notes/instructions */
+            notes?: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        MovingLeadResponseDto: {
+            data: components["schemas"]["MovingLeadDto"];
+        };
+        MovingLeadAdminDto: {
+            id: string;
+            /** @example MDN-MOV-A7K92X */
+            reference: string;
+            /** @enum {string} */
+            status: "new" | "contacted" | "converted" | "lost";
+            truckSlug: string;
+            truckName: string;
+            pickupAddress?: string | null;
+            pickupLat: number;
+            pickupLng: number;
+            destinations: components["schemas"]["MovingLeadStopDto"][];
+            distanceKm: number;
+            includedKm: number;
+            chargeableKm: number;
+            roundTrip: boolean;
+            tollRoute: boolean;
+            declaredValue?: number | null;
+            /** @description Rupiah */
+            baseFare: number;
+            /** @description Rupiah */
+            distanceFare: number;
+            /** @description Rupiah */
+            travelSubtotal: number;
+            /** @description Rupiah */
+            tollFare: number;
+            addons: components["schemas"]["MovingLeadAddonLineDto"][];
+            /** @description Rupiah */
+            addonsTotal: number;
+            /** @description Rupiah */
+            subtotal: number;
+            /** @description Rupiah */
+            total: number;
+            minFareApplied: boolean;
+            /** @description Rupiah */
+            lowEstimate: number;
+            /** @description Rupiah */
+            highEstimate: number;
+            legs: components["schemas"]["MovingLeadLegDto"][];
+            /** @example IDR */
+            currency: string;
+            customerName?: string | null;
+            phone?: string | null;
+            email?: string | null;
+            /** @description Customer-provided additional notes/instructions */
+            notes?: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            adminNote?: string | null;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        MovingLeadPaginationMetaDto: {
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+        };
+        MovingLeadAdminListResponseDto: {
+            data: components["schemas"]["MovingLeadAdminDto"][];
+            meta: components["schemas"]["MovingLeadPaginationMetaDto"];
+        };
+        MovingLeadAdminResponseDto: {
+            data: components["schemas"]["MovingLeadAdminDto"];
+        };
+        UpdateMovingLeadDto: {
+            /** @enum {string} */
+            status?: "new" | "contacted" | "converted" | "lost";
+            /**
+             * @description Internal note, not shown to the customer
+             * @example Follow-up dijadwalkan 3 Sep
+             */
+            adminNote?: string;
         };
         StorageDimensionsDto: {
             lengthCm: number;
@@ -4748,6 +5034,104 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MovingSettingsResponseDto"];
+                };
+            };
+        };
+    };
+    MovingLeadsController_create_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateMovingLeadDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovingLeadResponseDto"];
+                };
+            };
+        };
+    };
+    MovingLeadsAdminController_findAll_v1: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+                status?: "new" | "contacted" | "converted" | "lost";
+                /** @description Leads captured on or after this Jakarta calendar day (inclusive). Unlike Event Support, whose from/to bound a booking event window, a Moving lead has no event window — this bounds capture time (createdAt). */
+                from?: string;
+                /** @description Leads captured on or before this Jakarta calendar day — the whole day counts, not midnight. Any time component is ignored. */
+                to?: string;
+                /** @description Matches lead reference, customer name, or phone */
+                search?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovingLeadAdminListResponseDto"];
+                };
+            };
+        };
+    };
+    MovingLeadsAdminController_findOne_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovingLeadAdminResponseDto"];
+                };
+            };
+        };
+    };
+    MovingLeadsAdminController_update_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateMovingLeadDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovingLeadAdminResponseDto"];
                 };
             };
         };

@@ -1,0 +1,68 @@
+import Image from "next/image";
+import Link from "next/link";
+import { ImageOff } from "lucide-react";
+import { Table, TableBody, TableCell, TableEmpty, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import type { AdminMovingTruckClass } from "@/lib/api/moving";
+import { formatIDRShort } from "@/lib/format";
+
+const COLUMN_COUNT = 4;
+
+export function MovingTruckClassesTable({ rows, hasActiveFilters }: { rows: AdminMovingTruckClass[]; hasActiveFilters: boolean }) {
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Tipe truk</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead className="text-right">Tarif dasar</TableHead>
+          <TableHead className="text-right">Tarif / km</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {rows.length === 0 ? (
+          <TableEmpty colSpan={COLUMN_COUNT}>
+            {hasActiveFilters
+              ? "Tidak ada tipe truk yang cocok dengan filter ini."
+              : "Belum ada tipe truk. Tipe truk yang ditambahkan akan muncul di sini."}
+          </TableEmpty>
+        ) : (
+          rows.map((row) => <TruckClassRow key={row.id} row={row} />)
+        )}
+      </TableBody>
+    </Table>
+  );
+}
+
+function TruckClassRow({ row }: { row: AdminMovingTruckClass }) {
+  return (
+    <TableRow>
+      <TableCell>
+        <Link href={`/moving/truck-classes/${row.id}`} className="flex items-center gap-3">
+          <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded-md bg-muted">
+            {row.image ? (
+              <Image src={row.image.url} alt={row.image.alt ?? row.name} fill className="object-cover" sizes="64px" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                <ImageOff className="size-4" />
+              </div>
+            )}
+          </div>
+          <div className="min-w-0">
+            <p className="truncate font-medium text-primary hover:underline">{row.name}</p>
+            <p className="truncate text-xs text-muted-foreground">{row.slug}</p>
+          </div>
+        </Link>
+      </TableCell>
+      <TableCell>
+        <Badge variant={row.isActive ? "default" : "secondary"}>{row.isActive ? "Aktif" : "Nonaktif"}</Badge>
+      </TableCell>
+      <TableCell className="whitespace-nowrap text-right font-medium text-primary">
+        {formatIDRShort(row.baseFare)}
+      </TableCell>
+      <TableCell className="whitespace-nowrap text-right text-sm text-muted-foreground">
+        {formatIDRShort(row.perKmFare)}
+      </TableCell>
+    </TableRow>
+  );
+}
