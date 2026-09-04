@@ -12,6 +12,8 @@ import { ContentBlockPreview } from "@/components/content-media/content-block-pr
 import { createContentBlockAction, updateContentBlockAction, deleteContentBlockAction } from "@/app/actions/content-blocks";
 import type { AdminContentBlock, ContentBlockInput } from "@/lib/api/content-blocks";
 import type { ContentBlockTypeDef } from "@/lib/content-blocks/types";
+import { LISTING_TYPES, type ListingType } from "@/lib/properties/query";
+import { LISTING_LABEL } from "@/components/properties/property-status-badge";
 
 function Field({ label, htmlFor, children }: { label: string; htmlFor?: string; children: React.ReactNode }) {
   return (
@@ -48,6 +50,10 @@ export function ContentBlockForm(props: ContentBlockFormProps) {
   const [link, setLink] = useState(block?.link ?? "");
   const [isActive, setIsActive] = useState(block?.isActive ?? true);
   const [imageOnly, setImageOnly] = useState(block?.imageOnly ?? false);
+  // null and [] both mean "every listing type" (doc §4b) — collapse
+  // either into the same empty-array UI state; handleSubmit re-expands an
+  // empty selection back to null on submit.
+  const [scope, setScope] = useState<ListingType[]>(block?.listingTypeScope ?? []);
   const [image, setImage] = useState<ImagePickerValue>({
     mediaAssetId: null,
     preview: block?.image ? { url: block.image.url, alt: block.image.alt } : null,
@@ -57,6 +63,10 @@ export function ContentBlockForm(props: ContentBlockFormProps) {
   const [saved, setSaved] = useState(false);
   const [pending, startTransition] = useTransition();
   const [deletePending, startDeleteTransition] = useTransition();
+
+  function toggleScope(listingType: ListingType) {
+    setScope((prev) => (prev.includes(listingType) ? prev.filter((v) => v !== listingType) : [...prev, listingType]));
+  }
 
   function handleSubmit() {
     setError(null);
@@ -92,6 +102,10 @@ export function ContentBlockForm(props: ContentBlockFormProps) {
       link: link.trim() || undefined,
       isActive,
       ...(typeDef.supportsImageOnly ? { imageOnly } : {}),
+      // Always send the key (never omit) so clearing the scope back to
+      // "every listing type" actually reaches the API — omitting it
+      // would leave the previous scope untouched instead (doc §4b).
+      ...(typeDef.supportsListingTypeScope ? { listingTypeScope: scope.length ? scope : null } : {}),
       ...(image.mediaAssetId ? { mediaAssetId: image.mediaAssetId } : cleared ? { mediaAssetId: null } : {}),
     };
 
@@ -139,6 +153,13 @@ export function ContentBlockForm(props: ContentBlockFormProps) {
       router.push(`/content-media/${typeDef.slug}`);
     });
   }
+
+  // Soft hint, not a validation block: the public promo card only renders
+  // its CTA button when both ctaText AND link are present (mandana-web's
+  // promo-card.tsx) — filling in one without the other silently drops the
+  // button rather than erroring, so surface that here instead of letting
+  // it be a surprise on the live site.
+  const missingCtaLink = typeDef.type === "property_promo" && ctaText.trim() !== "" && link.trim() === "";
 
   return (
     <div className="flex flex-col gap-6">
@@ -190,6 +211,11 @@ export function ContentBlockForm(props: ContentBlockFormProps) {
                 disabled={pending}
               />
             </Field>
+            {missingCtaLink && (
+              <p className="text-xs text-muted-foreground">
+                Tombol CTA tidak akan tampil tanpa {typeDef.linkLabel.toLowerCase()} — isi tautannya di atas.
+              </p>
+            )}
           </div>
 
           <div className="rounded-lg border border-border p-4">
@@ -219,9 +245,32 @@ export function ContentBlockForm(props: ContentBlockFormProps) {
                 onChange={(e) => setIsActive(e.target.checked)}
                 disabled={pending}
               />
-              Aktif (tampil di homepage)
+              Aktif (tampil di situs)
             </label>
           </div>
+
+          {typeDef.supportsListingTypeScope && (
+            <div className="rounded-lg border border-border p-4">
+              <p className="text-sm font-medium text-primary">Tampilkan pada tipe listing</p>
+              <div className="mt-2 flex flex-wrap gap-4">
+                {LISTING_TYPES.map((listingType) => (
+                  <label key={listingType} className="flex items-center gap-2 text-sm text-primary">
+                    <input
+                      type="checkbox"
+                      className="accent-primary"
+                      checked={scope.includes(listingType)}
+                      onChange={() => toggleScope(listingType)}
+                      disabled={pending}
+                    />
+                    {LISTING_LABEL[listingType]}
+                  </label>
+                ))}
+              </div>
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                Kosongkan untuk menampilkan kartu di semua tipe listing.
+              </p>
+            </div>
+          )}
 
           {typeDef.supportsImageOnly && (
             <div className="rounded-lg border border-border p-4">

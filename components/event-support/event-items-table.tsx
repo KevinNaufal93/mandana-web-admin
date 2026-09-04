@@ -67,8 +67,11 @@ function ItemRow({ row }: { row: AdminEventItem }) {
           see the event-support availability model. Labelled "Stok", not
           "Tersedia", on purpose. */}
       <TableCell className="text-right text-sm text-muted-foreground">{row.stockQuantity}</TableCell>
-      <TableCell className="whitespace-nowrap text-right font-medium text-primary">
-        {formatIDRShort(row.pricePerDay)}
+      <TableCell className="whitespace-nowrap text-right">
+        <p className="font-medium text-primary">{formatIDRShort(row.pricePerDay)}</p>
+        {row.supportsHourly && row.hourlyRate != null && (
+          <p className="text-xs text-muted-foreground">{formatIDRShort(row.hourlyRate)}/jam</p>
+        )}
       </TableCell>
     </TableRow>
   );

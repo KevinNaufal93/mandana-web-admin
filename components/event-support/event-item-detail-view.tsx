@@ -181,6 +181,17 @@ export function EventItemDetailView({
             <DetailCard title="Spesifikasi">
               <DetailRow label="Kategori" value={<Link href={`/event-support/categories/${item.categoryId}`} className="hover:underline">{item.categoryName}</Link>} />
               <DetailRow label="Harga / hari" value={formatIDRFull(item.pricePerDay)} />
+              {item.supportsHourly ? (
+                <>
+                  <DetailRow label="Harga / jam" value={item.hourlyRate != null ? formatIDRFull(item.hourlyRate) : "—"} />
+                  <DetailRow
+                    label="Minimum jam"
+                    value={item.minimumHours != null ? `${item.minimumHours} jam` : "Default kebijakan"}
+                  />
+                </>
+              ) : (
+                <DetailRow label="Sewa per jam" value={<span className="text-muted-foreground">Hanya sewa harian</span>} />
+              )}
               {/* stockQuantity is TOTAL inventory, not availability on a
                   given date — see the guide's availability model. Never
                   labelled "Tersedia". */}

@@ -57,6 +57,9 @@ export function EventItemForm(props: EventItemFormProps) {
   const [kind, setKind] = useState<EventItemKind>(item?.kind ?? "package");
   const [description, setDescription] = useState(item?.description ?? "");
   const [pricePerDay, setPricePerDay] = useState(item ? String(item.pricePerDay) : "");
+  const [supportsHourly, setSupportsHourly] = useState(item?.supportsHourly ?? false);
+  const [hourlyRate, setHourlyRate] = useState(item?.hourlyRate != null ? String(item.hourlyRate) : "");
+  const [minimumHours, setMinimumHours] = useState(item?.minimumHours != null ? String(item.minimumHours) : "");
   const [stockQuantity, setStockQuantity] = useState(item ? String(item.stockQuantity) : "");
   const [sortOrder, setSortOrder] = useState(item ? String(item.sortOrder) : "0");
   const [image, setImage] = useState<ImagePickerValue>({
@@ -83,6 +86,22 @@ export function EventItemForm(props: EventItemFormProps) {
       setError("Harga per hari harus berupa bilangan bulat (Rupiah), 0 atau lebih.");
       return;
     }
+    let hourlyRateNumber: number | undefined;
+    if (supportsHourly) {
+      hourlyRateNumber = Number(hourlyRate);
+      if (hourlyRate.trim() === "" || !Number.isInteger(hourlyRateNumber) || hourlyRateNumber <= 0) {
+        setError("Harga per jam wajib diisi dan lebih dari 0 bila sewa per jam diaktifkan.");
+        return;
+      }
+    }
+    let minimumHoursNumber: number | undefined;
+    if (minimumHours.trim() !== "") {
+      minimumHoursNumber = Number(minimumHours);
+      if (!Number.isInteger(minimumHoursNumber) || minimumHoursNumber < 1) {
+        setError("Minimum jam harus berupa bilangan bulat 1 atau lebih.");
+        return;
+      }
+    }
     const stock = Number(stockQuantity);
     if (stockQuantity.trim() === "" || !Number.isInteger(stock) || stock < 0) {
       setError("Stok harus berupa bilangan bulat 0 atau lebih.");
@@ -101,6 +120,9 @@ export function EventItemForm(props: EventItemFormProps) {
       kind,
       description: description || undefined,
       pricePerDay: price,
+      supportsHourly,
+      hourlyRate: supportsHourly ? hourlyRateNumber : undefined,
+      minimumHours: minimumHoursNumber,
       stockQuantity: stock,
       mediaAssetId: image.mediaAssetId ?? undefined,
       sortOrder: sortOrderNumber,
@@ -212,6 +234,51 @@ export function EventItemForm(props: EventItemFormProps) {
                 disabled={pending}
               />
             </Field>
+
+            <label className="flex items-center gap-2 text-sm text-primary">
+              <input
+                type="checkbox"
+                className="accent-primary"
+                checked={supportsHourly}
+                onChange={(e) => setSupportsHourly(e.target.checked)}
+                disabled={pending}
+              />
+              Dukung sewa per jam
+            </label>
+
+            {supportsHourly && (
+              <>
+                <Field label="Harga per jam (Rp)" htmlFor="item-hourly-rate">
+                  <Input
+                    id="item-hourly-rate"
+                    type="number"
+                    min={0}
+                    step={1}
+                    value={hourlyRate}
+                    onChange={(e) => setHourlyRate(e.target.value)}
+                    disabled={pending}
+                  />
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Ditetapkan terpisah, bukan hasil bagi harga harian.
+                  </p>
+                </Field>
+                <Field label="Minimum jam (opsional)" htmlFor="item-minimum-hours">
+                  <Input
+                    id="item-minimum-hours"
+                    type="number"
+                    min={1}
+                    step={1}
+                    value={minimumHours}
+                    onChange={(e) => setMinimumHours(e.target.value)}
+                    disabled={pending}
+                  />
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Kosongkan untuk memakai default kebijakan.
+                  </p>
+                </Field>
+              </>
+            )}
+
             <Field label="Stok total" htmlFor="item-stock">
               <Input
                 id="item-stock"

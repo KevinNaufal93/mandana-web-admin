@@ -20,10 +20,28 @@ export interface EventBookingLine {
   itemId: string;
   itemName: string;
   quantity: number;
+  /** Naive local datetimes ("2026-03-01T09:00", no Z/offset). Null on
+   *  bookings recorded before hourly pricing shipped. */
+  dropoffAt: string | null;
+  pickupAt: string | null;
   startDate: string;
+  /** Calendar days held (endDate - startDate + 1) — an output, not an
+   *  input. Stays meaningful for an hourly line too: a same-day rental
+   *  still reads days: 1. */
   days: number;
   endDate: string;
+  billingMode: "hourly" | "daily";
+  /** Rupiah, integer */
   pricePerDay: number;
+  /** Rupiah, integer — the rate actually applied (pricePerDay for a daily
+   *  line, hourlyRate for an hourly one). */
+  unitPrice: number;
+  unitLabel: "jam" | "hari";
+  billableUnits: number;
+  /** Set only under the pricing policy's "day_plus_hourly" mode. */
+  extraHours: number | null;
+  /** Rupiah, integer */
+  extraHoursTotal: number | null;
   lineTotal: number;
 }
 
@@ -36,6 +54,8 @@ export interface AdminEventBooking {
   email: string | null;
   eventLocation: string | null;
   notes: string | null;
+  dropoffAt: string | null;
+  pickupAt: string | null;
   startDate: string;
   endDate: string;
   items: EventBookingLine[];
@@ -69,10 +89,12 @@ export interface EventBookingLineInput {
   itemId: string;
   /** 1..1000 */
   quantity: number;
-  /** "YYYY-MM-DD" */
-  startDate: string;
-  /** 1..365 */
-  days: number;
+  /** Naive local datetime, no Z/offset — e.g. "2026-03-01T09:00", exactly
+   *  what a <input type="datetime-local"> produces. Required by the live
+   *  API; the old startDate+days shape 400s (removed here — see the
+   *  event-support-admin-integration.md hourly-pricing rollout). */
+  dropoffAt: string;
+  pickupAt: string;
 }
 
 export interface EventBookingCreateInput {

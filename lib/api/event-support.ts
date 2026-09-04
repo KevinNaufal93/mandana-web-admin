@@ -53,7 +53,14 @@ export interface AdminEventItem {
   kind: EventItemKind;
   description: string | null;
   descriptionText: string | null;
+  /** Rupiah, integer */
   pricePerDay: number;
+  /** Rupiah, integer. Independent of pricePerDay — never derived from it. */
+  hourlyRate: number | null;
+  supportsHourly: boolean;
+  /** Smallest billable hourly block. Null falls back to the pricing
+   *  policy's defaultMinimumHours. */
+  minimumHours: number | null;
   stockQuantity: number;
   status: EventItemStatus;
   image: EventImage | null;
@@ -132,6 +139,15 @@ export interface EventItemCreateInput {
   kind?: EventItemKind;
   description?: string;
   pricePerDay: number;
+  /** Rupiah, integer. Required (and must be > 0) when supportsHourly is true. */
+  hourlyRate?: number;
+  /** Opts this item into hourly pricing for windows at/under the pricing
+   *  policy's threshold. Required on the live DTO (server defaults it to
+   *  false, but the field itself isn't optional) — always send it. */
+  supportsHourly?: boolean;
+  /** Smallest billable hourly block for this item. Omit to use the pricing
+   *  policy's defaultMinimumHours. */
+  minimumHours?: number;
   stockQuantity: number;
   mediaAssetId?: string;
   sortOrder?: number;

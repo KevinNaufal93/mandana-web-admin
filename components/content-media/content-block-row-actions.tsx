@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowUp, ArrowDown, Eye, EyeOff, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { moveContentBlockAction, toggleContentBlockActiveAction } from "@/app/actions/content-blocks";
-import type { AdminContentBlock } from "@/lib/api/content-blocks";
+import type { AdminContentBlock, ContentBlockType } from "@/lib/api/content-blocks";
 
 /**
  * Quick actions from the list row: reorder, publish/unpublish, edit.
@@ -21,7 +21,7 @@ export function ContentBlockRowActions({
   isLast,
 }: {
   block: AdminContentBlock;
-  type: "hero" | "service_card";
+  type: ContentBlockType;
   slug: string;
   isFirst: boolean;
   isLast: boolean;

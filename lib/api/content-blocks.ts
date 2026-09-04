@@ -3,6 +3,7 @@ import { cache } from "react";
 import { serverApi, unwrap } from "@/lib/api/server-client";
 import type { ApiResult } from "@/lib/api/errors";
 import type { components } from "@/lib/api/schema";
+import type { ListingType } from "@/lib/properties/query";
 
 /**
  * Same rationale as lib/api/storage.ts's header comment: response types
@@ -17,11 +18,24 @@ import type { components } from "@/lib/api/schema";
  * docs/content-blocks-admin-integration.md exactly.
  */
 
+/** The API's `type` enum. `lib/api/schema.d.ts` (generated from an older
+ *  spec) still only knows "hero" | "service_card" — see the cast in
+ *  listContentBlocks() below, which is the one place that gap bites. */
+export type ContentBlockType = "hero" | "service_card" | "property_promo";
+
+/** Restricts a `property_promo` card to specific listing types. `null`
+ *  (or an empty array, which this module always normalizes to `null`
+ *  before sending) means "show on every listing type" — doc §4b.
+ *  Meaningless on `hero`/`service_card`: sending a non-empty array on
+ *  either is a 400. */
+export type ListingTypeScope = ListingType[] | null;
+
 export interface ContentBlockImage {
   url: string;
   srcset: string;
-  /** "" for cover-purpose images (service cards) — AVIF is only generated
-   *  for hero-purpose uploads. Render an avif <source> only when non-empty. */
+  /** "" for cover-purpose images (service cards, promo cards) — AVIF is
+   *  only generated for hero-purpose uploads. Render an avif <source>
+   *  only when non-empty. */
   srcsetAvif: string;
   /** Small base64 data: URI for blur-up. Can be null on an asset uploaded
    *  before this field existed. */
@@ -35,17 +49,18 @@ export interface ContentBlockImage {
 
 export interface AdminContentBlock {
   id: string;
-  /** "hero" | "service_card" today — kept as `string` here so an unknown
-   *  future type from the API degrades to a generic row instead of a type
-   *  error; see lib/content-blocks/types.ts's findTypeByValue(). */
+  /** "hero" | "service_card" | "property_promo" today — kept as `string`
+   *  here so an unknown future type from the API degrades to a generic
+   *  row instead of a type error; see lib/content-blocks/types.ts's
+   *  findTypeByValue(). */
   type: string;
   title: string;
   subtitle: string | null;
   ctaText: string | null;
   link: string | null;
   mediaAssetId: string | null;
-  /** null only for a service card with no icon attached yet — a hero
-   *  always has one (the hero-requires-image rule, doc §4). */
+  /** null only for a service/promo card with no image attached yet — a
+   *  hero always has one (the hero-requires-image rule, doc §4). */
   image: ContentBlockImage | null;
   sortOrder: number;
   isActive: boolean;
@@ -55,23 +70,30 @@ export interface AdminContentBlock {
    *  integration.md §2); the admin form still lets it be set on a hero so
    *  the toggle is ready once the backend/public site honor it there. */
   imageOnly: boolean;
+  /** `property_promo` only — `null` on hero/service_card rows (doc §4b). */
+  listingTypeScope: ListingTypeScope;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface ContentBlockInput {
-  type?: "hero" | "service_card";
+  type?: ContentBlockType;
   title?: string;
   subtitle?: string;
   ctaText?: string;
   link?: string;
-  /** Explicit `null` clears a service card's icon (rejected 400 on a
-   *  hero — doc §4). Omit the key entirely to leave the current image
+  /** Explicit `null` clears a service/promo card's image (rejected 400 on
+   *  a hero — doc §4). Omit the key entirely to leave the current image
    *  untouched — see the plan's note on <ImagePicker> value semantics. */
   mediaAssetId?: string | null;
   sortOrder?: number;
   isActive?: boolean;
   imageOnly?: boolean;
+  /** Only send on a `property_promo` row. `null` clears an existing
+   *  scope (send it explicitly — omitting the key leaves the current
+   *  scope untouched, same convention as `mediaAssetId`). Setting a
+   *  non-empty array on any other type is a 400 (doc §4b). */
+  listingTypeScope?: ListingTypeScope;
 }
 
 /**
@@ -79,9 +101,15 @@ export interface ContentBlockInput {
  * sortOrder then createdAt (doc §3). Always returns both active and
  * inactive rows — there is no isActive filter on this endpoint.
  */
-export async function listContentBlocks(type?: "hero" | "service_card"): Promise<ApiResult<AdminContentBlock[]>> {
+export async function listContentBlocks(type?: ContentBlockType): Promise<ApiResult<AdminContentBlock[]>> {
   const api = await serverApi();
-  const result = await api.GET("/admin/content-blocks", { params: { query: type ? { type } : {} } });
+  const result = await api.GET("/admin/content-blocks", {
+    // The deployed spec accepts `property_promo`; lib/api/schema.d.ts
+    // predates it (see the file header). Drop this cast after re-running
+    // `npm run gen:api` against a live API — nothing else in this file
+    // changes.
+    params: { query: (type ? { type } : {}) as { type?: "hero" | "service_card" } },
+  });
   return unwrap<AdminContentBlock[]>(result);
 }
 

@@ -16,7 +16,7 @@ export default function ContentMediaLayout({ children }: { children: React.React
         <div>
           <h1 className="text-2xl font-semibold text-primary">Content Media Management</h1>
           <p className="text-sm text-muted-foreground">
-            Kelola gambar dan konten yang tampil di homepage — hero carousel dan kartu layanan.
+            Kelola gambar dan konten yang dikelola admin — hero carousel, kartu layanan, dan promo halaman properti.
           </p>
         </div>
         <ContentMediaRefreshButton />

@@ -88,3 +88,37 @@ export function formatDateRangeID(start: string, end: string): string {
   }
   return `${formatDateID(start)} – ${formatDateID(end)}`;
 }
+
+/**
+ * Parses a naive local datetime ("2026-03-01T09:00", no Z/offset) into
+ * components by hand — same rationale as parseDateOnly above: this string
+ * is deliberately timezone-free (Asia/Jakarta wall-clock time as agreed
+ * over WhatsApp), and an explicit parse keeps that obvious rather than
+ * relying on how a given engine treats a Z-less ISO string.
+ */
+export function parseDateTimeLocal(v: string): Date {
+  const [datePart, timePart] = v.split("T");
+  const [y, m, d] = datePart.split("-").map(Number);
+  const [h, min] = (timePart ?? "00:00").split(":").map(Number);
+  return new Date(y, m - 1, d, h, min);
+}
+
+/** "1 Maret 2026, 09.00" — accepts a naive "YYYY-MM-DDTHH:mm" datetime. */
+export function formatDateTimeID(v: string): string {
+  const date = parseDateTimeLocal(v);
+  const datePart = date.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+  const timePart = date.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+  return `${datePart}, ${timePart}`;
+}
+
+/** "1 Maret 2026, 09.00 – 17.00", collapsing the date when start and end share one day. */
+export function formatDateTimeRangeID(start: string, end: string): string {
+  const a = parseDateTimeLocal(start);
+  const b = parseDateTimeLocal(end);
+  const sameDay = a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  const timeB = b.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+  if (sameDay) {
+    return `${formatDateTimeID(start)} – ${timeB}`;
+  }
+  return `${formatDateTimeID(start)} – ${formatDateTimeID(end)}`;
+}

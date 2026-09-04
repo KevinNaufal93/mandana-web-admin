@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { BookingItemPicker, emptyBookingLine, type BookingLineDraft } from "@/components/event-support/booking-item-picker";
 import { createEventBookingAction } from "@/app/actions/event-support-bookings";
 import type { AdminEventItem } from "@/lib/api/event-support";
+import type { AdminEventSupportSettings } from "@/lib/api/event-support-settings";
 import type { EventBookingLineInput } from "@/lib/api/event-support-bookings";
 
 function Field({
@@ -31,15 +32,19 @@ function Field({
 }
 
 /** Every real booking is agreed over WhatsApp first — this form is where
- *  that agreement gets written down. */
-export function BookingCreateForm({ items }: { items: AdminEventItem[] }) {
+ *  that agreement gets written down. `settings` is null when the pricing
+ *  policy failed to load — the form still works, it just can't show a
+ *  live estimate (recording the booking matters more than the preview). */
+export function BookingCreateForm({ items, settings }: { items: AdminEventItem[]; settings: AdminEventSupportSettings | null }) {
   const router = useRouter();
   const [customerName, setCustomerName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [eventLocation, setEventLocation] = useState("");
   const [notes, setNotes] = useState("");
-  const [lines, setLines] = useState<BookingLineDraft[]>([emptyBookingLine(items[0]?.id ?? "")]);
+  const [sharedDropoffAt, setSharedDropoffAt] = useState("");
+  const [sharedPickupAt, setSharedPickupAt] = useState("");
+  const [lines, setLines] = useState<BookingLineDraft[]>([emptyBookingLine(items[0]?.id ?? "", "", "")]);
 
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -68,16 +73,15 @@ export function BookingCreateForm({ items }: { items: AdminEventItem[] }) {
         setError("Jumlah harus berupa bilangan bulat 1–1000.");
         return;
       }
-      if (!line.startDate) {
-        setError("Setiap baris harus memiliki tanggal mulai.");
+      if (!line.dropoffAt || !line.pickupAt) {
+        setError("Setiap baris harus memiliki waktu drop-off dan pickup.");
         return;
       }
-      const days = Number(line.days);
-      if (!Number.isInteger(days) || days < 1 || days > 365) {
-        setError("Jumlah hari harus berupa bilangan bulat 1–365.");
+      if (line.pickupAt <= line.dropoffAt) {
+        setError("Waktu pickup harus setelah drop-off.");
         return;
       }
-      parsedLines.push({ itemId: line.itemId, quantity, startDate: line.startDate, days });
+      parsedLines.push({ itemId: line.itemId, quantity, dropoffAt: line.dropoffAt, pickupAt: line.pickupAt });
     }
 
     startTransition(async () => {
@@ -137,7 +141,19 @@ export function BookingCreateForm({ items }: { items: AdminEventItem[] }) {
         {items.length === 0 ? (
           <p className="text-sm text-muted-foreground">Belum ada item yang terbit untuk dipesan.</p>
         ) : (
-          <BookingItemPicker items={items} lines={lines} onChange={setLines} disabled={pending} />
+          <BookingItemPicker
+            items={items}
+            settings={settings}
+            sharedDropoffAt={sharedDropoffAt}
+            sharedPickupAt={sharedPickupAt}
+            onSharedWindowChange={(dropoffAt, pickupAt) => {
+              setSharedDropoffAt(dropoffAt);
+              setSharedPickupAt(pickupAt);
+            }}
+            lines={lines}
+            onChange={setLines}
+            disabled={pending}
+          />
         )}
       </div>
 

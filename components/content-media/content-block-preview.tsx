@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { ImageOff } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { ContentBlockTypeDef } from "@/lib/content-blocks/types";
 
@@ -15,19 +16,20 @@ export interface ContentBlockPreviewData {
   subtitle: string | null;
   ctaText: string | null;
   isActive: boolean;
-  /** Service card only — see ContentBlockTypeDef.supportsImageOnly's doc
-   *  comment. When true, the card renders image-only, matching what the
-   *  public site actually does. */
+  /** See ContentBlockTypeDef.supportsImageOnly's doc comment. When true,
+   *  the card renders image-only, matching what the public site actually
+   *  does. */
   imageOnly: boolean;
   image: { url: string; alt: string | null } | null;
 }
 
 /**
- * Renders one block the way the public homepage actually shows it — a
- * hero slide's dark-overlay title card, or a service-strip card — instead
- * of a generic table row. Used in three places: <ContentBlockList>'s
- * rows, and the live preview panel on both the create and edit forms, so
- * "what you're editing" and "what visitors will see" are the same pixels.
+ * Renders one block the way the public site actually shows it — a hero
+ * slide's dark-overlay title card, a service-strip card, or a promo card
+ * from the property detail sidebar — instead of a generic table row. Used
+ * in three places: <ContentBlockList>'s rows, and the live preview panel
+ * on both the create and edit forms, so "what you're editing" and "what
+ * visitors will see" are the same pixels.
  *
  * No "use client"/async here on purpose: a plain sync component composes
  * into both the (server) list page and the (client) form tree, same as
@@ -42,11 +44,14 @@ export function ContentBlockPreview({
   data: ContentBlockPreviewData;
   className?: string;
 }) {
-  return typeDef.layout === "stack" ? (
-    <HeroPreview data={data} className={className} />
-  ) : (
-    <ServiceCardPreview data={data} className={className} />
-  );
+  switch (typeDef.layout) {
+    case "stack":
+      return <HeroPreview data={data} className={className} />;
+    case "grid":
+      return <ServiceCardPreview data={data} className={className} />;
+    case "sidebar":
+      return <PromoCardPreview data={data} className={className} />;
+  }
 }
 
 function InactiveBadge({ isActive }: { isActive: boolean }) {
@@ -76,8 +81,9 @@ function PreviewImage({
    *  why it uses this too) and for a service-card illustration, whose
    *  aspect ratio and composition (often with a headline baked into the
    *  graphic itself) can't survive an arbitrary crop the way a photo can.
-   *  "cover" crops to fill — kept for a caller that specifically wants a
-   *  full-bleed, no-empty-space treatment and can accept the crop. */
+   *  "cover" crops to fill — right for a promo card, which the public
+   *  component (mandana-web's promo-card.tsx) always renders with
+   *  object-cover. */
   fit: "cover" | "contain";
 }) {
   if (!image) {
@@ -175,6 +181,62 @@ function ServiceCardPreview({ data, className }: { data: ContentBlockPreviewData
       <div className="relative mt-auto aspect-[4/3] w-full overflow-hidden rounded-md bg-muted">
         <PreviewImage image={data.image} alt={data.title} fit="contain" />
       </div>
+    </div>
+  );
+}
+
+/**
+ * Mirrors mandana-web/components/property/detail/promo-card.tsx pixel for
+ * pixel — same shell classes, same font-serif title, same accent button —
+ * so the admin's live preview is the property-detail sidebar card, not an
+ * approximation of it. Two differences from the public component are
+ * deliberate admin-only chrome, not visual drift: `relative` on the shell
+ * (to host <InactiveBadge>) and a `max-w-[380px]` cap (the public card's
+ * own `sizes` hint — "(min-width: 1024px) 380px" — is what the real
+ * sidebar column constrains it to; without the cap this panel would
+ * stretch to fill whatever width the surrounding form grid gives it).
+ */
+function PromoCardPreview({ data, className }: { data: ContentBlockPreviewData; className?: string }) {
+  const hasCta = Boolean(data.ctaText);
+
+  if (data.imageOnly) {
+    return (
+      <div
+        className={cn(
+          "relative max-w-[380px] overflow-hidden rounded-xl border border-border transition-opacity",
+          !data.isActive && "opacity-50",
+          className,
+        )}
+      >
+        <InactiveBadge isActive={data.isActive} />
+        <div className="relative aspect-video w-full bg-muted">
+          <PreviewImage image={data.image} alt={data.title} fit="cover" />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        "relative flex max-w-[380px] flex-col gap-4 rounded-xl border border-border bg-card p-5 transition-opacity",
+        !data.isActive && "opacity-50",
+        className,
+      )}
+    >
+      <InactiveBadge isActive={data.isActive} />
+      {data.image && (
+        <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
+          <PreviewImage image={data.image} alt={data.title} fit="cover" />
+        </div>
+      )}
+      <h3 className="font-serif text-base font-bold text-primary">{data.title || "Judul kartu promo"}</h3>
+      {data.subtitle && <p className="text-sm text-primary">{data.subtitle}</p>}
+      {hasCta && (
+        <Button variant="accent" className="w-fit" disabled>
+          {data.ctaText}
+        </Button>
+      )}
     </div>
   );
 }

@@ -8,6 +8,7 @@ import {
   deleteContentBlock,
   type AdminContentBlock,
   type ContentBlockInput,
+  type ContentBlockType,
 } from "@/lib/api/content-blocks";
 import { findTypeByValue } from "@/lib/content-blocks/types";
 import type { ApiError } from "@/lib/api/errors";
@@ -38,7 +39,7 @@ export type ContentBlockResult =
   | { ok: true; data: AdminContentBlock }
   | { ok: false; error: string; conflict?: true };
 
-export type CreateContentBlockInput = ContentBlockInput & { type: "hero" | "service_card"; title: string };
+export type CreateContentBlockInput = ContentBlockInput & { type: ContentBlockType; title: string };
 
 // ─── Create / update / delete ──────────────────────────────────────────────
 
@@ -87,7 +88,7 @@ export async function toggleContentBlockActiveAction(id: string, isActive: boole
 
 export async function deleteContentBlockAction(
   id: string,
-  type: "hero" | "service_card",
+  type: ContentBlockType,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const result = await deleteContentBlock(id);
   if (!result.ok) {
@@ -111,7 +112,7 @@ export async function deleteContentBlockAction(
  * first move over tied seed data, which self-heals it permanently).
  */
 export async function moveContentBlockAction(
-  type: "hero" | "service_card",
+  type: ContentBlockType,
   id: string,
   direction: "up" | "down",
 ): Promise<{ ok: true } | { ok: false; error: string }> {

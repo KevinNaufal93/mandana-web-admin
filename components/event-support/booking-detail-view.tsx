@@ -14,7 +14,7 @@ import {
   cancelEventBookingAction,
   completeEventBookingAction,
 } from "@/app/actions/event-support-bookings";
-import { formatIDRFull, formatDateID, formatDateRangeID, toWaNumber } from "@/lib/format";
+import { formatIDRFull, formatDateID, formatDateRangeID, formatDateTimeRangeID, toWaNumber } from "@/lib/format";
 import type { AdminEventBooking } from "@/lib/api/event-support-bookings";
 
 /** Bookings are never edited in place — no PATCH for fields exists.
@@ -64,9 +64,9 @@ export function BookingDetailView({ booking: initialBooking }: { booking: AdminE
               <TableHeader>
                 <TableRow>
                   <TableHead>Item</TableHead>
-                  <TableHead>Tanggal</TableHead>
+                  <TableHead>Jadwal</TableHead>
                   <TableHead className="text-right">Jumlah</TableHead>
-                  <TableHead className="text-right">Harga/hari</TableHead>
+                  <TableHead className="text-right">Tarif</TableHead>
                   <TableHead className="text-right">Subtotal</TableHead>
                 </TableRow>
               </TableHeader>
@@ -79,11 +79,25 @@ export function BookingDetailView({ booking: initialBooking }: { booking: AdminE
                       </Link>
                     </TableCell>
                     <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                      {formatDateRangeID(line.startDate, line.endDate)} · {line.days} hari
+                      {line.dropoffAt && line.pickupAt
+                        ? formatDateTimeRangeID(line.dropoffAt, line.pickupAt)
+                        : formatDateRangeID(line.startDate, line.endDate)}
+                      {" · "}
+                      {line.days} hari
                     </TableCell>
                     <TableCell className="text-right text-sm text-muted-foreground">{line.quantity}</TableCell>
                     <TableCell className="whitespace-nowrap text-right text-sm text-muted-foreground">
-                      {formatIDRFull(line.pricePerDay)}
+                      <p>
+                        {formatIDRFull(line.unitPrice)}/{line.unitLabel}
+                      </p>
+                      <p className="text-xs">
+                        {line.billableUnits} {line.unitLabel}
+                      </p>
+                      {line.extraHours != null && (
+                        <p className="text-xs">
+                          +{line.extraHours} jam · {formatIDRFull(line.extraHoursTotal ?? 0)}
+                        </p>
+                      )}
                     </TableCell>
                     <TableCell className="whitespace-nowrap text-right font-medium text-primary">
                       {formatIDRFull(line.lineTotal)}
@@ -150,7 +164,14 @@ export function BookingDetailView({ booking: initialBooking }: { booking: AdminE
                 <span>{booking.eventLocation}</span>
               </p>
             )}
-            <DetailRow label="Tanggal" value={formatDateRangeID(booking.startDate, booking.endDate)} />
+            <DetailRow
+              label="Tanggal"
+              value={
+                booking.dropoffAt && booking.pickupAt
+                  ? formatDateTimeRangeID(booking.dropoffAt, booking.pickupAt)
+                  : formatDateRangeID(booking.startDate, booking.endDate)
+              }
+            />
             {booking.notes && (
               <div>
                 <p className="text-xs text-muted-foreground">Catatan</p>
