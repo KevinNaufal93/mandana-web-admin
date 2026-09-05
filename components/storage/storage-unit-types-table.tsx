@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import type { AdminStorageUnitType } from "@/lib/api/storage";
 import { formatIDRShort } from "@/lib/format";
 
-const COLUMN_COUNT = 4;
+const COLUMN_COUNT = 5;
 
 export function StorageUnitTypesTable({ rows, hasActiveFilters }: { rows: AdminStorageUnitType[]; hasActiveFilters: boolean }) {
   return (
@@ -16,6 +16,7 @@ export function StorageUnitTypesTable({ rows, hasActiveFilters }: { rows: AdminS
           <TableHead>Tipe unit</TableHead>
           <TableHead>Status</TableHead>
           <TableHead className="text-right">Tarif / bulan</TableHead>
+          <TableHead className="text-right">Tarif / minggu</TableHead>
           <TableHead className="text-right">Durasi min.</TableHead>
         </TableRow>
       </TableHeader>
@@ -41,7 +42,7 @@ function UnitTypeRow({ row }: { row: AdminStorageUnitType }) {
         <Link href={`/storage/unit-types/${row.id}`} className="flex items-center gap-3">
           <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded-md bg-muted">
             {row.image ? (
-              <Image src={row.image.url} alt={row.image.alt ?? row.name} fill className="object-cover" sizes="64px" />
+              <Image src={row.image.url} alt={row.image.alt ?? row.name} fill className="object-contain" sizes="64px" />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-muted-foreground">
                 <ImageOff className="size-4" />
@@ -59,6 +60,13 @@ function UnitTypeRow({ row }: { row: AdminStorageUnitType }) {
       </TableCell>
       <TableCell className="whitespace-nowrap text-right font-medium text-primary">
         {formatIDRShort(row.monthlyRate)}
+      </TableCell>
+      <TableCell className="whitespace-nowrap text-right text-sm">
+        {row.supportsWeekly && row.weeklyRate != null ? (
+          <span className="font-medium text-primary">{formatIDRShort(row.weeklyRate)}</span>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        )}
       </TableCell>
       <TableCell className="text-right text-sm text-muted-foreground">{row.minDurationMonths} bln</TableCell>
     </TableRow>

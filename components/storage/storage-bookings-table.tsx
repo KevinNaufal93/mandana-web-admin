@@ -4,7 +4,7 @@ import { StorageBookingStatusBadge } from "@/components/storage/storage-booking-
 import type { AdminStorageBooking } from "@/lib/api/storage-bookings";
 import { formatIDRFull, formatDateID } from "@/lib/format";
 
-const COLUMN_COUNT = 6;
+const COLUMN_COUNT = 7;
 
 export function StorageBookingsTable({ rows, hasActiveFilters }: { rows: AdminStorageBooking[]; hasActiveFilters: boolean }) {
   return (
@@ -16,6 +16,7 @@ export function StorageBookingsTable({ rows, hasActiveFilters }: { rows: AdminSt
           <TableHead>Status</TableHead>
           <TableHead>Fasilitas / tipe unit</TableHead>
           <TableHead>Mulai</TableHead>
+          <TableHead>Durasi</TableHead>
           <TableHead className="text-right">Total</TableHead>
         </TableRow>
       </TableHeader>
@@ -53,6 +54,9 @@ function BookingRow({ row }: { row: AdminStorageBooking }) {
         {row.facilityName} · {row.unitTypeName} × {row.quantity}
       </TableCell>
       <TableCell className="whitespace-nowrap text-sm text-muted-foreground">{formatDateID(row.startDate)}</TableCell>
+      <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+        {row.duration} {row.unitLabel}
+      </TableCell>
       <TableCell className="whitespace-nowrap text-right font-medium text-primary">{formatIDRFull(row.total)}</TableCell>
     </TableRow>
   );

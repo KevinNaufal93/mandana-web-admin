@@ -2,7 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Pencil, Trash2 } from "lucide-react";
+import Image from "next/image";
+import { ImageOff, Pencil, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DetailCard, DetailRow } from "@/components/ui/detail-card";
@@ -68,6 +69,18 @@ export function StorageFacilityDetailView({ facility: initialFacility }: { facil
       ) : (
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="flex flex-col gap-6 lg:col-span-2">
+            <DetailCard title="Gambar">
+              {facility.image ? (
+                <div className="relative aspect-video w-full max-w-sm overflow-hidden rounded-md bg-muted">
+                  <Image src={facility.image.url} alt={facility.image.alt ?? facility.name} fill className="object-contain" sizes="384px" />
+                </div>
+              ) : (
+                <div className="flex aspect-video w-full max-w-sm items-center justify-center rounded-md border border-dashed border-border text-muted-foreground">
+                  <ImageOff className="size-6" />
+                </div>
+              )}
+            </DetailCard>
+
             <DetailCard title="Deskripsi">
               <RichTextView html={facility.description} />
             </DetailCard>

@@ -34,6 +34,7 @@ export function StorageInventoryDetailView({
   const facility = facilities.find((f) => f.id === inventory.facilityId);
   const unitType = unitTypes.find((t) => t.id === inventory.unitTypeId);
   const effectiveRate = inventory.monthlyRateOverride ?? unitType?.monthlyRate ?? null;
+  const effectiveWeeklyRate = inventory.weeklyRateOverride ?? unitType?.weeklyRate ?? null;
 
   function handleSaved(fresh: AdminStorageInventory) {
     setInventory(fresh);
@@ -100,6 +101,20 @@ export function StorageInventoryDetailView({
               />
               {inventory.monthlyRateOverride != null && (
                 <DetailRow label="Tarif dasar tipe unit" value={unitType ? formatIDRFull(unitType.monthlyRate) : "—"} />
+              )}
+              {unitType?.supportsWeekly && (
+                <>
+                  <DetailRow
+                    label="Tarif efektif / minggu"
+                    value={effectiveWeeklyRate != null ? formatIDRFull(effectiveWeeklyRate) : "—"}
+                  />
+                  {inventory.weeklyRateOverride != null && (
+                    <DetailRow
+                      label="Tarif mingguan dasar tipe unit"
+                      value={unitType.weeklyRate != null ? formatIDRFull(unitType.weeklyRate) : "—"}
+                    />
+                  )}
+                </>
               )}
             </DetailCard>
           </div>

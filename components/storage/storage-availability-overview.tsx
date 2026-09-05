@@ -73,6 +73,7 @@ function FacilityCard({
                   <span className="text-primary">{unitType?.name ?? u.unitTypeSlug}</span>
                   <span className="text-muted-foreground">
                     {u.available}/{u.total} tersedia · {formatIDRShort(u.monthlyRate)}/bln
+                    {u.supportsWeekly && u.weeklyRate != null && ` · ${formatIDRShort(u.weeklyRate)}/mgg`}
                   </span>
                 </div>
               );

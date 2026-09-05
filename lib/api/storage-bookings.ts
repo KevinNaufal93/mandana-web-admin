@@ -25,9 +25,17 @@ export interface AdminStorageBooking {
   unitTypeName: string;
   quantity: number;
   startDate: string;
-  durationMonths: number;
+  /** Present only when durationUnit is "month"; null for a weekly booking. */
+  durationMonths: number | null;
   endDate: string;
-  /** Rupiah */
+  durationUnit: "week" | "month";
+  /** Billable count in durationUnit's unit. */
+  duration: number;
+  /** Rupiah — the rate actually applied per durationUnit. */
+  unitRate: number;
+  /** "bulan" | "minggu" */
+  unitLabel: string;
+  /** Rupiah — the reference monthly rate at booking time (not necessarily what was billed — see unitRate). */
   monthlyRate: number;
   /** Rupiah */
   subtotal: number;

@@ -20,6 +20,8 @@ export interface AdminStorageInventory {
   unitTypeId: string;
   unitTypeSlug: string;
   monthlyRateOverride: number | null;
+  /** Independent of monthlyRateOverride — a facility can override one without the other. */
+  weeklyRateOverride: number | null;
   isActive: boolean;
 }
 
@@ -38,8 +40,14 @@ export const getStorageInventory = cache(async (id: string): Promise<ApiResult<A
 export interface StorageInventoryInput {
   facilityId?: string;
   unitTypeId?: string;
-  /** Rupiah, integer. Overrides the unit type's base monthlyRate for this facility. */
-  monthlyRateOverride?: number;
+  /** Rupiah, integer. Overrides the unit type's base monthlyRate for this facility.
+   *  `null` clears the override back to the unit type's base rate (server:
+   *  `undefined` leaves the stored value untouched, `null` nulls the column)
+   *  — always send `null` for a blanked field on edit, never omit it. */
+  monthlyRateOverride?: number | null;
+  /** Rupiah, integer. Overrides the unit type's base weeklyRate for this facility.
+   *  Same undefined-vs-null rule as monthlyRateOverride. */
+  weeklyRateOverride?: number | null;
   isActive?: boolean;
 }
 

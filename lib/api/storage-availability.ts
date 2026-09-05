@@ -23,6 +23,9 @@ export interface StorageAvailabilityUnitType {
   maintenance: number;
   /** Rupiah, integer */
   monthlyRate: number;
+  /** Rupiah, integer. Already override-resolved, like monthlyRate. Null unless supportsWeekly. */
+  weeklyRate: number | null;
+  supportsWeekly: boolean;
 }
 
 export interface StorageAvailabilityFacility {

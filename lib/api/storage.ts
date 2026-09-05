@@ -49,6 +49,11 @@ export interface AdminStorageUnitType {
   /** Rupiah, integer */
   monthlyRate: number;
   minDurationMonths: number;
+  /** Rupiah, integer. Independent of monthlyRate — null unless supportsWeekly. */
+  weeklyRate: number | null;
+  supportsWeekly: boolean;
+  /** Falls back to 1 when null. */
+  minDurationWeeks: number | null;
   image: StorageImage | null;
   isActive: boolean;
   sortOrder: number;
@@ -99,6 +104,15 @@ export interface StorageUnitTypeInput {
   /** Rupiah, integer */
   monthlyRate?: number;
   minDurationMonths?: number;
+  /** Rupiah, integer. Independent of monthlyRate — set explicitly, never derived.
+   *  `null` clears it (server: `undefined` leaves the stored value untouched,
+   *  `null` nulls the column) — always send `null` for a blanked field on
+   *  edit, never omit it. */
+  weeklyRate?: number | null;
+  /** Requires a positive weeklyRate (here or already on the record) — a 400 otherwise. */
+  supportsWeekly?: boolean;
+  /** `null` clears it (falls back to 1 week) — same undefined-vs-null rule as weeklyRate. */
+  minDurationWeeks?: number | null;
   mediaAssetId?: string;
   isActive?: boolean;
   sortOrder?: number;

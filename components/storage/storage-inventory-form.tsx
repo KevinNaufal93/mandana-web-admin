@@ -51,10 +51,16 @@ export function StorageInventoryForm(props: StorageInventoryFormProps) {
   const [monthlyRateOverride, setMonthlyRateOverride] = useState(
     inventory?.monthlyRateOverride != null ? String(inventory.monthlyRateOverride) : "",
   );
+  const [weeklyRateOverride, setWeeklyRateOverride] = useState(
+    inventory?.weeklyRateOverride != null ? String(inventory.weeklyRateOverride) : "",
+  );
   const [isActive, setIsActive] = useState(inventory?.isActive ?? true);
 
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
+  const selectedUnitType = props.unitTypes.find((t) => t.id === unitTypeId);
+  const weeklySupported = selectedUnitType?.supportsWeekly ?? false;
 
   function handleSubmit() {
     setError(null);
@@ -67,19 +73,33 @@ export function StorageInventoryForm(props: StorageInventoryFormProps) {
       setError("Pilih tipe unit terlebih dahulu.");
       return;
     }
-    let rateOverride: number | undefined;
+    // `null` (not `undefined`) when blank — see StorageInventoryInput's doc
+    // comment: omitting the field leaves the stored override untouched,
+    // `null` explicitly clears it back to the unit type's base rate.
+    let rateOverride: number | null = null;
     if (monthlyRateOverride.trim()) {
-      rateOverride = Number(monthlyRateOverride);
-      if (!Number.isInteger(rateOverride) || rateOverride < 0) {
+      const parsed = Number(monthlyRateOverride);
+      if (!Number.isInteger(parsed) || parsed < 0) {
         setError("Tarif override harus berupa bilangan bulat (Rupiah), 0 atau lebih.");
         return;
       }
+      rateOverride = parsed;
+    }
+    let weeklyRateOverrideNumber: number | null = null;
+    if (weeklyRateOverride.trim()) {
+      const parsed = Number(weeklyRateOverride);
+      if (!Number.isInteger(parsed) || parsed < 0) {
+        setError("Tarif override mingguan harus berupa bilangan bulat (Rupiah), 0 atau lebih.");
+        return;
+      }
+      weeklyRateOverrideNumber = parsed;
     }
 
     const input: StorageInventoryInput = {
       facilityId,
       unitTypeId,
       monthlyRateOverride: rateOverride,
+      weeklyRateOverride: weeklyRateOverrideNumber,
       isActive,
     };
 
@@ -154,6 +174,25 @@ export function StorageInventoryForm(props: StorageInventoryFormProps) {
             placeholder="Kosongkan untuk memakai tarif dasar tipe unit"
             disabled={pending}
           />
+        </Field>
+
+        <Field label="Tarif override / minggu (Rp, opsional)" htmlFor="inventory-weekly-rate-override">
+          <Input
+            id="inventory-weekly-rate-override"
+            type="number"
+            min={0}
+            step={1}
+            value={weeklyRateOverride}
+            onChange={(e) => setWeeklyRateOverride(e.target.value)}
+            placeholder="Kosongkan untuk memakai tarif dasar tipe unit"
+            disabled={pending || !weeklySupported}
+          />
+          {!weeklySupported && (
+            <p className="mt-1.5 text-xs text-muted-foreground">
+              Tipe unit ini belum mengaktifkan sewa mingguan — override di sini tidak berlaku sampai diaktifkan pada
+              tipe unitnya.
+            </p>
+          )}
         </Field>
 
         <label className="mt-1 flex items-center gap-2 text-sm text-primary">

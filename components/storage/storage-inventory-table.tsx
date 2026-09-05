@@ -5,7 +5,7 @@ import type { AdminStorageInventory } from "@/lib/api/storage-inventory";
 import type { AdminStorageFacility, AdminStorageUnitType } from "@/lib/api/storage";
 import { formatIDRFull } from "@/lib/format";
 
-const COLUMN_COUNT = 4;
+const COLUMN_COUNT = 5;
 
 /**
  * Facility/unit-type names aren't on StorageInventoryDto (only ids +
@@ -35,6 +35,7 @@ export function StorageInventoryTable({
           <TableHead>Fasilitas</TableHead>
           <TableHead>Tipe unit</TableHead>
           <TableHead className="text-right">Tarif efektif / bulan</TableHead>
+          <TableHead className="text-right">Tarif efektif / minggu</TableHead>
           <TableHead>Status</TableHead>
         </TableRow>
       </TableHeader>
@@ -65,6 +66,7 @@ function InventoryRow({
   unitType: AdminStorageUnitType | undefined;
 }) {
   const effectiveRate = row.monthlyRateOverride ?? unitType?.monthlyRate ?? null;
+  const effectiveWeeklyRate = row.weeklyRateOverride ?? unitType?.weeklyRate ?? null;
   return (
     <TableRow>
       <TableCell>
@@ -81,6 +83,16 @@ function InventoryRow({
           </span>
         ) : (
           "—"
+        )}
+      </TableCell>
+      <TableCell className="whitespace-nowrap text-right text-sm">
+        {unitType?.supportsWeekly && effectiveWeeklyRate != null ? (
+          <span className={row.weeklyRateOverride != null ? "font-medium text-primary" : "text-muted-foreground"}>
+            {formatIDRFull(effectiveWeeklyRate)}
+            {row.weeklyRateOverride != null && <span className="ml-1 text-xs text-muted-foreground">(override)</span>}
+          </span>
+        ) : (
+          <span className="text-muted-foreground">—</span>
         )}
       </TableCell>
       <TableCell>

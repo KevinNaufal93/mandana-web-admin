@@ -42,7 +42,7 @@ function FacilityRow({ row }: { row: AdminStorageFacility }) {
         <Link href={`/storage/facilities/${row.id}`} className="flex items-center gap-3">
           <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded-md bg-muted">
             {row.image ? (
-              <Image src={row.image.url} alt={row.image.alt ?? row.name} fill className="object-cover" sizes="64px" />
+              <Image src={row.image.url} alt={row.image.alt ?? row.name} fill className="object-contain" sizes="64px" />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-muted-foreground">
                 <ImageOff className="size-4" />

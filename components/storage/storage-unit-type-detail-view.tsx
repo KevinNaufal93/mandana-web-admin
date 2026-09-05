@@ -70,7 +70,7 @@ export function StorageUnitTypeDetailView({ unitType: initialUnitType }: { unitT
             <DetailCard title="Gambar">
               {unitType.image ? (
                 <div className="relative aspect-video w-full max-w-sm overflow-hidden rounded-md bg-muted">
-                  <Image src={unitType.image.url} alt={unitType.image.alt ?? unitType.name} fill className="object-cover" sizes="384px" />
+                  <Image src={unitType.image.url} alt={unitType.image.alt ?? unitType.name} fill className="object-contain" sizes="384px" />
                 </div>
               ) : (
                 <div className="flex aspect-video w-full max-w-sm items-center justify-center rounded-md border border-dashed border-border text-muted-foreground">
@@ -88,6 +88,17 @@ export function StorageUnitTypeDetailView({ unitType: initialUnitType }: { unitT
             <DetailCard title="Spesifikasi">
               <DetailRow label="Tarif / bulan" value={formatIDRFull(unitType.monthlyRate)} />
               <DetailRow label="Durasi minimum" value={`${unitType.minDurationMonths} bulan`} />
+              <DetailRow
+                label="Sewa mingguan"
+                value={
+                  unitType.supportsWeekly && unitType.weeklyRate != null
+                    ? `${formatIDRFull(unitType.weeklyRate)} / minggu`
+                    : "Tidak aktif"
+                }
+              />
+              {unitType.supportsWeekly && (
+                <DetailRow label="Durasi minimum (mingguan)" value={`${unitType.minDurationWeeks ?? 1} minggu`} />
+              )}
               {unitType.volumeM3 != null && <DetailRow label="Volume" value={`${unitType.volumeM3} m³`} />}
               {unitType.dimensions && (
                 <DetailRow

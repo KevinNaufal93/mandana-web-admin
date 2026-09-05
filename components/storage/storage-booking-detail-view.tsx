@@ -81,13 +81,13 @@ export function StorageBookingDetailView({ booking: initialBooking }: { booking:
             <DetailRow label="Tipe unit" value={booking.unitTypeName} />
             <DetailRow label="Jumlah unit" value={booking.quantity} />
             <DetailRow label="Mulai" value={formatDateID(booking.startDate)} />
-            <DetailRow label="Durasi" value={`${booking.durationMonths} bulan`} />
+            <DetailRow label="Durasi" value={`${booking.duration} ${booking.unitLabel}`} />
             <DetailRow label="Berakhir" value={formatDateID(booking.endDate)} />
 
             <div className="mt-3 flex flex-col items-end gap-1 border-t border-border pt-3 text-sm">
               <div className="flex w-56 justify-between">
-                <span className="text-muted-foreground">Tarif / bulan</span>
-                <span className="text-primary">{formatIDRFull(booking.monthlyRate)}</span>
+                <span className="text-muted-foreground">Tarif / {booking.unitLabel}</span>
+                <span className="text-primary">{formatIDRFull(booking.unitRate)}</span>
               </div>
               <div className="flex w-56 justify-between">
                 <span className="text-muted-foreground">Subtotal</span>

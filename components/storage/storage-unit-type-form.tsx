@@ -53,6 +53,11 @@ export function StorageUnitTypeForm(props: StorageUnitTypeFormProps) {
   const [heightCm, setHeightCm] = useState(unitType?.dimensions ? String(unitType.dimensions.heightCm) : "");
   const [monthlyRate, setMonthlyRate] = useState(unitType ? String(unitType.monthlyRate) : "");
   const [minDurationMonths, setMinDurationMonths] = useState(unitType ? String(unitType.minDurationMonths) : "1");
+  const [weeklyRate, setWeeklyRate] = useState(unitType?.weeklyRate != null ? String(unitType.weeklyRate) : "");
+  const [supportsWeekly, setSupportsWeekly] = useState(unitType?.supportsWeekly ?? false);
+  const [minDurationWeeks, setMinDurationWeeks] = useState(
+    unitType?.minDurationWeeks != null ? String(unitType.minDurationWeeks) : "",
+  );
   const [isActive, setIsActive] = useState(unitType?.isActive ?? true);
   const [sortOrder, setSortOrder] = useState(unitType ? String(unitType.sortOrder) : "0");
   const [image, setImage] = useState<ImagePickerValue>({
@@ -79,6 +84,37 @@ export function StorageUnitTypeForm(props: StorageUnitTypeFormProps) {
     if (!Number.isInteger(minDuration) || minDuration < 1) {
       setError("Durasi minimum harus berupa bilangan bulat, minimal 1 bulan.");
       return;
+    }
+    // `null` (not `undefined`) when blank — the API distinguishes "field
+    // omitted, leave stored value alone" from "field explicitly null,
+    // clear it" (see StorageUnitTypeInput's doc comment), and a blanked
+    // input here always means the latter, on both create and edit.
+    let weekly: number | null = null;
+    if (weeklyRate.trim()) {
+      const parsed = Number(weeklyRate);
+      if (!Number.isInteger(parsed) || parsed < 0) {
+        setError("Tarif mingguan harus berupa bilangan bulat (Rupiah), 0 atau lebih.");
+        return;
+      }
+      weekly = parsed;
+    }
+    // Mirrors the server invariant (assertWeeklyRateInvariant) — catch it
+    // here too so the error appears next to the checkbox, not after a
+    // round-trip to the API. Uses `weekly` directly (not a fallback to the
+    // stored value) since a blank field is about to clear the rate, not
+    // leave it as-is.
+    if (supportsWeekly && !(weekly != null && weekly > 0)) {
+      setError("Aktifkan sewa mingguan membutuhkan tarif mingguan lebih dari 0.");
+      return;
+    }
+    let minWeeks: number | null = null;
+    if (minDurationWeeks.trim()) {
+      const parsed = Number(minDurationWeeks);
+      if (!Number.isInteger(parsed) || parsed < 1) {
+        setError("Durasi minimum mingguan harus berupa bilangan bulat, minimal 1 minggu.");
+        return;
+      }
+      minWeeks = parsed;
     }
     const sortOrderNumber = Number(sortOrder);
     if (!Number.isInteger(sortOrderNumber) || sortOrderNumber < 0) {
@@ -123,6 +159,9 @@ export function StorageUnitTypeForm(props: StorageUnitTypeFormProps) {
       heightCm: height,
       monthlyRate: rate,
       minDurationMonths: minDuration,
+      weeklyRate: weekly,
+      supportsWeekly,
+      minDurationWeeks: minWeeks,
       mediaAssetId: image.mediaAssetId ?? undefined,
       isActive,
       sortOrder: sortOrderNumber,
@@ -262,6 +301,42 @@ export function StorageUnitTypeForm(props: StorageUnitTypeFormProps) {
                 disabled={pending}
               />
             </Field>
+            <div className="mt-1 flex flex-col gap-3 border-t border-border pt-3">
+              <label className="flex items-center gap-2 text-sm text-primary">
+                <input
+                  type="checkbox"
+                  className="accent-primary"
+                  checked={supportsWeekly}
+                  onChange={(e) => setSupportsWeekly(e.target.checked)}
+                  disabled={pending}
+                />
+                Aktifkan sewa mingguan
+              </label>
+              <Field label="Tarif mingguan (Rp)" htmlFor="unit-type-weekly-rate">
+                <Input
+                  id="unit-type-weekly-rate"
+                  type="number"
+                  min={0}
+                  step={1}
+                  value={weeklyRate}
+                  onChange={(e) => setWeeklyRate(e.target.value)}
+                  placeholder="Independen dari tarif bulanan"
+                  disabled={pending}
+                />
+              </Field>
+              <Field label="Durasi minimum (minggu, opsional)" htmlFor="unit-type-min-duration-weeks">
+                <Input
+                  id="unit-type-min-duration-weeks"
+                  type="number"
+                  min={1}
+                  step={1}
+                  value={minDurationWeeks}
+                  onChange={(e) => setMinDurationWeeks(e.target.value)}
+                  placeholder="Baku ke 1 minggu bila dikosongkan"
+                  disabled={pending}
+                />
+              </Field>
+            </div>
             <Field label="Urutan" htmlFor="unit-type-sort-order">
               <Input
                 id="unit-type-sort-order"
