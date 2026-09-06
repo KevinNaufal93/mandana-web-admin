@@ -31,3 +31,18 @@ export const NAV_ITEMS: NavItem[] = [
 export function isNavItemActive(href: string, pathname: string): boolean {
   return href === "/" ? pathname === "/" : pathname.startsWith(href);
 }
+
+export interface TitleOnlyRoute {
+  href: string;
+  label: string;
+}
+
+/**
+ * Routes that need a topbar title but must NOT appear in the sidebar rail.
+ * The notification bell is /notifications' only entry point, so listing it
+ * a second time in NAV_ITEMS would be redundant navigation for a page nobody
+ * is meant to browse to directly. Kept as its own list (rather than adding
+ * an `inNav: boolean` flag to NAV_ITEMS) so NAV_ITEMS stays exactly what
+ * <AppSidebar> renders, unchanged.
+ */
+export const TITLE_ONLY_ROUTES: TitleOnlyRoute[] = [{ href: "/notifications", label: "Notifikasi" }];

@@ -239,7 +239,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get a single published property by slug */
+        /**
+         * Get a single published property by slug
+         * @description Includes `promoCards` — admin-managed cards for the sidebar directly below the agent card, always an array, empty when nothing is active/matching.
+         */
         get: operations["PropertiesController_findOne_v1"];
         put?: never;
         post?: never;
@@ -350,6 +353,42 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/content-blocks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List content blocks (admin) — hero slides, service cards, property promo cards, etc. Filter with ?type= */
+        get: operations["ContentBlocksController_findAll_v1"];
+        put?: never;
+        /** Create a content block */
+        post: operations["ContentBlocksController_create_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/content-blocks/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a content block */
+        delete: operations["ContentBlocksController_remove_v1"];
+        options?: never;
+        head?: never;
+        /** Update a content block */
+        patch: operations["ContentBlocksController_update_v1"];
+        trace?: never;
+    };
     "/api/v1/inquiries": {
         parameters: {
             query?: never;
@@ -400,42 +439,6 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/content-blocks": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List content blocks (admin) — hero slides, service cards, etc. Filter with ?type= */
-        get: operations["ContentBlocksController_findAll_v1"];
-        put?: never;
-        /** Create a content block */
-        post: operations["ContentBlocksController_create_v1"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/content-blocks/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** Delete a content block */
-        delete: operations["ContentBlocksController_remove_v1"];
-        options?: never;
-        head?: never;
-        /** Update a content block */
-        patch: operations["ContentBlocksController_update_v1"];
         trace?: never;
     };
     "/api/v1/collections/{slug}": {
@@ -837,7 +840,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Update a booking's internal note — status changes exclusively through /confirm, /reject, /cancel, /complete below */
+        /** Update a booking’s internal note — status changes exclusively through /confirm, /reject, /cancel, /complete below */
         patch: operations["MovingBookingsAdminController_update_v1"];
         trace?: never;
     };
@@ -907,6 +910,108 @@ export interface paths {
         head?: never;
         /** Mark a confirmed booking as completed (move carried out) */
         patch: operations["MovingBookingsAdminController_complete_v1"];
+        trace?: never;
+    };
+    "/api/v1/admin/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List booking notifications across Moving/Storage/Event Support (paginated; filter by sourceModule and unresolved/all) */
+        get: operations["NotificationsAdminController_findAll_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/notifications/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Badge counts for the bell: unresolvedCount (still pending -- never decremented by reading) and unreadCount */
+        get: operations["NotificationsAdminController_summary_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/notifications/{id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Mark one notification read -- does not resolve it */
+        patch: operations["NotificationsAdminController_markRead_v1"];
+        trace?: never;
+    };
+    "/api/v1/admin/notifications/read-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Mark every unread notification read -- does not resolve any of them; unresolvedCount is unaffected */
+        patch: operations["NotificationsAdminController_markAllRead_v1"];
+        trace?: never;
+    };
+    "/api/v1/admin/notifications/stream-ticket": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mint a 60s single-purpose ticket for the admin SSE stream -- EventSource cannot send an Authorization header, so GET /admin/notifications/stream authenticates via ?ticket= instead of Bearer */
+        post: operations["NotificationsAdminController_issueStreamTicket_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/notifications/stream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** SSE stream of notification.created / notification.resolved / notification.read events for the admin panel. Auth via short-lived ?ticket= (see POST /admin/notifications/stream-ticket) -- EventSource cannot send an Authorization header. */
+        get: operations["NotificationsAdminStreamController_stream_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/storage/unit-types": {
@@ -1235,7 +1340,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List storage bookings (paginated, filterable by status/facility/unit type) */
+        /** List storage bookings (paginated; filter by status, facility, unit type, capture-date range, rental-window range, and free-text search over reference/customer name/phone/email; sortable by createdAt/reference/total/startDate) */
         get: operations["StorageBookingsAdminController_findAll_v1"];
         put?: never;
         post?: never;
@@ -1506,6 +1611,23 @@ export interface paths {
         patch: operations["EventSupportAdminController_updateItemStatus_v1"];
         trace?: never;
     };
+    "/api/v1/event-support/bookings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit an Event Support booking request — status starts pending; an admin confirms it. Prices the same cart POST /event-support/quote would, and does not reserve stock until confirmed. */
+        post: operations["EventBookingsController_create_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/event-support/bookings": {
         parameters: {
             query?: never;
@@ -1513,7 +1635,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List event-support bookings (paginated, filterable by status/date range/search) */
+        /** List event-support bookings (paginated; filter by status, capture-date range, event-window range, and free-text search over reference/customer name/phone/email; sortable by createdAt/reference/total/startDate). BREAKING CHANGE: from/to now filter by capture date (createdAt) — the old event-window filter is startFrom/startTo. */
         get: operations["EventBookingsAdminController_findAll_v1"];
         put?: never;
         /** Record a booking made over WhatsApp — status starts pending; confirming it is a separate step. Does not reserve stock until confirmed. */
@@ -1662,6 +1784,115 @@ export interface components {
         };
         RefreshTokenDto: {
             refreshToken: string;
+        };
+        PropertyTypeRefDto: {
+            id: string;
+            name: string;
+            slug: string;
+        };
+        PropertyMediaImageDto: {
+            url: string;
+            srcset: string;
+            /** @description Empty when this asset has no AVIF variants — only hero-purpose uploads generate AVIF. */
+            srcsetAvif: string;
+            /** @description ~20px WebP data: URI for an instant blurred paint; null until backfilled for pre-existing assets. */
+            placeholder: string | null;
+            alt: string | null;
+            width: number;
+            height: number;
+        };
+        PropertyImageDto: {
+            url: string;
+            srcset: string;
+            /** @description Empty when this asset has no AVIF variants — only hero-purpose uploads generate AVIF. */
+            srcsetAvif: string;
+            /** @description ~20px WebP data: URI for an instant blurred paint; null until backfilled for pre-existing assets. */
+            placeholder: string | null;
+            alt: string | null;
+            width: number;
+            height: number;
+            id: string;
+            isCover: boolean;
+            sortOrder: number;
+        };
+        PropertyAmenityDto: {
+            id: string;
+            slug: string;
+            name: string;
+            icon?: string | null;
+            category?: string | null;
+        };
+        PropertyAgentDto: {
+            id: string;
+            name: string;
+            title?: string | null;
+            phone?: string | null;
+            whatsapp?: string | null;
+            photo?: components["schemas"]["PropertyMediaImageDto"] | null;
+        };
+        PropertyPromoCardDto: {
+            id: string;
+            title?: string | null;
+            /** @description The card's body copy (renamed from the admin's `subtitle`). */
+            body?: string | null;
+            ctaText?: string | null;
+            /** @description The card's CTA target (renamed from the admin's `link`). */
+            ctaLink?: string | null;
+            /** @description When true, the artwork already carries the copy — render the image alone, no title/body/button overlay. */
+            imageOnly: boolean;
+            sortOrder: number;
+            image?: components["schemas"]["PropertyMediaImageDto"] | null;
+        };
+        PropertyDetailDto: {
+            id: string;
+            slug: string;
+            title: string;
+            /** @enum {string} */
+            listingType: "sale" | "rent" | "new";
+            /** @description Handover/completion date (YYYY-MM-DD). Only meaningful when listingType is "new". */
+            handoverDate?: string | null;
+            /**
+             * @description Only meaningful when listingType is "new".
+             * @enum {string|null}
+             */
+            constructionStatus?: "ready" | "under_construction" | null;
+            price?: number | null;
+            currency: string;
+            bedrooms?: number | null;
+            bathrooms?: number | null;
+            areaSqm?: number | null;
+            area?: string | null;
+            city?: string | null;
+            province?: string | null;
+            propertyType?: components["schemas"]["PropertyTypeRefDto"] | null;
+            cover?: components["schemas"]["PropertyMediaImageDto"] | null;
+            /** @description Sanitized HTML rich text. */
+            description?: string | null;
+            /** @description Plain-text derivative of `description` (HTML stripped) — SEO meta, share previews. */
+            descriptionText?: string | null;
+            /** @description Fuzzed within `approximateRadiusM` metres of the real location. */
+            latitude?: number | null;
+            /** @description Fuzzed within `approximateRadiusM` metres of the real location. */
+            longitude?: number | null;
+            /** @enum {string} */
+            locationPrecision: "approximate";
+            /** @description Radius, in metres, the coordinates above were fuzzed within. */
+            approximateRadiusM: number;
+            /** @enum {string} */
+            status: "draft" | "published" | "archived";
+            isFeatured: boolean;
+            images: components["schemas"]["PropertyImageDto"][];
+            amenities: components["schemas"]["PropertyAmenityDto"][];
+            agent?: components["schemas"]["PropertyAgentDto"] | null;
+            /** @description Admin-managed promo cards for the sidebar, directly below the agent card — always an array, [] when nothing is active/matching for this listingType. The server resolves isActive and the listing-type scope and returns them pre-ordered by sortOrder; the client renders whatever it is given, in order, and nothing when the array is empty. */
+            promoCards: components["schemas"]["PropertyPromoCardDto"][];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        PropertyDetailResponseDto: {
+            data: components["schemas"]["PropertyDetailDto"];
         };
         CreatePropertyDto: {
             /**
@@ -1812,6 +2043,66 @@ export interface components {
             /** @description Marks this as the cover image; clears existing cover */
             isCover?: boolean;
         };
+        CreateContentBlockDto: {
+            /** @enum {string} */
+            type: "hero" | "service_card" | "property_promo";
+            /** @description Required regardless of type. */
+            title: string;
+            /** @description Hero: the slide's secondary line. Service card: its description. Promo card: its body copy. Same field, same visual role in all three. */
+            subtitle?: string;
+            /**
+             * @description Hero or promo card: the CTA button's label. Ignored for service_card.
+             * @example Lihat Properti
+             */
+            ctaText?: string;
+            /**
+             * @description Hero: the CTA target. Service card: its href. Promo card: its CTA target. Same field.
+             * @example /properties?listingType=sale
+             */
+            link?: string;
+            /** @description MediaAsset UUID (upload first via POST /admin/media). Required when type=hero, or when imageOnly=true — either case renders nothing without an image. Optional otherwise. */
+            mediaAssetId?: string;
+            /** @default 0 */
+            sortOrder: number;
+            /** @default true */
+            isActive: boolean;
+            /**
+             * @description Hero, service card, or promo card: when true, the public site renders just the image (the artwork already has the title/description baked in) and skips the text overlay. Requires mediaAssetId.
+             * @default false
+             */
+            imageOnly: boolean;
+            /** @description property_promo only: restrict the card to these listing types. Omit or send an empty array for every listing type. 400 if set on any other type. */
+            listingTypeScope?: ("sale" | "rent" | "new")[];
+        };
+        UpdateContentBlockDto: {
+            /** @enum {string} */
+            type?: "hero" | "service_card" | "property_promo";
+            /** @description Required regardless of type. */
+            title?: string;
+            /** @description Hero: the slide's secondary line. Service card: its description. Promo card: its body copy. Same field, same visual role in all three. */
+            subtitle?: string;
+            /**
+             * @description Hero or promo card: the CTA button's label. Ignored for service_card.
+             * @example Lihat Properti
+             */
+            ctaText?: string;
+            /**
+             * @description Hero: the CTA target. Service card: its href. Promo card: its CTA target. Same field.
+             * @example /properties?listingType=sale
+             */
+            link?: string;
+            /** @default 0 */
+            sortOrder: number;
+            /** @default true */
+            isActive: boolean;
+            /**
+             * @description Hero, service card, or promo card: when true, the public site renders just the image (the artwork already has the title/description baked in) and skips the text overlay. Requires mediaAssetId.
+             * @default false
+             */
+            imageOnly: boolean;
+            mediaAssetId?: string | null;
+            listingTypeScope?: ("sale" | "rent" | "new")[] | null;
+        };
         CreateInquiryDto: {
             /** @example Budi Santoso */
             name: string;
@@ -1823,63 +2114,6 @@ export interface components {
             message: string;
             /** @description UUID of the property this inquiry relates to */
             propertyId?: string;
-        };
-        CreateContentBlockDto: {
-            /** @enum {string} */
-            type: "hero" | "service_card";
-            /** @description Required regardless of type. */
-            title: string;
-            /** @description Hero: the slide's secondary line. Service card: its description. Same field, same visual role either way. */
-            subtitle?: string;
-            /**
-             * @description Hero-only: the CTA button's label. Ignored for other types.
-             * @example Lihat Properti
-             */
-            ctaText?: string;
-            /**
-             * @description Hero: the CTA target. Service card: its href. Same field.
-             * @example /properties?listingType=sale
-             */
-            link?: string;
-            /** @description MediaAsset UUID (upload first via POST /admin/media). Required when type=hero, or when imageOnly=true — either case renders nothing without an image. Optional otherwise. */
-            mediaAssetId?: string;
-            /** @default 0 */
-            sortOrder: number;
-            /** @default true */
-            isActive: boolean;
-            /**
-             * @description Hero or service card: when true, the public site renders just the image (the artwork already has the title/description baked in) and skips the text overlay. Requires mediaAssetId.
-             * @default false
-             */
-            imageOnly: boolean;
-        };
-        UpdateContentBlockDto: {
-            /** @enum {string} */
-            type?: "hero" | "service_card";
-            /** @description Required regardless of type. */
-            title?: string;
-            /** @description Hero: the slide's secondary line. Service card: its description. Same field, same visual role either way. */
-            subtitle?: string;
-            /**
-             * @description Hero-only: the CTA button's label. Ignored for other types.
-             * @example Lihat Properti
-             */
-            ctaText?: string;
-            /**
-             * @description Hero: the CTA target. Service card: its href. Same field.
-             * @example /properties?listingType=sale
-             */
-            link?: string;
-            /** @default 0 */
-            sortOrder: number;
-            /** @default true */
-            isActive: boolean;
-            /**
-             * @description Hero or service card: when true, the public site renders just the image (the artwork already has the title/description baked in) and skips the text overlay. Requires mediaAssetId.
-             * @default false
-             */
-            imageOnly: boolean;
-            mediaAssetId?: string | null;
         };
         CreateCollectionDto: {
             /**
@@ -2560,6 +2794,10 @@ export interface components {
         MovingBookingResponseDto: {
             data: components["schemas"]["MovingBookingDto"];
         };
+        /** @enum {string} */
+        SortOrder: "asc" | "desc";
+        /** @enum {string} */
+        MovingBookingSort: "createdAt" | "reference" | "total";
         MovingBookingAdminDto: {
             id: string;
             /** @example MDN-MOV-A7K92X */
@@ -2634,6 +2872,57 @@ export interface components {
              */
             adminNote?: string;
         };
+        /** @enum {string} */
+        NotificationFilter: "all" | "unresolved";
+        AdminNotificationDto: {
+            id: string;
+            /** @enum {string} */
+            sourceModule: "moving" | "storage" | "event_support";
+            /** @description uuid of the booking row in its own module’s table */
+            sourceId: string;
+            reference: string;
+            customerName?: string | null;
+            /** @description Rupiah */
+            total: number;
+            /** @enum {string} */
+            origin: "customer" | "admin";
+            readAt?: string | null;
+            resolvedAt?: string | null;
+            /** @description The status the booking landed on — module-specific values (e.g. "confirmed", "rejected"); null while still pending */
+            resolvedStatus?: string | null;
+            createdAt: string;
+        };
+        NotificationPaginationMetaDto: {
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+        };
+        NotificationListResponseDto: {
+            data: components["schemas"]["AdminNotificationDto"][];
+            meta: components["schemas"]["NotificationPaginationMetaDto"];
+        };
+        NotificationSummaryDto: {
+            /** @description Bookings still pending — never decremented by reading */
+            unresolvedCount: number;
+            /** @description Notifications with no readAt yet */
+            unreadCount: number;
+        };
+        NotificationSummaryResponseDto: {
+            data: components["schemas"]["NotificationSummaryDto"];
+        };
+        NotificationStreamTicketDto: {
+            /** @description Pass as ?ticket= on GET /admin/notifications/stream */
+            ticket: string;
+            /**
+             * @description Seconds until the ticket expires
+             * @example 60
+             */
+            expiresIn: number;
+        };
+        NotificationStreamTicketResponseDto: {
+            data: components["schemas"]["NotificationStreamTicketDto"];
+        };
         StorageDimensionsDto: {
             lengthCm: number;
             widthCm: number;
@@ -2661,6 +2950,10 @@ export interface components {
             /** @description Rupiah, integer */
             monthlyRate: number;
             minDurationMonths: number;
+            /** @description Rupiah, integer. Independent of monthlyRate. */
+            weeklyRate?: number | null;
+            supportsWeekly: boolean;
+            minDurationWeeks?: number | null;
             image?: components["schemas"]["StorageImageDto"] | null;
             isActive: boolean;
             sortOrder: number;
@@ -2698,6 +2991,9 @@ export interface components {
             maintenance: number;
             /** @description Rupiah, integer */
             monthlyRate: number;
+            /** @description Rupiah, integer. Already override-resolved, like monthlyRate. */
+            weeklyRate?: number | null;
+            supportsWeekly: boolean;
         };
         StorageAvailabilityLayoutUnitDto: {
             code: string;
@@ -2751,8 +3047,22 @@ export interface components {
              * @example 1
              */
             quantity: number;
-            /** @example 6 */
-            durationMonths: number;
+            /**
+             * @description Legacy field, still accepted — equivalent to durationUnit: "month". Provide exactly one of durationMonths or (durationUnit + duration).
+             * @example 6
+             */
+            durationMonths?: number;
+            /**
+             * @description Required together with `duration`.
+             * @example week
+             * @enum {string}
+             */
+            durationUnit?: "week" | "month";
+            /**
+             * @description Billable count in durationUnit's unit — up to 60 for months, 260 for weeks. Deliberately NOT @IsOptional(): the validator below must run whether or not this field is present, to catch the case where both durationMonths and duration are missing. It performs its own int/range check when this field is the active one.
+             * @example 3
+             */
+            duration?: number;
         };
         StorageQuoteFacilityDto: {
             slug: string;
@@ -2765,12 +3075,25 @@ export interface components {
         StorageQuoteDto: {
             facility: components["schemas"]["StorageQuoteFacilityDto"];
             unitType: components["schemas"]["StorageQuoteUnitTypeDto"];
-            /** @description Rupiah */
+            /** @description Rupiah — the reference monthly rate, always present regardless of durationUnit */
             monthlyRate: number;
             quantity: number;
-            durationMonths: number;
+            /** @description Present only when durationUnit is "month"; null for a weekly quote. */
+            durationMonths?: number | null;
+            /** @enum {string} */
+            durationUnit: "week" | "month";
+            /** @description Billable count in durationUnit's unit */
+            duration: number;
+            /** @description Rupiah — the rate actually applied per durationUnit */
+            unitRate: number;
+            /**
+             * @description "bulan" | "minggu"
+             * @example bulan
+             */
+            unitLabel: string;
             /** @description Rupiah */
             subtotal: number;
+            /** @description Always 0 for a weekly quote — the duration-discount tiers are month-only. */
             discountPct: number;
             /** @description Rupiah */
             discountAmount: number;
@@ -2825,6 +3148,21 @@ export interface components {
              * @example 1
              */
             minDurationMonths: number;
+            /**
+             * @description Rupiah, integer. Independent of monthlyRate, never derived from it — set explicitly for every unit type opted into weekly pricing.
+             * @example 200000
+             */
+            weeklyRate?: number;
+            /**
+             * @description Opts this unit type into weekly pricing. Requires a positive weeklyRate (here or already on the record) — enabling this without one is a 400.
+             * @default false
+             */
+            supportsWeekly: boolean;
+            /**
+             * @description Falls back to 1 when unset.
+             * @example 1
+             */
+            minDurationWeeks?: number;
             /** @description Upload an image first via POST /admin/media/upload, then pass its id */
             mediaAssetId?: string;
             /** @default true */
@@ -2872,6 +3210,21 @@ export interface components {
              * @example 1
              */
             minDurationMonths: number;
+            /**
+             * @description Rupiah, integer. Independent of monthlyRate, never derived from it — set explicitly for every unit type opted into weekly pricing.
+             * @example 200000
+             */
+            weeklyRate?: number;
+            /**
+             * @description Opts this unit type into weekly pricing. Requires a positive weeklyRate (here or already on the record) — enabling this without one is a 400.
+             * @default false
+             */
+            supportsWeekly: boolean;
+            /**
+             * @description Falls back to 1 when unset.
+             * @example 1
+             */
+            minDurationWeeks?: number;
             /** @description Upload an image first via POST /admin/media/upload, then pass its id */
             mediaAssetId?: string;
             /** @default true */
@@ -2956,6 +3309,7 @@ export interface components {
             unitTypeId: string;
             unitTypeSlug: string;
             monthlyRateOverride?: number | null;
+            weeklyRateOverride?: number | null;
             isActive: boolean;
         };
         StorageInventoryListResponseDto: {
@@ -2971,6 +3325,8 @@ export interface components {
             unitTypeId: string;
             /** @description Rupiah, integer. Overrides the unit type's base monthlyRate for this facility. */
             monthlyRateOverride?: number;
+            /** @description Rupiah, integer. Overrides the unit type's base weeklyRate for this facility — independent of monthlyRateOverride. */
+            weeklyRateOverride?: number;
             /** @default true */
             isActive: boolean;
         };
@@ -2981,6 +3337,8 @@ export interface components {
             unitTypeId?: string;
             /** @description Rupiah, integer. Overrides the unit type's base monthlyRate for this facility. */
             monthlyRateOverride?: number;
+            /** @description Rupiah, integer. Overrides the unit type's base weeklyRate for this facility — independent of monthlyRateOverride. */
+            weeklyRateOverride?: number;
             /** @default true */
             isActive: boolean;
         };
@@ -3126,8 +3484,22 @@ export interface components {
              * @example 2026-09-01
              */
             startDate: string;
-            /** @example 6 */
-            durationMonths: number;
+            /**
+             * @description Legacy field, still accepted — equivalent to durationUnit: "month". Provide exactly one of durationMonths or (durationUnit + duration).
+             * @example 6
+             */
+            durationMonths?: number;
+            /**
+             * @description Required together with `duration`.
+             * @example week
+             * @enum {string}
+             */
+            durationUnit?: "week" | "month";
+            /**
+             * @description Billable count in durationUnit's unit — up to 60 for months, 260 for weeks. Deliberately NOT @IsOptional() — see QuoteStorageDto.duration.
+             * @example 3
+             */
+            duration?: number;
         };
         StorageBookingDto: {
             id: string;
@@ -3143,9 +3515,19 @@ export interface components {
             unitTypeName: string;
             quantity: number;
             startDate: string;
-            durationMonths: number;
+            durationMonths?: number | null;
             endDate: string;
-            /** @description Rupiah */
+            /** @enum {string} */
+            durationUnit: "week" | "month";
+            duration: number;
+            /** @description Rupiah — the rate actually applied per durationUnit */
+            unitRate: number;
+            /**
+             * @description "bulan" | "minggu"
+             * @example bulan
+             */
+            unitLabel: string;
+            /** @description Rupiah — the reference monthly rate */
             monthlyRate: number;
             /** @description Rupiah */
             subtotal: number;
@@ -3163,6 +3545,8 @@ export interface components {
         StorageBookingResponseDto: {
             data: components["schemas"]["StorageBookingDto"];
         };
+        /** @enum {string} */
+        StorageBookingSort: "createdAt" | "reference" | "total" | "startDate";
         StorageBookingAdminDto: {
             id: string;
             reference: string;
@@ -3178,9 +3562,19 @@ export interface components {
             unitTypeName: string;
             quantity: number;
             startDate: string;
-            durationMonths: number;
+            durationMonths?: number | null;
             endDate: string;
-            /** @description Rupiah */
+            /** @enum {string} */
+            durationUnit: "week" | "month";
+            duration: number;
+            /** @description Rupiah — the rate actually applied per durationUnit */
+            unitRate: number;
+            /**
+             * @description "bulan" | "minggu"
+             * @example bulan
+             */
+            unitLabel: string;
+            /** @description Rupiah — the reference monthly rate */
             monthlyRate: number;
             /** @description Rupiah */
             subtotal: number;
@@ -3560,6 +3954,66 @@ export interface components {
             /** @enum {string} */
             status: "draft" | "published" | "archived";
         };
+        CreatePublicEventBookingDto: {
+            /**
+             * @description Drop-off timestamp, naive local datetime (Asia/Jakarta)
+             * @example 2026-03-01T09:00
+             */
+            dropoffAt: string;
+            /**
+             * @description Pickup timestamp, naive local datetime (Asia/Jakarta)
+             * @example 2026-03-01T17:00
+             */
+            pickupAt: string;
+            /** @example Balai Sarbini, Jakarta Selatan */
+            eventLocation?: string;
+            items: components["schemas"]["QuoteEventSupportItemDto"][];
+            /** @example Budi Santoso */
+            customerName: string;
+            /** @example +628123456789 */
+            phone?: string;
+            /** @example budi@example.com */
+            email?: string;
+            /** @example Perlu akses loading dock jam 08:00 */
+            notes?: string;
+        };
+        EventBookingPublicDto: {
+            id: string;
+            /** @example MDN-EVT-A7K92X */
+            reference: string;
+            /** @enum {string} */
+            status: "pending" | "confirmed" | "cancelled" | "completed";
+            customerName: string;
+            phone?: string | null;
+            email?: string | null;
+            eventLocation?: string | null;
+            notes?: string | null;
+            dropoffAt: string;
+            pickupAt: string;
+            /** @description Derived cart-wide calendar span */
+            startDate: string;
+            endDate: string;
+            /** @description true when the lines were priced under different billingModes */
+            isMixedBilling: boolean;
+            lines: components["schemas"]["EventQuoteLineDto"][];
+            /** @description Rupiah, integer */
+            subtotal: number;
+            /** @description Rupiah, integer */
+            discountAmount: number;
+            /** @description Rupiah, integer */
+            total: number;
+            /** @example IDR */
+            currency: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** @description Prefilled Indonesian WhatsApp message, including the booking reference; the FE appends its own number */
+            whatsappMessage: string;
+        };
+        EventBookingPublicResponseDto: {
+            data: components["schemas"]["EventBookingPublicDto"];
+        };
+        /** @enum {string} */
+        EventBookingSort: "createdAt" | "reference" | "total" | "startDate";
         EventBookingLineDto: {
             id: string;
             itemId: string;
@@ -4100,7 +4554,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PropertyDetailResponseDto"];
+                };
             };
         };
     };
@@ -4311,6 +4767,89 @@ export interface operations {
             };
         };
     };
+    ContentBlocksController_findAll_v1: {
+        parameters: {
+            query?: {
+                /** @description Omit to list every type together. */
+                type?: "hero" | "service_card" | "property_promo";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ContentBlocksController_create_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateContentBlockDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ContentBlocksController_remove_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ContentBlocksController_update_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateContentBlockDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     InquiriesController_create_v1: {
         parameters: {
             query?: never;
@@ -4385,89 +4924,6 @@ export interface operations {
         requestBody?: never;
         responses: {
             204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    ContentBlocksController_findAll_v1: {
-        parameters: {
-            query?: {
-                /** @description Omit to list every type together. */
-                type?: "hero" | "service_card";
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    ContentBlocksController_create_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateContentBlockDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    ContentBlocksController_remove_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    ContentBlocksController_update_v1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateContentBlockDto"];
-            };
-        };
-        responses: {
-            200: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5139,17 +5595,15 @@ export interface operations {
             query?: {
                 page?: number;
                 limit?: number;
-                status?: "pending" | "confirmed" | "rejected" | "cancelled" | "completed";
                 /** @description Case-insensitive substring match over reference, customer name, phone, and email */
                 search?: string;
                 /** @description Bookings captured on or after this Jakarta calendar day (inclusive, based on createdAt) */
                 from?: string;
                 /** @description Bookings captured on or before this Jakarta calendar day — the whole day counts (inclusive, based on createdAt) */
                 to?: string;
-                /** @enum {string} */
-                sortBy?: "createdAt" | "reference" | "total";
-                /** @enum {string} */
-                sortOrder?: "asc" | "desc";
+                sortOrder?: components["schemas"]["SortOrder"];
+                status?: "pending" | "confirmed" | "rejected" | "cancelled" | "completed";
+                sortBy?: components["schemas"]["MovingBookingSort"];
             };
             header?: never;
             path?: never;
@@ -5310,6 +5764,122 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["MovingBookingAdminResponseDto"];
                 };
+            };
+        };
+    };
+    NotificationsAdminController_findAll_v1: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+                sourceModule?: "moving" | "storage" | "event_support";
+                /** @description `unresolved` narrows to bookings still pending; `all` (default) is the full history feed */
+                filter?: components["schemas"]["NotificationFilter"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationListResponseDto"];
+                };
+            };
+        };
+    };
+    NotificationsAdminController_summary_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationSummaryResponseDto"];
+                };
+            };
+        };
+    };
+    NotificationsAdminController_markRead_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationsAdminController_markAllRead_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationsAdminController_issueStreamTicket_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationStreamTicketResponseDto"];
+                };
+            };
+        };
+    };
+    NotificationsAdminStreamController_stream_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -5986,25 +6556,23 @@ export interface operations {
             query?: {
                 page?: number;
                 limit?: number;
-                status?: "pending" | "confirmed" | "rejected" | "cancelled" | "completed";
-                /** @description StorageFacility.slug */
-                facilitySlug?: string;
-                /** @description StorageUnitType.slug */
-                unitTypeSlug?: string;
                 /** @description Case-insensitive substring match over reference, customer name, phone, and email */
                 search?: string;
                 /** @description Bookings captured on or after this Jakarta calendar day (inclusive, based on createdAt) */
                 from?: string;
                 /** @description Bookings captured on or before this Jakarta calendar day — the whole day counts (inclusive, based on createdAt) */
                 to?: string;
-                /** @description Bookings whose rental window overlaps this range — endDate >= startFrom. Despite the name, this is an overlap test against the whole window, not just the start date. */
+                sortOrder?: components["schemas"]["SortOrder"];
+                status?: "pending" | "confirmed" | "rejected" | "cancelled" | "completed";
+                /** @description StorageFacility.slug */
+                facilitySlug?: string;
+                /** @description StorageUnitType.slug */
+                unitTypeSlug?: string;
+                /** @description Bookings whose rental window overlaps this range — endDate >= startFrom. Despite the name, this is an overlap test against the whole window, not just the start date (a booking that started earlier still matches if it hasn't ended yet). */
                 startFrom?: string;
                 /** @description Bookings whose rental window overlaps this range — startDate <= startTo (see startFrom for the overlap semantics). */
                 startTo?: string;
-                /** @enum {string} */
-                sortBy?: "createdAt" | "reference" | "total" | "startDate";
-                /** @enum {string} */
-                sortOrder?: "asc" | "desc";
+                sortBy?: components["schemas"]["StorageBookingSort"];
             };
             header?: never;
             path?: never;
@@ -6515,26 +7083,47 @@ export interface operations {
             };
         };
     };
+    EventBookingsController_create_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePublicEventBookingDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventBookingPublicResponseDto"];
+                };
+            };
+        };
+    };
     EventBookingsAdminController_findAll_v1: {
         parameters: {
             query?: {
                 page?: number;
                 limit?: number;
-                status?: "pending" | "confirmed" | "cancelled" | "completed";
                 /** @description Case-insensitive substring match over reference, customer name, phone, and email */
                 search?: string;
-                /** @description Bookings captured on or after this Jakarta calendar day (inclusive, based on createdAt). BREAKING CHANGE: this used to bound the event window — see startFrom/startTo. */
+                /** @description Bookings captured on or after this Jakarta calendar day (inclusive, based on createdAt) */
                 from?: string;
-                /** @description Bookings captured on or before this Jakarta calendar day — the whole day counts (inclusive, based on createdAt). BREAKING CHANGE: this used to bound the event window — see startFrom/startTo. */
+                /** @description Bookings captured on or before this Jakarta calendar day — the whole day counts (inclusive, based on createdAt) */
                 to?: string;
-                /** @description Bookings whose event window overlaps this range — endDate >= startFrom. Despite the name, this is an overlap test against the whole window, not just the start date. */
+                sortOrder?: components["schemas"]["SortOrder"];
+                status?: "pending" | "confirmed" | "cancelled" | "completed";
+                /** @description Bookings whose event window overlaps this range — endDate >= startFrom. Despite the name, this is an overlap test against the whole window, not just the start date (a multi-day booking that started earlier still matches if it hasn't ended yet). BREAKING CHANGE: this used to be named `from`; `from`/`to` now filter by createdAt (capture date) instead — see BookingListQueryDto. */
                 startFrom?: string;
-                /** @description Bookings whose event window overlaps this range — startDate <= startTo (see startFrom for the overlap semantics). */
+                /** @description Bookings whose event window overlaps this range — startDate <= startTo (see startFrom for the overlap semantics). BREAKING CHANGE: this used to be named `to`. */
                 startTo?: string;
-                /** @enum {string} */
-                sortBy?: "createdAt" | "reference" | "total" | "startDate";
-                /** @enum {string} */
-                sortOrder?: "asc" | "desc";
+                sortBy?: components["schemas"]["EventBookingSort"];
             };
             header?: never;
             path?: never;

@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { NAV_ITEMS, isNavItemActive } from "@/lib/ui/nav-items";
+import { NAV_ITEMS, TITLE_ONLY_ROUTES, isNavItemActive } from "@/lib/ui/nav-items";
 
 /**
  * The topbar's wayfinding label — not a document heading. Every page under
@@ -21,7 +21,9 @@ import { NAV_ITEMS, isNavItemActive } from "@/lib/ui/nav-items";
  */
 export function PageTitle() {
   const pathname = usePathname();
-  const current = NAV_ITEMS.find(({ href }) => isNavItemActive(href, pathname));
+  const current =
+    NAV_ITEMS.find(({ href }) => isNavItemActive(href, pathname)) ??
+    TITLE_ONLY_ROUTES.find(({ href }) => isNavItemActive(href, pathname));
 
   if (!current) return null;
 

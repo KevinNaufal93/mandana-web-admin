@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { AppSidebar } from "@/components/shell/app-sidebar";
 import { AppTopbar } from "@/components/shell/app-topbar";
 import { SidebarProvider } from "@/components/shell/sidebar-provider";
+import { NotificationBell, NotificationBellSkeleton } from "@/components/shell/notification-bell";
 import { UserMenu, UserMenuSkeleton } from "@/components/shell/user-menu";
 import { SIDEBAR_COOKIE, parseSidebarState } from "@/lib/ui/sidebar-cookie";
 
@@ -36,9 +37,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             instead of pushing the sidebar narrower than its own width. */}
         <div className="flex min-w-0 flex-1 flex-col">
           <AppTopbar>
-            <Suspense fallback={<UserMenuSkeleton />}>
-              <UserMenu />
-            </Suspense>
+            <div className="flex items-center gap-3">
+              <Suspense fallback={<NotificationBellSkeleton />}>
+                <NotificationBell />
+              </Suspense>
+              <Suspense fallback={<UserMenuSkeleton />}>
+                <UserMenu />
+              </Suspense>
+            </div>
           </AppTopbar>
           <main className="flex-1 p-6">{children}</main>
         </div>
