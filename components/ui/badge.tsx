@@ -8,8 +8,8 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default: "bg-primary text-card",
-        secondary: "bg-secondary text-secondary-foreground",
-        accent: "bg-accent text-accent-foreground",
+        secondary: "bg-secondary text-background",
+        accent: "bg-accent text-primary-foreground",
         outline: "border border-primary text-primary",
         dijual: "bg-ring text-background",
         disewa: "bg-accent text-primary",

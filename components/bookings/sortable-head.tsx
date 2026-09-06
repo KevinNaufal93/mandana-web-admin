@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ChevronUp, ChevronsUpDown } from "lucide-react";
 import { TableHead } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import type { BookingListQuery, SortOrder } from "@/lib/bookings/query";
@@ -27,6 +27,13 @@ export interface SortableHeadProps<Q extends BookingListQuery & { sortBy: string
  * plain `next/link` (same mechanism components/*-pagination.tsx already
  * uses for page links) so the booking tables stay server components with
  * no client-side state.
+ *
+ * Visually distinct from a plain `TableHead` by design — bold label plus
+ * an always-visible chevron (muted "unfold" glyph when this column isn't
+ * the active sort, a solid directional one in primary when it is), so a
+ * sortable column reads as sortable before anyone hovers it. A plain
+ * (non-sortable) `TableHead` keeps its ordinary muted, medium-weight
+ * label with no icon — the contrast between the two is the point.
  */
 export function SortableHead<Q extends BookingListQuery & { sortBy: string }>({
   query,
@@ -38,21 +45,24 @@ export function SortableHead<Q extends BookingListQuery & { sortBy: string }>({
   children,
 }: SortableHeadProps<Q>) {
   const active = query.sortBy === sortKey;
-  const nextOrder: SortOrder = active ? (query.sortOrder === "asc" ? "desc" : "asc") : defaultOrder;
+  const order = query.sortOrder;
+  const nextOrder: SortOrder = active ? (order === "asc" ? "desc" : "asc") : defaultOrder;
   const patch = { sortBy: sortKey, sortOrder: nextOrder, page: 1 } as Partial<Q>;
   const href = `${basePath}${toSearchString(query, patch)}`;
+  const Icon = active ? (order === "asc" ? ChevronUp : ChevronDown) : ChevronsUpDown;
 
   return (
-    <TableHead className={className} aria-sort={active ? (query.sortOrder === "asc" ? "ascending" : "descending") : "none"}>
-      <Link href={href} scroll={false} className="inline-flex items-center gap-1 hover:text-primary">
+    <TableHead className={className} aria-sort={active ? (order === "asc" ? "ascending" : "descending") : "none"}>
+      <Link
+        href={href}
+        scroll={false}
+        className={cn(
+          "inline-flex items-center gap-1 font-semibold transition-colors hover:text-primary",
+          active ? "text-primary" : "text-muted-foreground",
+        )}
+      >
         {children}
-        <ChevronDown
-          className={cn(
-            "size-3.5 transition-transform",
-            !active && "opacity-0",
-            active && query.sortOrder === "asc" && "rotate-180",
-          )}
-        />
+        <Icon className={cn("size-3.5 shrink-0", !active && "text-muted-foreground/50")} />
       </Link>
     </TableHead>
   );

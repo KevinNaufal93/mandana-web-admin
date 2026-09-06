@@ -29,7 +29,7 @@ export function MovingBookingsTable({
           <TableHead>Pelanggan</TableHead>
           <TableHead>Status</TableHead>
           <SortableHead query={query} basePath={basePath} toSearchString={toMovingBookingSearchString} sortKey="createdAt">
-            Tanggal
+            Tanggal pemesanan
           </SortableHead>
           <TableHead>Truk</TableHead>
           <TableHead>Tujuan</TableHead>

@@ -4,9 +4,9 @@ import { SortableHead } from "@/components/bookings/sortable-head";
 import { BookingStatusBadge } from "@/components/event-support/booking-status-badge";
 import type { AdminEventBooking } from "@/lib/api/event-support-bookings";
 import { toBookingSearchString, type EventBookingQuery } from "@/lib/event-support/query";
-import { formatIDRFull, formatDateRangeID } from "@/lib/format";
+import { formatIDRFull, formatDateID, formatDateRangeID } from "@/lib/format";
 
-const COLUMN_COUNT = 6;
+const COLUMN_COUNT = 7;
 
 export function BookingsTable({
   rows,
@@ -28,6 +28,9 @@ export function BookingsTable({
           </SortableHead>
           <TableHead>Pelanggan</TableHead>
           <TableHead>Status</TableHead>
+          <SortableHead query={query} basePath={basePath} toSearchString={toBookingSearchString} sortKey="createdAt">
+            Tanggal pemesanan
+          </SortableHead>
           <SortableHead query={query} basePath={basePath} toSearchString={toBookingSearchString} sortKey="startDate">
             Tanggal acara
           </SortableHead>
@@ -67,6 +70,7 @@ function BookingRow({ row }: { row: AdminEventBooking }) {
       <TableCell>
         <BookingStatusBadge status={row.status} />
       </TableCell>
+      <TableCell className="whitespace-nowrap text-sm text-muted-foreground">{formatDateID(row.createdAt)}</TableCell>
       <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
         {formatDateRangeID(row.startDate, row.endDate)}
       </TableCell>

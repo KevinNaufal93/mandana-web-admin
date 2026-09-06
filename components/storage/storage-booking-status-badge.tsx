@@ -9,14 +9,21 @@ export const STATUS_LABEL: Record<StorageBookingStatus, string> = {
   completed: "Selesai",
 };
 
-const STATUS_VARIANT: Record<StorageBookingStatus, "outline" | "default" | "secondary" | "accent"> = {
+const STATUS_VARIANT: Record<
+  StorageBookingStatus,
+  "outline" | "default" | "secondary" | "accent"
+> = {
   pending: "outline",
   confirmed: "default",
-  rejected: "secondary",
-  cancelled: "secondary",
-  completed: "accent",
+  rejected: "accent",
+  cancelled: "accent",
+  completed: "secondary",
 };
 
-export function StorageBookingStatusBadge({ status }: { status: StorageBookingStatus }) {
+export function StorageBookingStatusBadge({
+  status,
+}: {
+  status: StorageBookingStatus;
+}) {
   return <Badge variant={STATUS_VARIANT[status]}>{STATUS_LABEL[status]}</Badge>;
 }

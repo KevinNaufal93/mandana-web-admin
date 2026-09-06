@@ -6,7 +6,7 @@ import type { AdminStorageBooking } from "@/lib/api/storage-bookings";
 import { toStorageBookingSearchString, type StorageBookingQuery } from "@/lib/storage/query";
 import { formatIDRFull, formatDateID } from "@/lib/format";
 
-const COLUMN_COUNT = 7;
+const COLUMN_COUNT = 8;
 
 export function StorageBookingsTable({
   rows,
@@ -28,6 +28,9 @@ export function StorageBookingsTable({
           </SortableHead>
           <TableHead>Pelanggan</TableHead>
           <TableHead>Status</TableHead>
+          <SortableHead query={query} basePath={basePath} toSearchString={toStorageBookingSearchString} sortKey="createdAt">
+            Tanggal pemesanan
+          </SortableHead>
           <TableHead>Fasilitas / tipe unit</TableHead>
           <SortableHead query={query} basePath={basePath} toSearchString={toStorageBookingSearchString} sortKey="startDate">
             Mulai
@@ -68,6 +71,7 @@ function BookingRow({ row }: { row: AdminStorageBooking }) {
       <TableCell>
         <StorageBookingStatusBadge status={row.status} />
       </TableCell>
+      <TableCell className="whitespace-nowrap text-sm text-muted-foreground">{formatDateID(row.createdAt)}</TableCell>
       <TableCell className="text-sm text-muted-foreground">
         {row.facilityName} · {row.unitTypeName} × {row.quantity}
       </TableCell>

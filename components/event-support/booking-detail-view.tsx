@@ -6,7 +6,6 @@ import { Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { BookingStatusBadge } from "@/components/event-support/booking-status-badge";
 import { BookingConflictPanel } from "@/components/event-support/booking-conflict-panel";
 import { DetailCard, DetailRow } from "@/components/ui/detail-card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
@@ -60,54 +59,38 @@ export function BookingDetailView({ booking: initialBooking }: { booking: AdminE
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="flex flex-col gap-6 lg:col-span-2">
           <DetailCard title="Item">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Item</TableHead>
-                  <TableHead>Jadwal</TableHead>
-                  <TableHead className="text-right">Jumlah</TableHead>
-                  <TableHead className="text-right">Tarif</TableHead>
-                  <TableHead className="text-right">Subtotal</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {booking.items.map((line) => (
-                  <TableRow key={line.id}>
-                    <TableCell>
-                      <Link href={`/event-support/items/${line.itemId}`} className="font-medium text-primary hover:underline">
-                        {line.itemName}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                      {line.dropoffAt && line.pickupAt
-                        ? formatDateTimeRangeID(line.dropoffAt, line.pickupAt)
-                        : formatDateRangeID(line.startDate, line.endDate)}
-                      {" · "}
-                      {line.days} hari
-                    </TableCell>
-                    <TableCell className="text-right text-sm text-muted-foreground">{line.quantity}</TableCell>
-                    <TableCell className="whitespace-nowrap text-right text-sm text-muted-foreground">
-                      <p>
-                        {formatIDRFull(line.unitPrice)}/{line.unitLabel}
-                      </p>
-                      <p className="text-xs">
-                        {line.billableUnits} {line.unitLabel}
-                      </p>
-                      {line.extraHours != null && (
-                        <p className="text-xs">
-                          +{line.extraHours} jam · {formatIDRFull(line.extraHoursTotal ?? 0)}
-                        </p>
-                      )}
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap text-right font-medium text-primary">
-                      {formatIDRFull(line.lineTotal)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <div className="flex flex-col divide-y divide-border">
+              {booking.items.map((line) => (
+                <div key={line.id} className="flex flex-col gap-1 py-3 first:pt-0 last:pb-0">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <Link
+                      href={`/event-support/items/${line.itemId}`}
+                      className="font-medium text-primary hover:underline"
+                    >
+                      {line.itemName}
+                    </Link>
+                    <span className="whitespace-nowrap font-medium text-primary">{formatIDRFull(line.lineTotal)}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {line.dropoffAt && line.pickupAt
+                      ? formatDateTimeRangeID(line.dropoffAt, line.pickupAt)
+                      : formatDateRangeID(line.startDate, line.endDate)}
+                    {" · "}
+                    {line.days} hari · {line.quantity} unit
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {formatIDRFull(line.unitPrice)}/{line.unitLabel} × {line.billableUnits} {line.unitLabel}
+                    {line.extraHours != null && (
+                      <>
+                        {" · "}+{line.extraHours} jam ekstra ({formatIDRFull(line.extraHoursTotal ?? 0)})
+                      </>
+                    )}
+                  </p>
+                </div>
+              ))}
+            </div>
 
-            <div className="mt-3 flex flex-col items-end gap-1 text-sm">
+            <div className="mt-3 flex flex-col items-end gap-1 border-t border-border pt-3 text-sm">
               <div className="flex w-48 justify-between">
                 <span className="text-muted-foreground">Subtotal</span>
                 <span className="text-primary">{formatIDRFull(booking.subtotal)}</span>
