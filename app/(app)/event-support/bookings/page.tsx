@@ -3,10 +3,12 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth/dal";
 import { listEventBookings } from "@/lib/api/event-support-bookings";
-import { parseEventBookingQuery } from "@/lib/event-support/query";
+import { parseEventBookingQuery, toBookingSearchString } from "@/lib/event-support/query";
+import { exportEventBookingsAction } from "@/app/actions/booking-exports";
 import { BookingFilters } from "@/components/event-support/booking-filters";
 import { BookingsTable } from "@/components/event-support/bookings-table";
 import { BookingsPagination } from "@/components/event-support/bookings-pagination";
+import { ExportBookingsButton } from "@/components/bookings/export-bookings-button";
 import { Button } from "@/components/ui/button";
 import type { ApiError } from "@/lib/api/errors";
 
@@ -26,12 +28,15 @@ export default async function EventBookingsPage({
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <BookingFilters query={query} />
-        <Button variant="secondary" asChild>
-          <Link href="/event-support/bookings/new">
-            <Plus className="size-4" />
-            Catat pemesanan
-          </Link>
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <ExportBookingsButton action={exportEventBookingsAction} searchString={toBookingSearchString(query, {})} />
+          <Button variant="secondary" asChild>
+            <Link href="/event-support/bookings/new">
+              <Plus className="size-4" />
+              Catat pemesanan
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {!result.ok ? (

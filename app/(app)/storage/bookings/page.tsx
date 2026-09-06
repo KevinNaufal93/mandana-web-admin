@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import { getCurrentUser } from "@/lib/auth/dal";
 import { listStorageBookings } from "@/lib/api/storage-bookings";
 import { listStorageFacilities, listStorageUnitTypes } from "@/lib/api/storage";
-import { parseStorageBookingQuery } from "@/lib/storage/query";
+import { parseStorageBookingQuery, toStorageBookingSearchString } from "@/lib/storage/query";
+import { exportStorageBookingsAction } from "@/app/actions/booking-exports";
 import { StorageBookingFilters } from "@/components/storage/storage-booking-filters";
 import { StorageBookingsTable } from "@/components/storage/storage-bookings-table";
 import { StorageBookingsPagination } from "@/components/storage/storage-bookings-pagination";
+import { ExportBookingsButton } from "@/components/bookings/export-bookings-button";
 import type { ApiError } from "@/lib/api/errors";
 
 export const metadata: Metadata = { title: "Pemesanan Smart Storage — Mandana Admin" };
@@ -36,7 +38,10 @@ export default async function StorageBookingsPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <StorageBookingFilters query={query} facilities={facilities} unitTypes={unitTypes} />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <StorageBookingFilters query={query} facilities={facilities} unitTypes={unitTypes} />
+        <ExportBookingsButton action={exportStorageBookingsAction} searchString={toStorageBookingSearchString(query, {})} />
+      </div>
 
       {!bookingsResult.ok ? (
         <ErrorPanel message={errorMessage(bookingsResult.error)} />

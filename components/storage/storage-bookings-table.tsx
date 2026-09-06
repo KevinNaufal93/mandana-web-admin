@@ -57,8 +57,13 @@ export function StorageBookingsTable({
 }
 
 function BookingRow({ row }: { row: AdminStorageBooking }) {
+  // Flag rows still awaiting review with the existing warm accent tint
+  // (not a literal yellow — off-palette here) so admins catch them while
+  // scanning the list; the "Menunggu" badge itself is the outline variant
+  // (no fill), so there's nothing for the tint to clash with.
+  const isPending = row.status === "pending";
   return (
-    <TableRow>
+    <TableRow className={isPending ? "bg-accent/20 hover:bg-accent/30" : undefined}>
       <TableCell>
         <Link href={`/storage/bookings/${row.id}`} className="font-medium text-primary hover:underline">
           {row.reference}

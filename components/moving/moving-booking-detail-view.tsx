@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { MovingBookingStatusBadge } from "@/components/moving/moving-booking-status-badge";
+import { DownloadBookingPdfButton } from "@/components/bookings/download-booking-pdf-button";
 import { DetailCard, DetailRow } from "@/components/ui/detail-card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ import {
   cancelMovingBookingAction,
   completeMovingBookingAction,
 } from "@/app/actions/moving-bookings";
+import type { BookingPdfResult } from "@/app/actions/booking-pdfs";
 import { formatIDRFull, formatDateID, toWaNumber } from "@/lib/format";
 import type { AdminMovingBooking } from "@/lib/api/moving-bookings";
 
@@ -32,7 +34,13 @@ function stopLabel(address: string | null, lat: number, lng: number): string {
  * lib/api/moving-bookings.ts) — deliberately no "view truck class" link
  * off this page.
  */
-export function MovingBookingDetailView({ booking: initialBooking }: { booking: AdminMovingBooking }) {
+export function MovingBookingDetailView({
+  booking: initialBooking,
+  pdfAction,
+}: {
+  booking: AdminMovingBooking;
+  pdfAction: (id: string) => Promise<BookingPdfResult>;
+}) {
   const [booking, setBooking] = useState(initialBooking);
   const [adminNote, setAdminNote] = useState("");
   const [pending, startTransition] = useTransition();
@@ -76,7 +84,10 @@ export function MovingBookingDetailView({ booking: initialBooking }: { booking: 
             {booking.truckName} · {formatDateID(booking.createdAt)}
           </p>
         </div>
-        <MovingBookingStatusBadge status={booking.status} />
+        <div className="flex flex-col items-end gap-2">
+          <DownloadBookingPdfButton action={pdfAction} bookingId={booking.id} />
+          <MovingBookingStatusBadge status={booking.status} />
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">

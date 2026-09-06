@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { Mail, MessageCircle, Phone } from "lucide-react";
 import { StorageBookingStatusBadge } from "@/components/storage/storage-booking-status-badge";
 import { StorageBookingConflictPanel } from "@/components/storage/storage-booking-conflict-panel";
+import { DownloadBookingPdfButton } from "@/components/bookings/download-booking-pdf-button";
 import { DetailCard, DetailRow } from "@/components/ui/detail-card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import {
   cancelStorageBookingAction,
   completeStorageBookingAction,
 } from "@/app/actions/storage-bookings";
+import type { BookingPdfResult } from "@/app/actions/booking-pdfs";
 import { formatIDRFull, formatDateID, toWaNumber } from "@/lib/format";
 import type { AdminStorageBooking } from "@/lib/api/storage-bookings";
 
@@ -26,7 +28,13 @@ import type { AdminStorageBooking } from "@/lib/api/storage-bookings";
  * Everything below the header is read-only except the four transition
  * buttons and their shared admin note.
  */
-export function StorageBookingDetailView({ booking: initialBooking }: { booking: AdminStorageBooking }) {
+export function StorageBookingDetailView({
+  booking: initialBooking,
+  pdfAction,
+}: {
+  booking: AdminStorageBooking;
+  pdfAction: (id: string) => Promise<BookingPdfResult>;
+}) {
   const [booking, setBooking] = useState(initialBooking);
   const [adminNote, setAdminNote] = useState("");
   const [pending, startTransition] = useTransition();
@@ -71,7 +79,10 @@ export function StorageBookingDetailView({ booking: initialBooking }: { booking:
             {booking.facilityName} · {booking.unitTypeName}
           </p>
         </div>
-        <StorageBookingStatusBadge status={booking.status} />
+        <div className="flex flex-col items-end gap-2">
+          <DownloadBookingPdfButton action={pdfAction} bookingId={booking.id} />
+          <StorageBookingStatusBadge status={booking.status} />
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">

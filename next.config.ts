@@ -32,6 +32,16 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "mandana-media-storage-dev.s3.ap-southeast-1.amazonaws.com", pathname: "/**" }, // deployed (S3)
     ],
   },
+  // The booking PDF export (lib/bookings/pdf/) renders with
+  // @react-pdf/renderer, which reads its fonts from disk at runtime
+  // (lib/bookings/pdf/fonts/*.ttf|otf) rather than importing them as
+  // modules — Next's default trace can miss files only ever touched via
+  // fs.readFileSync/path.join, silently 404-ing the fonts (or throwing)
+  // once deployed. Keep this in sync with the paths read by
+  // lib/bookings/pdf/fonts.ts and lib/bookings/pdf/chrome.tsx.
+  outputFileTracingIncludes: {
+    "/**": ["./lib/bookings/pdf/fonts/**", "./public/images/logo/logo_text_white.png"],
+  },
 };
 
 export default nextConfig;

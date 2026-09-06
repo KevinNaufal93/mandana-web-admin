@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { BookingStatusBadge } from "@/components/event-support/booking-status-badge";
 import { BookingConflictPanel } from "@/components/event-support/booking-conflict-panel";
+import { DownloadBookingPdfButton } from "@/components/bookings/download-booking-pdf-button";
 import { DetailCard, DetailRow } from "@/components/ui/detail-card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -13,13 +14,20 @@ import {
   cancelEventBookingAction,
   completeEventBookingAction,
 } from "@/app/actions/event-support-bookings";
+import type { BookingPdfResult } from "@/app/actions/booking-pdfs";
 import { formatIDRFull, formatDateID, formatDateRangeID, formatDateTimeRangeID, toWaNumber } from "@/lib/format";
 import type { AdminEventBooking } from "@/lib/api/event-support-bookings";
 
 /** Bookings are never edited in place — no PATCH for fields exists.
  *  Everything below the header is read-only except the three transition
  *  buttons and their shared admin note. */
-export function BookingDetailView({ booking: initialBooking }: { booking: AdminEventBooking }) {
+export function BookingDetailView({
+  booking: initialBooking,
+  pdfAction,
+}: {
+  booking: AdminEventBooking;
+  pdfAction: (id: string) => Promise<BookingPdfResult>;
+}) {
   const [booking, setBooking] = useState(initialBooking);
   const [adminNote, setAdminNote] = useState("");
   const [pending, startTransition] = useTransition();
@@ -53,7 +61,10 @@ export function BookingDetailView({ booking: initialBooking }: { booking: AdminE
           <h1 className="text-2xl font-semibold text-primary">{booking.reference}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{formatDateRangeID(booking.startDate, booking.endDate)}</p>
         </div>
-        <BookingStatusBadge status={booking.status} />
+        <div className="flex flex-col items-end gap-2">
+          <DownloadBookingPdfButton action={pdfAction} bookingId={booking.id} />
+          <BookingStatusBadge status={booking.status} />
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">

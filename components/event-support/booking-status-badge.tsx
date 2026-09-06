@@ -8,7 +8,11 @@ export const STATUS_LABEL: Record<EventBookingStatus, string> = {
   completed: "Selesai",
 };
 
-const STATUS_VARIANT: Record<EventBookingStatus, "outline" | "default" | "secondary" | "accent"> = {
+/** Exported (in addition to STATUS_LABEL above) so the booking PDF export
+ *  (lib/event-support/pdf-document.tsx) can render its status pill with
+ *  the exact same variant this badge uses on screen, rather than keeping
+ *  a second copy of this mapping that could drift from this one. */
+export const STATUS_VARIANT: Record<EventBookingStatus, "outline" | "default" | "secondary" | "accent"> = {
   pending: "outline",
   confirmed: "default",
   cancelled: "secondary",

@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth/dal";
 import { getMovingBooking, type AdminMovingBooking } from "@/lib/api/moving-bookings";
 import { MovingBookingDetailView } from "@/components/moving/moving-booking-detail-view";
+import { exportMovingBookingPdfAction } from "@/app/actions/booking-pdfs";
 import type { ApiError } from "@/lib/api/errors";
 
 type Params = { id: string };
@@ -37,7 +38,7 @@ export default async function MovingBookingDetailPage({ params }: { params: Prom
         Kembali ke daftar pemesanan
       </Link>
 
-      <MovingBookingDetailView booking={booking} />
+      <MovingBookingDetailView booking={booking} pdfAction={exportMovingBookingPdfAction} />
     </div>
   );
 }

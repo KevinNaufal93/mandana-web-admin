@@ -56,8 +56,11 @@ export function BookingsTable({
 }
 
 function BookingRow({ row }: { row: AdminEventBooking }) {
+  // See storage-bookings-table.tsx — same warm-accent tint (not a literal
+  // yellow) to flag rows still awaiting review.
+  const isPending = row.status === "pending";
   return (
-    <TableRow>
+    <TableRow className={isPending ? "bg-accent/20 hover:bg-accent/30" : undefined}>
       <TableCell>
         <Link href={`/event-support/bookings/${row.id}`} className="font-medium text-primary hover:underline">
           {row.reference}

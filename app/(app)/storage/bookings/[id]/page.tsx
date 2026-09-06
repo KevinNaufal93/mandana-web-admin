@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth/dal";
 import { getStorageBooking, type AdminStorageBooking } from "@/lib/api/storage-bookings";
 import { StorageBookingDetailView } from "@/components/storage/storage-booking-detail-view";
+import { exportStorageBookingPdfAction } from "@/app/actions/booking-pdfs";
 import type { ApiError } from "@/lib/api/errors";
 
 type Params = { id: string };
@@ -37,7 +38,7 @@ export default async function StorageBookingDetailPage({ params }: { params: Pro
         Kembali ke daftar pemesanan
       </Link>
 
-      <StorageBookingDetailView booking={booking} />
+      <StorageBookingDetailView booking={booking} pdfAction={exportStorageBookingPdfAction} />
     </div>
   );
 }

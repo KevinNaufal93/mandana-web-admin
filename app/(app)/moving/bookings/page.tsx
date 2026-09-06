@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { getCurrentUser } from "@/lib/auth/dal";
 import { listMovingBookings } from "@/lib/api/moving-bookings";
-import { parseMovingBookingQuery } from "@/lib/moving/query";
+import { parseMovingBookingQuery, toMovingBookingSearchString } from "@/lib/moving/query";
+import { exportMovingBookingsAction } from "@/app/actions/booking-exports";
 import { MovingBookingFilters } from "@/components/moving/moving-booking-filters";
 import { MovingBookingsTable } from "@/components/moving/moving-bookings-table";
 import { MovingBookingsPagination } from "@/components/moving/moving-bookings-pagination";
+import { ExportBookingsButton } from "@/components/bookings/export-bookings-button";
 import type { ApiError } from "@/lib/api/errors";
 
 export const metadata: Metadata = { title: "Pemesanan Moving Support — Mandana Admin" };
@@ -26,7 +28,10 @@ export default async function MovingBookingsPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <MovingBookingFilters query={query} />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <MovingBookingFilters query={query} />
+        <ExportBookingsButton action={exportMovingBookingsAction} searchString={toMovingBookingSearchString(query, {})} />
+      </div>
 
       {!result.ok ? (
         <ErrorPanel message={errorMessage(result.error)} />
