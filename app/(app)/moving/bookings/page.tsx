@@ -1,39 +1,44 @@
 import type { Metadata } from "next";
 import { getCurrentUser } from "@/lib/auth/dal";
-import { listMovingLeads } from "@/lib/api/moving-leads";
-import { parseMovingLeadQuery } from "@/lib/moving/query";
-import { MovingLeadFilters } from "@/components/moving/moving-lead-filters";
-import { MovingLeadsTable } from "@/components/moving/moving-leads-table";
-import { MovingLeadsPagination } from "@/components/moving/moving-leads-pagination";
+import { listMovingBookings } from "@/lib/api/moving-bookings";
+import { parseMovingBookingQuery } from "@/lib/moving/query";
+import { MovingBookingFilters } from "@/components/moving/moving-booking-filters";
+import { MovingBookingsTable } from "@/components/moving/moving-bookings-table";
+import { MovingBookingsPagination } from "@/components/moving/moving-bookings-pagination";
 import type { ApiError } from "@/lib/api/errors";
 
-export const metadata: Metadata = { title: "Lead Moving Support — Mandana Admin" };
+export const metadata: Metadata = { title: "Pemesanan Moving Support — Mandana Admin" };
 
 // No "+ Tambah" button anywhere on this page — same as storage/bookings —
-// there is no admin-create endpoint for leads, they only originate from
+// there is no admin-create endpoint for bookings, they only originate from
 // the public quote-capture flow. Unlike storage/bookings' filter page, no
 // secondary lookups here (no facility/unit-type dropdowns to hydrate) —
 // every filter is self-contained.
-export default async function MovingLeadsPage({
+export default async function MovingBookingsPage({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   await getCurrentUser();
-  const query = parseMovingLeadQuery(await searchParams);
-  const result = await listMovingLeads(query);
+  const query = parseMovingBookingQuery(await searchParams);
+  const result = await listMovingBookings(query);
   const hasActiveFilters = Boolean(query.status || query.search || query.from || query.to);
 
   return (
     <div className="flex flex-col gap-6">
-      <MovingLeadFilters query={query} />
+      <MovingBookingFilters query={query} />
 
       {!result.ok ? (
         <ErrorPanel message={errorMessage(result.error)} />
       ) : (
         <>
-          <MovingLeadsTable rows={result.data.items} hasActiveFilters={hasActiveFilters} />
-          <MovingLeadsPagination query={query} meta={result.data.meta} basePath="/moving/leads" />
+          <MovingBookingsTable
+            rows={result.data.items}
+            hasActiveFilters={hasActiveFilters}
+            query={query}
+            basePath="/moving/bookings"
+          />
+          <MovingBookingsPagination query={query} meta={result.data.meta} basePath="/moving/bookings" />
         </>
       )}
     </div>
@@ -43,7 +48,7 @@ export default async function MovingLeadsPage({
 function errorMessage(error: ApiError): string {
   if (error.kind === "network") return "Tidak dapat terhubung ke server.";
   if (error.messages.length > 0) return error.messages.join(" ");
-  return "Gagal memuat daftar lead.";
+  return "Gagal memuat daftar pemesanan.";
 }
 
 function ErrorPanel({ message }: { message: string }) {

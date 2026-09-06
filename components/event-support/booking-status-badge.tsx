@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import type { EventBookingStatus } from "@/lib/event-support/query";
 
-const STATUS_LABEL: Record<EventBookingStatus, string> = {
+export const STATUS_LABEL: Record<EventBookingStatus, string> = {
   pending: "Menunggu",
   confirmed: "Terkonfirmasi",
   cancelled: "Dibatalkan",

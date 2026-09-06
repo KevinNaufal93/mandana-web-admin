@@ -49,6 +49,12 @@ export interface AdminEventBooking {
   id: string;
   reference: string;
   status: EventBookingStatus;
+  /** Whether the customer submitted this directly ("public") or an admin
+   *  recorded it after a WhatsApp conversation ("admin"). Not the same as
+   *  `createdByName` being null — that's also true for a public booking
+   *  AND for an admin booking whose creating user account was later
+   *  deleted (the FK is ON DELETE SET NULL). */
+  source: "public" | "admin";
   customerName: string;
   phone: string | null;
   email: string | null;

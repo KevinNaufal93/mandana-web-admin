@@ -71,9 +71,12 @@ rebuilds the URL dropping defaults. Needed for two lists:
   `status?` (`"available"|"occupied"|"maintenance"`).
 - `StorageBookingQuery`: `page`, `limit`, `status?`
   (`"pending"|"confirmed"|"rejected"|"cancelled"|"completed"`),
-  `facilitySlug?`, `unitTypeSlug?`. Note: unlike `EventBookingQuery`, the
-  storage bookings query DTO has **no `search` or `from`/`to` date range** —
-  don't invent filters the backend doesn't support.
+  `facilitySlug?`, `unitTypeSlug?`. ~~Note: unlike `EventBookingQuery`, the
+  storage bookings query DTO has no `search` or `from`/`to` date range~~ —
+  **stale as of the shared booking-list-contract rollout**: Storage now
+  takes the same `search`/`from`/`to`/`sortBy`/`sortOrder` every
+  "pemesanan" list does — see `docs/booking-list-contract.md` in the API
+  repo and `lib/bookings/query.ts` here, not this note.
 
 Facilities/unit-types/inventory lists don't need pagination-query parsing —
 same as `EventCategoryQuery`, just an optional `isActive` filter (or none at
@@ -160,7 +163,7 @@ app/(app)/storage/
     new/page.tsx             — single-unit create
     [id]/page.tsx             — edit (code, status, isActive — no grid fields, see contract table)
   bookings/
-    page.tsx                — list with status/facilitySlug/unitTypeSlug filters (no search/date range — contract has none)
+    page.tsx                — list with search/status/date-range/facilitySlug/unitTypeSlug filters, sortable columns (see docs/booking-list-contract.md — stale when this line said "no search/date range")
     [id]/page.tsx             — detail + confirm/reject/cancel/complete buttons, each opening an adminNote prompt; NO new/page.tsx (no admin-create endpoint)
 ```
 

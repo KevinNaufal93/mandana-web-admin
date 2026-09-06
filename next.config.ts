@@ -3,6 +3,15 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   devIndicators: false,
   poweredByHeader: false,
+  // Moving's "leads" resource was renamed to "bookings" (see
+  // lib/moving/query.ts's header comment) — keep old bookmarks/links alive
+  // rather than 404ing.
+  async redirects() {
+    return [
+      { source: "/moving/leads", destination: "/moving/bookings", permanent: true },
+      { source: "/moving/leads/:id", destination: "/moving/bookings/:id", permanent: true },
+    ];
+  },
   experimental: {
     serverActions: {
       // Default is 1MB — every image upload in this app (user photos,

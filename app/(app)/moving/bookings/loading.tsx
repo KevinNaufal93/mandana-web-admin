@@ -4,7 +4,7 @@ function SkeletonBlock({ className }: { className?: string }) {
   return <div className={cn("animate-pulse rounded-lg bg-muted", className)} />;
 }
 
-export default function MovingLeadsLoading() {
+export default function MovingBookingsLoading() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center gap-3">

@@ -789,7 +789,7 @@ export interface paths {
         patch: operations["MovingSettingsAdminController_update_v1"];
         trace?: never;
     };
-    "/api/v1/moving/leads": {
+    "/api/v1/moving/bookings": {
         parameters: {
             query?: never;
             header?: never;
@@ -798,23 +798,23 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Capture a Moving Support lead — persists the configured order (truck, pickup, destinations, add-ons, price) the moment the customer commits to it, before the real conversation happens over WhatsApp. */
-        post: operations["MovingLeadsController_create_v1"];
+        /** Capture a Moving Support booking — persists the configured order (truck, pickup, destinations, add-ons, price) the moment the customer commits to it, before the real conversation happens over WhatsApp. */
+        post: operations["MovingBookingsController_create_v1"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/moving/leads": {
+    "/api/v1/admin/moving/bookings": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** List Moving Support leads (paginated; filter by status, capture-date range, and free-text search over reference / customer name / phone) */
-        get: operations["MovingLeadsAdminController_findAll_v1"];
+        /** List Moving Support bookings (paginated; filter by status, capture-date range, and free-text search over reference/customer name/phone/email; sortable by createdAt/reference/total) */
+        get: operations["MovingBookingsAdminController_findAll_v1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -823,22 +823,90 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/moving/leads/{id}": {
+    "/api/v1/admin/moving/bookings/{id}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get a single Moving Support lead with its destinations and add-on lines */
-        get: operations["MovingLeadsAdminController_findOne_v1"];
+        /** Get a single Moving Support booking with its destinations and add-on lines */
+        get: operations["MovingBookingsAdminController_findOne_v1"];
         put?: never;
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
-        /** Update a lead’s triage status and/or internal note — no confirm/reject flow, nothing here is reserved */
-        patch: operations["MovingLeadsAdminController_update_v1"];
+        /** Update a booking's internal note — status changes exclusively through /confirm, /reject, /cancel, /complete below */
+        patch: operations["MovingBookingsAdminController_update_v1"];
+        trace?: never;
+    };
+    "/api/v1/admin/moving/bookings/{id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Confirm a pending booking */
+        patch: operations["MovingBookingsAdminController_confirm_v1"];
+        trace?: never;
+    };
+    "/api/v1/admin/moving/bookings/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Reject a pending booking */
+        patch: operations["MovingBookingsAdminController_reject_v1"];
+        trace?: never;
+    };
+    "/api/v1/admin/moving/bookings/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Cancel a confirmed booking */
+        patch: operations["MovingBookingsAdminController_cancel_v1"];
+        trace?: never;
+    };
+    "/api/v1/admin/moving/bookings/{id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Mark a confirmed booking as completed (move carried out) */
+        patch: operations["MovingBookingsAdminController_complete_v1"];
         trace?: never;
     };
     "/api/v1/storage/unit-types": {
@@ -2371,7 +2439,7 @@ export interface components {
             /** @example 106.8456 */
             lng: number;
         };
-        CreateMovingLeadDto: {
+        CreateMovingBookingDto: {
             /**
              * @description TruckClass.slug
              * @example pickup-bak
@@ -2413,14 +2481,14 @@ export interface components {
              */
             notes?: string;
         };
-        MovingLeadStopDto: {
+        MovingBookingStopDto: {
             /** @description 0-based route order */
             stopIndex: number;
             address?: string | null;
             lat: number;
             lng: number;
         };
-        MovingLeadAddonLineDto: {
+        MovingBookingAddonLineDto: {
             slug: string;
             name: string;
             quantity: number;
@@ -2429,7 +2497,7 @@ export interface components {
             /** @description Rupiah */
             amount: number;
         };
-        MovingLeadLegDto: {
+        MovingBookingLegDto: {
             distanceKm: number;
             includedKm: number;
             chargeableKm: number;
@@ -2440,18 +2508,18 @@ export interface components {
             /** @description Rupiah */
             subtotal: number;
         };
-        MovingLeadDto: {
+        MovingBookingDto: {
             id: string;
             /** @example MDN-MOV-A7K92X */
             reference: string;
             /** @enum {string} */
-            status: "new" | "contacted" | "converted" | "lost";
+            status: "pending" | "confirmed" | "rejected" | "cancelled" | "completed";
             truckSlug: string;
             truckName: string;
             pickupAddress?: string | null;
             pickupLat: number;
             pickupLng: number;
-            destinations: components["schemas"]["MovingLeadStopDto"][];
+            destinations: components["schemas"]["MovingBookingStopDto"][];
             distanceKm: number;
             includedKm: number;
             chargeableKm: number;
@@ -2466,7 +2534,7 @@ export interface components {
             travelSubtotal: number;
             /** @description Rupiah */
             tollFare: number;
-            addons: components["schemas"]["MovingLeadAddonLineDto"][];
+            addons: components["schemas"]["MovingBookingAddonLineDto"][];
             /** @description Rupiah */
             addonsTotal: number;
             /** @description Rupiah */
@@ -2478,7 +2546,7 @@ export interface components {
             lowEstimate: number;
             /** @description Rupiah */
             highEstimate: number;
-            legs: components["schemas"]["MovingLeadLegDto"][];
+            legs: components["schemas"]["MovingBookingLegDto"][];
             /** @example IDR */
             currency: string;
             customerName?: string | null;
@@ -2489,21 +2557,21 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
         };
-        MovingLeadResponseDto: {
-            data: components["schemas"]["MovingLeadDto"];
+        MovingBookingResponseDto: {
+            data: components["schemas"]["MovingBookingDto"];
         };
-        MovingLeadAdminDto: {
+        MovingBookingAdminDto: {
             id: string;
             /** @example MDN-MOV-A7K92X */
             reference: string;
             /** @enum {string} */
-            status: "new" | "contacted" | "converted" | "lost";
+            status: "pending" | "confirmed" | "rejected" | "cancelled" | "completed";
             truckSlug: string;
             truckName: string;
             pickupAddress?: string | null;
             pickupLat: number;
             pickupLng: number;
-            destinations: components["schemas"]["MovingLeadStopDto"][];
+            destinations: components["schemas"]["MovingBookingStopDto"][];
             distanceKm: number;
             includedKm: number;
             chargeableKm: number;
@@ -2518,7 +2586,7 @@ export interface components {
             travelSubtotal: number;
             /** @description Rupiah */
             tollFare: number;
-            addons: components["schemas"]["MovingLeadAddonLineDto"][];
+            addons: components["schemas"]["MovingBookingAddonLineDto"][];
             /** @description Rupiah */
             addonsTotal: number;
             /** @description Rupiah */
@@ -2530,7 +2598,7 @@ export interface components {
             lowEstimate: number;
             /** @description Rupiah */
             highEstimate: number;
-            legs: components["schemas"]["MovingLeadLegDto"][];
+            legs: components["schemas"]["MovingBookingLegDto"][];
             /** @example IDR */
             currency: string;
             customerName?: string | null;
@@ -2541,28 +2609,28 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
             adminNote?: string | null;
+            confirmedAt?: string | null;
+            confirmedByName?: string | null;
             /** Format: date-time */
             updatedAt: string;
         };
-        MovingLeadPaginationMetaDto: {
+        MovingBookingPaginationMetaDto: {
             total: number;
             page: number;
             limit: number;
             totalPages: number;
         };
-        MovingLeadAdminListResponseDto: {
-            data: components["schemas"]["MovingLeadAdminDto"][];
-            meta: components["schemas"]["MovingLeadPaginationMetaDto"];
+        MovingBookingAdminListResponseDto: {
+            data: components["schemas"]["MovingBookingAdminDto"][];
+            meta: components["schemas"]["MovingBookingPaginationMetaDto"];
         };
-        MovingLeadAdminResponseDto: {
-            data: components["schemas"]["MovingLeadAdminDto"];
+        MovingBookingAdminResponseDto: {
+            data: components["schemas"]["MovingBookingAdminDto"];
         };
-        UpdateMovingLeadDto: {
-            /** @enum {string} */
-            status?: "new" | "contacted" | "converted" | "lost";
+        TransitionMovingBookingDto: {
             /**
              * @description Internal note, not shown to the customer
-             * @example Follow-up dijadwalkan 3 Sep
+             * @example Dikonfirmasi via telepon, jadwal 5 Sep jam 09:00
              */
             adminNote?: string;
         };
@@ -3523,6 +3591,11 @@ export interface components {
             reference: string;
             /** @enum {string} */
             status: "pending" | "confirmed" | "cancelled" | "completed";
+            /**
+             * @description Whether the customer submitted this directly or an admin recorded it after a WhatsApp conversation
+             * @enum {string}
+             */
+            source: "public" | "admin";
             customerName: string;
             phone?: string | null;
             email?: string | null;
@@ -5038,7 +5111,7 @@ export interface operations {
             };
         };
     };
-    MovingLeadsController_create_v1: {
+    MovingBookingsController_create_v1: {
         parameters: {
             query?: never;
             header?: never;
@@ -5047,7 +5120,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CreateMovingLeadDto"];
+                "application/json": components["schemas"]["CreateMovingBookingDto"];
             };
         };
         responses: {
@@ -5056,23 +5129,27 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MovingLeadResponseDto"];
+                    "application/json": components["schemas"]["MovingBookingResponseDto"];
                 };
             };
         };
     };
-    MovingLeadsAdminController_findAll_v1: {
+    MovingBookingsAdminController_findAll_v1: {
         parameters: {
             query?: {
                 page?: number;
                 limit?: number;
-                status?: "new" | "contacted" | "converted" | "lost";
-                /** @description Leads captured on or after this Jakarta calendar day (inclusive). Unlike Event Support, whose from/to bound a booking event window, a Moving lead has no event window — this bounds capture time (createdAt). */
-                from?: string;
-                /** @description Leads captured on or before this Jakarta calendar day — the whole day counts, not midnight. Any time component is ignored. */
-                to?: string;
-                /** @description Matches lead reference, customer name, or phone */
+                status?: "pending" | "confirmed" | "rejected" | "cancelled" | "completed";
+                /** @description Case-insensitive substring match over reference, customer name, phone, and email */
                 search?: string;
+                /** @description Bookings captured on or after this Jakarta calendar day (inclusive, based on createdAt) */
+                from?: string;
+                /** @description Bookings captured on or before this Jakarta calendar day — the whole day counts (inclusive, based on createdAt) */
+                to?: string;
+                /** @enum {string} */
+                sortBy?: "createdAt" | "reference" | "total";
+                /** @enum {string} */
+                sortOrder?: "asc" | "desc";
             };
             header?: never;
             path?: never;
@@ -5085,12 +5162,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MovingLeadAdminListResponseDto"];
+                    "application/json": components["schemas"]["MovingBookingAdminListResponseDto"];
                 };
             };
         };
     };
-    MovingLeadsAdminController_findOne_v1: {
+    MovingBookingsAdminController_findOne_v1: {
         parameters: {
             query?: never;
             header?: never;
@@ -5106,12 +5183,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MovingLeadAdminResponseDto"];
+                    "application/json": components["schemas"]["MovingBookingAdminResponseDto"];
                 };
             };
         };
     };
-    MovingLeadsAdminController_update_v1: {
+    MovingBookingsAdminController_update_v1: {
         parameters: {
             query?: never;
             header?: never;
@@ -5122,7 +5199,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UpdateMovingLeadDto"];
+                "application/json": components["schemas"]["TransitionMovingBookingDto"];
             };
         };
         responses: {
@@ -5131,7 +5208,107 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MovingLeadAdminResponseDto"];
+                    "application/json": components["schemas"]["MovingBookingAdminResponseDto"];
+                };
+            };
+        };
+    };
+    MovingBookingsAdminController_confirm_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransitionMovingBookingDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovingBookingAdminResponseDto"];
+                };
+            };
+        };
+    };
+    MovingBookingsAdminController_reject_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransitionMovingBookingDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovingBookingAdminResponseDto"];
+                };
+            };
+        };
+    };
+    MovingBookingsAdminController_cancel_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransitionMovingBookingDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovingBookingAdminResponseDto"];
+                };
+            };
+        };
+    };
+    MovingBookingsAdminController_complete_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransitionMovingBookingDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovingBookingAdminResponseDto"];
                 };
             };
         };
@@ -5814,6 +5991,20 @@ export interface operations {
                 facilitySlug?: string;
                 /** @description StorageUnitType.slug */
                 unitTypeSlug?: string;
+                /** @description Case-insensitive substring match over reference, customer name, phone, and email */
+                search?: string;
+                /** @description Bookings captured on or after this Jakarta calendar day (inclusive, based on createdAt) */
+                from?: string;
+                /** @description Bookings captured on or before this Jakarta calendar day — the whole day counts (inclusive, based on createdAt) */
+                to?: string;
+                /** @description Bookings whose rental window overlaps this range — endDate >= startFrom. Despite the name, this is an overlap test against the whole window, not just the start date. */
+                startFrom?: string;
+                /** @description Bookings whose rental window overlaps this range — startDate <= startTo (see startFrom for the overlap semantics). */
+                startTo?: string;
+                /** @enum {string} */
+                sortBy?: "createdAt" | "reference" | "total" | "startDate";
+                /** @enum {string} */
+                sortOrder?: "asc" | "desc";
             };
             header?: never;
             path?: never;
@@ -6330,12 +6521,20 @@ export interface operations {
                 page?: number;
                 limit?: number;
                 status?: "pending" | "confirmed" | "cancelled" | "completed";
-                /** @description Bookings whose endDate >= from */
-                from?: string;
-                /** @description Bookings whose startDate <= to */
-                to?: string;
-                /** @description Matches booking reference, customer name, or phone */
+                /** @description Case-insensitive substring match over reference, customer name, phone, and email */
                 search?: string;
+                /** @description Bookings captured on or after this Jakarta calendar day (inclusive, based on createdAt). BREAKING CHANGE: this used to bound the event window — see startFrom/startTo. */
+                from?: string;
+                /** @description Bookings captured on or before this Jakarta calendar day — the whole day counts (inclusive, based on createdAt). BREAKING CHANGE: this used to bound the event window — see startFrom/startTo. */
+                to?: string;
+                /** @description Bookings whose event window overlaps this range — endDate >= startFrom. Despite the name, this is an overlap test against the whole window, not just the start date. */
+                startFrom?: string;
+                /** @description Bookings whose event window overlaps this range — startDate <= startTo (see startFrom for the overlap semantics). */
+                startTo?: string;
+                /** @enum {string} */
+                sortBy?: "createdAt" | "reference" | "total" | "startDate";
+                /** @enum {string} */
+                sortOrder?: "asc" | "desc";
             };
             header?: never;
             path?: never;

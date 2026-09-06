@@ -187,6 +187,7 @@ export function BookingDetailView({ booking: initialBooking }: { booking: AdminE
           )}
 
           <DetailCard title="Metadata">
+            <DetailRow label="Sumber" value={booking.source === "admin" ? "Dicatat admin" : "Diajukan pelanggan"} />
             <DetailRow label="Dibuat oleh" value={booking.createdByName ?? "—"} />
             <DetailRow label="Dibuat" value={formatDateID(booking.createdAt)} />
             {booking.confirmedAt && <DetailRow label="Dikonfirmasi" value={formatDateID(booking.confirmedAt)} />}

@@ -1,22 +1,40 @@
 import Link from "next/link";
 import { Table, TableBody, TableCell, TableEmpty, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { SortableHead } from "@/components/bookings/sortable-head";
 import { BookingStatusBadge } from "@/components/event-support/booking-status-badge";
 import type { AdminEventBooking } from "@/lib/api/event-support-bookings";
+import { toBookingSearchString, type EventBookingQuery } from "@/lib/event-support/query";
 import { formatIDRFull, formatDateRangeID } from "@/lib/format";
 
 const COLUMN_COUNT = 6;
 
-export function BookingsTable({ rows, hasActiveFilters }: { rows: AdminEventBooking[]; hasActiveFilters: boolean }) {
+export function BookingsTable({
+  rows,
+  hasActiveFilters,
+  query,
+  basePath,
+}: {
+  rows: AdminEventBooking[];
+  hasActiveFilters: boolean;
+  query: EventBookingQuery;
+  basePath: string;
+}) {
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Referensi</TableHead>
+          <SortableHead query={query} basePath={basePath} toSearchString={toBookingSearchString} sortKey="reference" defaultOrder="asc">
+            Referensi
+          </SortableHead>
           <TableHead>Pelanggan</TableHead>
           <TableHead>Status</TableHead>
-          <TableHead>Tanggal acara</TableHead>
+          <SortableHead query={query} basePath={basePath} toSearchString={toBookingSearchString} sortKey="startDate">
+            Tanggal acara
+          </SortableHead>
           <TableHead className="text-right">Item</TableHead>
-          <TableHead className="text-right">Total</TableHead>
+          <SortableHead query={query} basePath={basePath} toSearchString={toBookingSearchString} sortKey="total" className="text-right">
+            Total
+          </SortableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

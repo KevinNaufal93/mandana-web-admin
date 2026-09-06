@@ -1,5 +1,17 @@
 # Integration plan: Moving Support admin module
 
+> **Superseded.** This was the original build plan and is kept only for
+> history. The two "real differences" it calls out below no longer hold:
+> Moving's leads resource was renamed to **bookings** and gained the same
+> pending/confirmed/rejected/cancelled/completed state machine and
+> confirm/reject/cancel/complete endpoints Storage bookings already had
+> (`/admin/moving/bookings`, not `/admin/moving/leads`). The admin UI now
+> lives at `/moving/bookings` (`app/(app)/moving/bookings/**`), not
+> `/moving/leads`. For the current contract, see the API repo's
+> `moving-admin-integration.md` and `docs/booking-list-contract.md`
+> (shared query vocabulary with Storage and Event Support). Settings §5/§6
+> below is unaffected by this change.
+
 `mandana-api` already has a full, documented admin surface for the **Moving
 Support** business module ("Mandana Move" — truck-class/add-on catalog,
 a pricing-policy singleton, and lead capture/triage — see

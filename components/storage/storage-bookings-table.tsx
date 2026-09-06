@@ -1,23 +1,41 @@
 import Link from "next/link";
 import { Table, TableBody, TableCell, TableEmpty, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { SortableHead } from "@/components/bookings/sortable-head";
 import { StorageBookingStatusBadge } from "@/components/storage/storage-booking-status-badge";
 import type { AdminStorageBooking } from "@/lib/api/storage-bookings";
+import { toStorageBookingSearchString, type StorageBookingQuery } from "@/lib/storage/query";
 import { formatIDRFull, formatDateID } from "@/lib/format";
 
 const COLUMN_COUNT = 7;
 
-export function StorageBookingsTable({ rows, hasActiveFilters }: { rows: AdminStorageBooking[]; hasActiveFilters: boolean }) {
+export function StorageBookingsTable({
+  rows,
+  hasActiveFilters,
+  query,
+  basePath,
+}: {
+  rows: AdminStorageBooking[];
+  hasActiveFilters: boolean;
+  query: StorageBookingQuery;
+  basePath: string;
+}) {
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Referensi</TableHead>
+          <SortableHead query={query} basePath={basePath} toSearchString={toStorageBookingSearchString} sortKey="reference" defaultOrder="asc">
+            Referensi
+          </SortableHead>
           <TableHead>Pelanggan</TableHead>
           <TableHead>Status</TableHead>
           <TableHead>Fasilitas / tipe unit</TableHead>
-          <TableHead>Mulai</TableHead>
+          <SortableHead query={query} basePath={basePath} toSearchString={toStorageBookingSearchString} sortKey="startDate">
+            Mulai
+          </SortableHead>
           <TableHead>Durasi</TableHead>
-          <TableHead className="text-right">Total</TableHead>
+          <SortableHead query={query} basePath={basePath} toSearchString={toStorageBookingSearchString} sortKey="total" className="text-right">
+            Total
+          </SortableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

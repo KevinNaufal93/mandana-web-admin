@@ -1,15 +1,34 @@
 /**
  * Whitelists and clamps the admin Smart Storage list query params before
- * they reach the API. Copy of lib/event-support/query.ts's shape — same
- * "copy, don't generify" precedent (see that file's header comment).
+ * they reach the API.
  *
- * Contract deltas vs. event-support, worth calling out explicitly:
- *  - Storage bookings have NO search and NO from/to date range — the
- *    DTO genuinely doesn't support them. Don't invent the fields.
+ * The Bookings section shares its vocabulary with Moving and Event
+ * Support's booking lists — see docs/booking-list-contract.md and
+ * lib/bookings/query.ts, which this extends exactly the way the API's own
+ * `QueryStorageBookingsDto extends BookingListQueryDto` does.
+ *
+ * The Catalog/Inventory/Units sections below have no equivalent on the
+ * other two modules (Moving has no paginated catalog resource at all until
+ * bookings; Event Support's catalog is items/categories, shaped
+ * differently) and stay a "copy, don't generify" file of their own, same
+ * precedent as lib/event-support/query.ts's non-booking sections.
+ *
+ * Contract deltas vs. Moving/Event Support's booking lists, worth calling
+ * out explicitly:
  *  - Facility/unit-type filters on bookings are by SLUG, not id.
- *  - Units are paginated + filterable by facility/unit-type id and status;
- *    inventory is unpaginated and filterable by facility/unit-type id only.
+ *  - `sortBy` additionally allows `startDate` (Moving has no window, so it
+ *    lacks this option; Event Support has one and also allows it).
  */
+import {
+  BookingListQuery,
+  DEFAULT_BOOKING_SORT_BY,
+  RawSearchParams,
+  UUID_RE,
+  appendBookingListParams,
+  first,
+  parseBookingListQuery,
+  parseEnumParam,
+} from "@/lib/bookings/query";
 
 export const STORAGE_UNIT_STATUSES = ["available", "occupied", "maintenance"] as const;
 export type StorageUnitStatus = (typeof STORAGE_UNIT_STATUSES)[number];
@@ -17,16 +36,12 @@ export type StorageUnitStatus = (typeof STORAGE_UNIT_STATUSES)[number];
 export const STORAGE_BOOKING_STATUSES = ["pending", "confirmed", "rejected", "cancelled", "completed"] as const;
 export type StorageBookingStatus = (typeof STORAGE_BOOKING_STATUSES)[number];
 
+export const STORAGE_BOOKING_SORTS = ["createdAt", "reference", "total", "startDate"] as const;
+export type StorageBookingSort = (typeof STORAGE_BOOKING_SORTS)[number];
+
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-type RawSearchParams = { [key: string]: string | string[] | undefined };
-
-function first(v: string | string[] | undefined): string | undefined {
-  return Array.isArray(v) ? v[0] : v;
-}
 
 // ─── Catalog (facilities + unit types) ─────────────────────────────────────
 
@@ -117,38 +132,33 @@ export function toUnitSearchString(query: StorageUnitQuery, patch: Partial<Stora
 
 // ─── Bookings ───────────────────────────────────────────────────────────────
 
-export interface StorageBookingQuery {
-  page: number;
-  limit: number;
+export interface StorageBookingQuery extends BookingListQuery {
   status?: StorageBookingStatus;
+  sortBy: StorageBookingSort;
+  /** StorageFacility.slug */
   facilitySlug?: string;
+  /** StorageUnitType.slug */
   unitTypeSlug?: string;
 }
 
 export function parseStorageBookingQuery(raw: RawSearchParams): StorageBookingQuery {
-  const pageRaw = Number(first(raw.page));
-  const page = Number.isFinite(pageRaw) && pageRaw >= 1 ? Math.floor(pageRaw) : DEFAULT_PAGE;
+  const base = parseBookingListQuery(raw);
 
-  const limitRaw = Number(first(raw.limit));
-  const limit = Number.isFinite(limitRaw) && limitRaw >= 1 ? Math.min(Math.floor(limitRaw), MAX_LIMIT) : DEFAULT_LIMIT;
-
-  const statusRaw = first(raw.status);
-  const status = (STORAGE_BOOKING_STATUSES as readonly string[]).includes(statusRaw ?? "")
-    ? (statusRaw as StorageBookingStatus)
-    : undefined;
+  const status = parseEnumParam(first(raw.status), STORAGE_BOOKING_STATUSES);
+  const sortBy = parseEnumParam(first(raw.sortBy), STORAGE_BOOKING_SORTS) ?? DEFAULT_BOOKING_SORT_BY;
 
   const facilitySlug = first(raw.facilitySlug)?.trim() || undefined;
   const unitTypeSlug = first(raw.unitTypeSlug)?.trim() || undefined;
 
-  return { page, limit, status, facilitySlug, unitTypeSlug };
+  return { ...base, status, sortBy, facilitySlug, unitTypeSlug };
 }
 
 export function toStorageBookingSearchString(query: StorageBookingQuery, patch: Partial<StorageBookingQuery>): string {
   const merged = { ...query, ...patch };
   const params = new URLSearchParams();
-  if (merged.page && merged.page !== DEFAULT_PAGE) params.set("page", String(merged.page));
-  if (merged.limit && merged.limit !== DEFAULT_LIMIT) params.set("limit", String(merged.limit));
   if (merged.status) params.set("status", merged.status);
+  appendBookingListParams(params, merged);
+  if (merged.sortBy && merged.sortBy !== DEFAULT_BOOKING_SORT_BY) params.set("sortBy", merged.sortBy);
   if (merged.facilitySlug) params.set("facilitySlug", merged.facilitySlug);
   if (merged.unitTypeSlug) params.set("unitTypeSlug", merged.unitTypeSlug);
   const s = params.toString();

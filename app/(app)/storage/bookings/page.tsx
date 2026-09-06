@@ -30,7 +30,9 @@ export default async function StorageBookingsPage({
 
   const facilities = facilitiesResult.ok ? facilitiesResult.data : [];
   const unitTypes = unitTypesResult.ok ? unitTypesResult.data : [];
-  const hasActiveFilters = Boolean(query.status || query.facilitySlug || query.unitTypeSlug);
+  const hasActiveFilters = Boolean(
+    query.status || query.facilitySlug || query.unitTypeSlug || query.search || query.from || query.to,
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -40,7 +42,12 @@ export default async function StorageBookingsPage({
         <ErrorPanel message={errorMessage(bookingsResult.error)} />
       ) : (
         <>
-          <StorageBookingsTable rows={bookingsResult.data.items} hasActiveFilters={hasActiveFilters} />
+          <StorageBookingsTable
+            rows={bookingsResult.data.items}
+            hasActiveFilters={hasActiveFilters}
+            query={query}
+            basePath="/storage/bookings"
+          />
           <StorageBookingsPagination query={query} meta={bookingsResult.data.meta} basePath="/storage/bookings" />
         </>
       )}

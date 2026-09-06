@@ -15,7 +15,7 @@ const TABS = [
   { href: "/moving/truck-classes", label: "Tipe Truk" },
   { href: "/moving/addons", label: "Add-on" },
   { href: "/moving/settings", label: "Pengaturan" },
-  { href: "/moving/leads", label: "Leads" },
+  { href: "/moving/bookings", label: "Pemesanan" },
 ] as const;
 
 export function MovingTabs() {

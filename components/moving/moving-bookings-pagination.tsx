@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { toMovingLeadSearchString, type MovingLeadQuery } from "@/lib/moving/query";
+import { toMovingBookingSearchString, type MovingBookingQuery } from "@/lib/moving/query";
 import type { PageMeta } from "@/lib/api/server-client";
 
 type PageItem = number | "ellipsis";
 
 /** Copy of components/storage/storage-bookings-pagination.tsx, retyped to
- *  MovingLeadQuery. */
+ *  MovingBookingQuery. */
 function buildPageList(current: number, total: number): PageItem[] {
   const keep = new Set<number>([1, 2, total - 1, total, current - 1, current, current + 1]);
   const sorted = [...keep].filter((p) => p >= 1 && p <= total).sort((a, b) => a - b);
@@ -27,12 +27,12 @@ const pageLinkClass = (active: boolean) =>
     active ? "border-primary bg-primary text-card" : "border-border text-primary hover:bg-muted",
   );
 
-export function MovingLeadsPagination({
+export function MovingBookingsPagination({
   query,
   meta,
   basePath,
 }: {
-  query: MovingLeadQuery;
+  query: MovingBookingQuery;
   meta: PageMeta;
   basePath: string;
 }) {
@@ -44,7 +44,7 @@ export function MovingLeadsPagination({
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
       <p className="text-sm text-muted-foreground">
-        Menampilkan {from}–{to} dari {meta.total} lead
+        Menampilkan {from}–{to} dari {meta.total} pemesanan
       </p>
 
       {meta.totalPages > 1 && (
@@ -57,7 +57,7 @@ export function MovingLeadsPagination({
             ) : (
               <Link
                 key={item}
-                href={`${basePath}${toMovingLeadSearchString(query, { page: item })}`}
+                href={`${basePath}${toMovingBookingSearchString(query, { page: item })}`}
                 aria-current={item === meta.page ? "page" : undefined}
                 className={pageLinkClass(item === meta.page)}
               >

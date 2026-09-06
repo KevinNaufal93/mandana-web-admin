@@ -38,7 +38,12 @@ export default async function EventBookingsPage({
         <ErrorPanel message={errorMessage(result.error)} />
       ) : (
         <>
-          <BookingsTable rows={result.data.items} hasActiveFilters={hasActiveFilters} />
+          <BookingsTable
+            rows={result.data.items}
+            hasActiveFilters={hasActiveFilters}
+            query={query}
+            basePath="/event-support/bookings"
+          />
           <BookingsPagination query={query} meta={result.data.meta} basePath="/event-support/bookings" />
         </>
       )}

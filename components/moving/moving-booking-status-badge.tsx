@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
-import type { StorageBookingStatus } from "@/lib/storage/query";
+import type { MovingBookingStatus } from "@/lib/moving/query";
 
-export const STATUS_LABEL: Record<StorageBookingStatus, string> = {
+export const STATUS_LABEL: Record<MovingBookingStatus, string> = {
   pending: "Menunggu",
   confirmed: "Terkonfirmasi",
   rejected: "Ditolak",
@@ -9,7 +9,7 @@ export const STATUS_LABEL: Record<StorageBookingStatus, string> = {
   completed: "Selesai",
 };
 
-const STATUS_VARIANT: Record<StorageBookingStatus, "outline" | "default" | "secondary" | "accent"> = {
+const STATUS_VARIANT: Record<MovingBookingStatus, "outline" | "default" | "secondary" | "accent"> = {
   pending: "outline",
   confirmed: "default",
   rejected: "secondary",
@@ -17,6 +17,6 @@ const STATUS_VARIANT: Record<StorageBookingStatus, "outline" | "default" | "seco
   completed: "accent",
 };
 
-export function StorageBookingStatusBadge({ status }: { status: StorageBookingStatus }) {
+export function MovingBookingStatusBadge({ status }: { status: MovingBookingStatus }) {
   return <Badge variant={STATUS_VARIANT[status]}>{STATUS_LABEL[status]}</Badge>;
 }
