@@ -16,6 +16,7 @@ import { sourceModuleBookingHref, SOURCE_MODULE_LABEL } from "@/lib/notification
 import type { AdminNotification, NotificationSummary } from "@/lib/api/notifications";
 import type { NotificationSourceModule } from "@/lib/notifications/query";
 import { formatIDRFull } from "@/lib/format";
+import { createLogger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
 
 interface NotificationCreatedEvent extends AdminNotification {
@@ -33,6 +34,14 @@ interface NotificationReadEvent {
   ids: string[];
   unreadCount: number;
 }
+/** Fired once, immediately, on every connect (first load, tab-visibility
+ *  reconnect, error retry, ticket refresh) -- see the API's
+ *  NotificationsService.stream() doc comment for why. */
+interface NotificationSnapshotEvent {
+  items: AdminNotification[];
+  unresolvedCount: number;
+  unreadCount: number;
+}
 
 const MAX_DROPDOWN_ITEMS = 20;
 /** Fixed reconnect delay after a dropped stream -- deliberately not a
@@ -40,9 +49,19 @@ const MAX_DROPDOWN_ITEMS = 20;
  *  channel, and a flat 3s keeps the retry logic simple and readable. */
 const RECONNECT_DELAY_MS = 3_000;
 
+const log = createLogger("notification-stream");
+
 interface NotificationBellDropdownProps {
   initialItems: AdminNotification[];
   initialSummary: NotificationSummary;
+  /** Resolved server-side by <NotificationBell> (see its streamBaseUrl()) --
+   *  never read from process.env directly in this client component. See
+   *  that function's doc comment for why: NEXT_PUBLIC_* is inlined at
+   *  build time, which previously made a post-deploy env change silently
+   *  never take effect. Null means truly unconfigured (no API_BASE_URL and
+   *  no NEXT_PUBLIC_API_BASE_URL anywhere) -- the stream stays off and logs
+   *  once rather than retrying forever. */
+  streamBaseUrl: string | null;
 }
 
 /**
@@ -56,9 +75,11 @@ interface NotificationBellDropdownProps {
  *
  * <NotificationBell> (the server half) seeds `initialItems`/`initialSummary`
  * so the bell is correct before any client JS runs; everything after that
- * comes from the stream, never from polling or router.refresh().
+ * comes from the stream (notification.snapshot backfills on every
+ * connect -- see NotificationSnapshotEvent above -- so a reconnect never
+ * has to fall back to polling or router.refresh() either).
  */
-export function NotificationBellDropdown({ initialItems, initialSummary }: NotificationBellDropdownProps) {
+export function NotificationBellDropdown({ initialItems, initialSummary, streamBaseUrl }: NotificationBellDropdownProps) {
   const [items, setItems] = useState(initialItems);
   const [summary, setSummary] = useState(initialSummary);
 
@@ -75,55 +96,108 @@ export function NotificationBellDropdown({ initialItems, initialSummary }: Notif
     // cross-invocation leak: each invocation gets its own.
     let cancelled = false;
     let eventSource: EventSource | null = null;
+    // Guards the async gap between "connect() started" and "eventSource
+    // is actually assigned" -- without it, a fast hide/show/hide/show via
+    // handleVisibilityChange can call connect() a second time while the
+    // first call is still awaiting its ticket, opening two live
+    // connections (the same class of race the comment above describes
+    // for Strict Mode, but reachable here too, post-mount).
+    let connecting = false;
     let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
 
+    function scheduleReconnect() {
+      // Never reconnect a hidden tab: handleVisibilityChange() below
+      // already reconnects, with a fresh ticket, the moment it becomes
+      // visible again -- a timer armed while hidden would only open a
+      // connection nobody is looking at.
+      if (cancelled || document.hidden) return;
+      reconnectTimer = setTimeout(connect, RECONNECT_DELAY_MS);
+    }
+
     async function connect() {
-      const base = process.env.NEXT_PUBLIC_API_BASE_URL;
-      if (!base) return;
-
-      const ticketResult = await mintStreamTicketAction();
-      if (cancelled || !ticketResult.ok) return;
-
-      const es = new EventSource(`${base}/admin/notifications/stream?ticket=${ticketResult.data.ticket}`);
-      eventSource = es;
-
-      es.addEventListener("notification.created", (e: MessageEvent<string>) => {
-        const payload = JSON.parse(e.data) as NotificationCreatedEvent;
-        setItems((prev) => [payload, ...prev].slice(0, MAX_DROPDOWN_ITEMS));
-        setSummary({ unresolvedCount: payload.unresolvedCount, unreadCount: payload.unreadCount });
-      });
-
-      es.addEventListener("notification.resolved", (e: MessageEvent<string>) => {
-        const payload = JSON.parse(e.data) as NotificationResolvedEvent;
-        setItems((prev) =>
-          prev.map((n) =>
-            n.id === payload.id
-              ? { ...n, resolvedAt: new Date().toISOString(), resolvedStatus: payload.resolvedStatus }
-              : n,
-          ),
-        );
-        setSummary((prev) => ({ ...prev, unresolvedCount: payload.unresolvedCount }));
-      });
-
-      es.addEventListener("notification.read", (e: MessageEvent<string>) => {
-        const payload = JSON.parse(e.data) as NotificationReadEvent;
-        const ids = new Set(payload.ids);
-        setItems((prev) => prev.map((n) => (ids.has(n.id) ? { ...n, readAt: n.readAt ?? new Date().toISOString() } : n)));
-        setSummary((prev) => ({ ...prev, unreadCount: payload.unreadCount }));
-      });
-
-      // Never rely on the browser's native EventSource retry: it would
-      // reopen the SAME url, whose ?ticket= has by then likely expired
-      // (60s TTL). Close it and mint a fresh ticket for a brand-new
-      // connection instead -- same flow docs/storage-integration.md
-      // documents for the sibling Storage admin stream.
-      es.onerror = () => {
-        es.close();
-        eventSource = null;
-        if (!cancelled) {
-          reconnectTimer = setTimeout(connect, RECONNECT_DELAY_MS);
+      if (cancelled || connecting || eventSource) return;
+      connecting = true;
+      try {
+        if (!streamBaseUrl) {
+          // Not retried: a missing base URL is a deploy misconfiguration
+          // (see notification-bell.tsx's streamBaseUrl()), not a
+          // transient failure -- retrying on a timer would just repeat
+          // the same no-op forever and bury the real problem.
+          log.error("No API base URL resolved -- notification stream disabled");
+          return;
         }
-      };
+
+        const ticketResult = await mintStreamTicketAction();
+        if (cancelled) return;
+        if (!ticketResult.ok) {
+          log.warn("Mint notification stream ticket failed, retrying", { error: ticketResult.error });
+          scheduleReconnect();
+          return;
+        }
+        if (document.hidden) return; // went hidden during the round trip above
+
+        const es = new EventSource(`${streamBaseUrl}/admin/notifications/stream?ticket=${ticketResult.data.ticket}`);
+        eventSource = es;
+
+        // Fired once, immediately, by every connection (first load, tab
+        // return, error retry, ticket refresh). Replaces state wholesale
+        // rather than merging, so it also backfills anything that fired
+        // while this tab had no stream open -- events$ on the server is a
+        // plain Subject with no replay buffer, so those would otherwise
+        // be lost for good. See NotificationsService.stream() on the API.
+        es.addEventListener("notification.snapshot", (e: MessageEvent<string>) => {
+          const payload = JSON.parse(e.data) as NotificationSnapshotEvent;
+          setItems(payload.items.slice(0, MAX_DROPDOWN_ITEMS));
+          setSummary({ unresolvedCount: payload.unresolvedCount, unreadCount: payload.unreadCount });
+        });
+
+        es.addEventListener("notification.created", (e: MessageEvent<string>) => {
+          const payload = JSON.parse(e.data) as NotificationCreatedEvent;
+          setItems((prev) => [payload, ...prev].slice(0, MAX_DROPDOWN_ITEMS));
+          setSummary({ unresolvedCount: payload.unresolvedCount, unreadCount: payload.unreadCount });
+        });
+
+        es.addEventListener("notification.resolved", (e: MessageEvent<string>) => {
+          const payload = JSON.parse(e.data) as NotificationResolvedEvent;
+          setItems((prev) =>
+            prev.map((n) =>
+              n.id === payload.id
+                ? { ...n, resolvedAt: new Date().toISOString(), resolvedStatus: payload.resolvedStatus }
+                : n,
+            ),
+          );
+          setSummary((prev) => ({ ...prev, unresolvedCount: payload.unresolvedCount }));
+        });
+
+        es.addEventListener("notification.read", (e: MessageEvent<string>) => {
+          const payload = JSON.parse(e.data) as NotificationReadEvent;
+          const ids = new Set(payload.ids);
+          setItems((prev) => prev.map((n) => (ids.has(n.id) ? { ...n, readAt: n.readAt ?? new Date().toISOString() } : n)));
+          setSummary((prev) => ({ ...prev, unreadCount: payload.unreadCount }));
+        });
+
+        // Never rely on the browser's native EventSource retry: it would
+        // reopen the SAME url, whose ?ticket= has by then likely expired
+        // (60s TTL). Close it and mint a fresh ticket for a brand-new
+        // connection instead -- same flow docs/storage-integration.md
+        // documents for the sibling Storage admin stream.
+        es.onerror = () => {
+          es.close();
+          eventSource = null;
+          log.warn("Notification stream dropped, reconnecting");
+          scheduleReconnect();
+        };
+      } catch (err) {
+        // mintStreamTicketAction() or `new EventSource(...)` throwing --
+        // rather than resolving to the ok:false path above -- used to
+        // leave this effect permanently dead for the rest of the session:
+        // nothing ever called es.onerror, so no retry was ever scheduled.
+        // Catching here and explicitly retrying closes that gap.
+        log.error("Failed to open notification stream, retrying", { error: err });
+        scheduleReconnect();
+      } finally {
+        connecting = false;
+      }
     }
 
     function disconnect() {
@@ -150,7 +224,11 @@ export function NotificationBellDropdown({ initialItems, initialSummary }: Notif
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       disconnect();
     };
-  }, []);
+    // streamBaseUrl is resolved once, server-side, by the parent Server
+    // Component (see notification-bell.tsx) -- it cannot change during
+    // this component's lifetime, but is listed here (rather than in an
+    // empty array) because it genuinely is a value the effect reads.
+  }, [streamBaseUrl]);
 
   function handleOpenChange(open: boolean) {
     if (!open || summary.unreadCount === 0) return;

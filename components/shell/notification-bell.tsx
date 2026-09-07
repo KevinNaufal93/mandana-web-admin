@@ -9,6 +9,26 @@ import { NotificationBellDropdown } from "@/components/shell/notification-bell-d
 const DROPDOWN_ITEM_LIMIT = 20;
 
 /**
+ * NEXT_PUBLIC_* vars are inlined into the JS bundle at `next build` time --
+ * including in server code, not just the client bundle (Next's own docs:
+ * "will no longer respond to changes ... after being built"). On Amplify,
+ * that means setting or changing NEXT_PUBLIC_API_BASE_URL in the console
+ * has no effect until the next rebuild -- if it was unset (or wrong) at the
+ * build currently deployed, the bell's EventSource would silently never
+ * connect, forever, with nothing in the console to explain why.
+ *
+ * API_BASE_URL (no NEXT_PUBLIC_ prefix) is never inlined: Next resolves it
+ * from real process.env at request time on the server. Preferring it here,
+ * server-side, and passing the result down as a plain prop sidesteps the
+ * build-time freeze entirely. Falling back to NEXT_PUBLIC_API_BASE_URL
+ * keeps this working with zero config changes anywhere that only ever set
+ * the public var (local dev's .env.local, today).
+ */
+function streamBaseUrl(): string | null {
+  return process.env.API_BASE_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? null;
+}
+
+/**
  * The one session-dependent piece feeding the bell -- deliberately kept to
  * this single component and rendered inside a <Suspense> in
  * app/(app)/layout.tsx, mirroring <UserMenu>: a slow fetch streams in
@@ -28,7 +48,13 @@ export async function NotificationBell() {
   const initialItems = listResult.ok ? listResult.data.items : [];
   const initialSummary = summaryResult.ok ? summaryResult.data : { unresolvedCount: 0, unreadCount: 0 };
 
-  return <NotificationBellDropdown initialItems={initialItems} initialSummary={initialSummary} />;
+  return (
+    <NotificationBellDropdown
+      initialItems={initialItems}
+      initialSummary={initialSummary}
+      streamBaseUrl={streamBaseUrl()}
+    />
+  );
 }
 
 export function NotificationBellSkeleton() {
