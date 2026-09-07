@@ -8,7 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { formatIDRFull } from "@/lib/format";
 import { estimateLine } from "@/lib/event-support/pricing";
 import type { AdminEventItem } from "@/lib/api/event-support";
-import type { AdminEventSupportSettings } from "@/lib/api/event-support-settings";
 
 export interface BookingLineDraft {
   /** Keyed by a fresh id, NOT itemId — the same item may legitimately
@@ -52,7 +51,6 @@ const MAX_LINES = 50;
  */
 export function BookingItemPicker({
   items,
-  settings,
   sharedDropoffAt,
   sharedPickupAt,
   onSharedWindowChange,
@@ -61,7 +59,6 @@ export function BookingItemPicker({
   disabled,
 }: {
   items: AdminEventItem[];
-  settings: AdminEventSupportSettings | null;
   sharedDropoffAt: string;
   sharedPickupAt: string;
   onSharedWindowChange: (dropoffAt: string, pickupAt: string) => void;
@@ -99,14 +96,12 @@ export function BookingItemPicker({
     }
   }
 
-  const estimates = settings
-    ? lines.map((l) => {
-        const item = byId.get(l.itemId);
-        const qty = Number(l.quantity);
-        if (!item) return null;
-        return estimateLine(item, settings, l.dropoffAt, l.pickupAt, qty);
-      })
-    : lines.map(() => null);
+  const estimates = lines.map((l) => {
+    const item = byId.get(l.itemId);
+    const qty = Number(l.quantity);
+    if (!item) return null;
+    return estimateLine(item, l.dropoffAt, l.pickupAt, qty);
+  });
 
   const estimatedTotal = estimates.reduce((sum: number, e) => sum + (e?.lineTotal ?? 0), 0);
   const hasEstimate = estimates.some((e) => e !== null);
@@ -142,7 +137,6 @@ export function BookingItemPicker({
       </div>
 
       {lines.map((line, i) => {
-        const item = byId.get(line.itemId);
         const estimate = estimates[i];
         return (
           <div key={line.key} className="rounded-lg border border-border p-3">
@@ -156,8 +150,8 @@ export function BookingItemPicker({
                   <SelectContent>
                     {items.map((i2) => (
                       <SelectItem key={i2.id} value={i2.id}>
-                        {i2.name} — {formatIDRFull(i2.supportsHourly && i2.hourlyRate != null ? i2.hourlyRate : i2.pricePerDay)}/
-                        {i2.supportsHourly && i2.hourlyRate != null ? "jam" : "hari"}
+                        {i2.name} — {formatIDRFull(i2.supportsEightHour && i2.eightHourRate != null ? i2.eightHourRate : i2.pricePerDay)}/
+                        {i2.supportsEightHour && i2.eightHourRate != null ? "8 jam" : "hari"}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -180,7 +174,7 @@ export function BookingItemPicker({
                 {estimate ? (
                   <>
                     <p className="font-medium text-primary">
-                      {estimate.billableUnits} {estimate.unitLabel}
+                      {estimate.unitLabel === "8 jam" ? "8 jam" : `${estimate.billableUnits} hari`}
                     </p>
                     <p>{formatIDRFull(estimate.lineTotal)}</p>
                   </>
@@ -237,12 +231,6 @@ export function BookingItemPicker({
                 </div>
               )}
             </details>
-
-            {item?.supportsHourly && estimate?.extraHours != null && (
-              <p className="mt-1 text-xs text-muted-foreground">
-                +{estimate.extraHours} jam · {formatIDRFull(estimate.extraHoursTotal ?? 0)}
-              </p>
-            )}
           </div>
         );
       })}

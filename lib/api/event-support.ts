@@ -55,12 +55,11 @@ export interface AdminEventItem {
   descriptionText: string | null;
   /** Rupiah, integer */
   pricePerDay: number;
-  /** Rupiah, integer. Independent of pricePerDay — never derived from it. */
-  hourlyRate: number | null;
-  supportsHourly: boolean;
-  /** Smallest billable hourly block. Null falls back to the pricing
-   *  policy's defaultMinimumHours. */
-  minimumHours: number | null;
+  /** Rupiah, integer, for one fixed 8-hour block. Independent of
+   *  pricePerDay — never derived from it. Must not exceed pricePerDay
+   *  (enforced server-side, 400 otherwise). */
+  eightHourRate: number | null;
+  supportsEightHour: boolean;
   stockQuantity: number;
   status: EventItemStatus;
   image: EventImage | null;
@@ -139,15 +138,15 @@ export interface EventItemCreateInput {
   kind?: EventItemKind;
   description?: string;
   pricePerDay: number;
-  /** Rupiah, integer. Required (and must be > 0) when supportsHourly is true. */
-  hourlyRate?: number;
-  /** Opts this item into hourly pricing for windows at/under the pricing
-   *  policy's threshold. Required on the live DTO (server defaults it to
-   *  false, but the field itself isn't optional) — always send it. */
-  supportsHourly?: boolean;
-  /** Smallest billable hourly block for this item. Omit to use the pricing
-   *  policy's defaultMinimumHours. */
-  minimumHours?: number;
+  /** Rupiah, integer, for one fixed 8-hour block. Required (and must be
+   *  > 0, and must not exceed pricePerDay) when supportsEightHour is true
+   *  — both violations are a 400 server-side. */
+  eightHourRate?: number;
+  /** Opts this item into 8-hour-block pricing — a rental at or under 8
+   *  hours bills one block at eightHourRate instead of by the day.
+   *  Required on the live DTO (server defaults it to false, but the field
+   *  itself isn't optional) — always send it. */
+  supportsEightHour?: boolean;
   stockQuantity: number;
   mediaAssetId?: string;
   sortOrder?: number;

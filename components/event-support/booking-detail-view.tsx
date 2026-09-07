@@ -98,10 +98,11 @@ export function BookingDetailView({
                     {line.days} hari · {line.quantity} unit
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {formatIDRFull(line.unitPrice)}/{line.unitLabel} × {line.billableUnits} {line.unitLabel}
-                    {line.extraHours != null && (
+                    {line.unitLabel === "8 jam" ? (
+                      <>{formatIDRFull(line.unitPrice)}/8 jam</>
+                    ) : (
                       <>
-                        {" · "}+{line.extraHours} jam ekstra ({formatIDRFull(line.extraHoursTotal ?? 0)})
+                        {formatIDRFull(line.unitPrice)}/hari × {line.billableUnits} hari
                       </>
                     )}
                   </p>

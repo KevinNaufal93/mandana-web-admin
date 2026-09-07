@@ -69,8 +69,8 @@ function ItemRow({ row }: { row: AdminEventItem }) {
       <TableCell className="text-right text-sm text-muted-foreground">{row.stockQuantity}</TableCell>
       <TableCell className="whitespace-nowrap text-right">
         <p className="font-medium text-primary">{formatIDRShort(row.pricePerDay)}</p>
-        {row.supportsHourly && row.hourlyRate != null && (
-          <p className="text-xs text-muted-foreground">{formatIDRShort(row.hourlyRate)}/jam</p>
+        {row.supportsEightHour && row.eightHourRate != null && (
+          <p className="text-xs text-muted-foreground">{formatIDRShort(row.eightHourRate)}/8 jam</p>
         )}
       </TableCell>
     </TableRow>

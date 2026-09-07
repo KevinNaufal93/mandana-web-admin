@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { BookingItemPicker, emptyBookingLine, type BookingLineDraft } from "@/components/event-support/booking-item-picker";
 import { createEventBookingAction } from "@/app/actions/event-support-bookings";
 import type { AdminEventItem } from "@/lib/api/event-support";
-import type { AdminEventSupportSettings } from "@/lib/api/event-support-settings";
 import type { EventBookingLineInput } from "@/lib/api/event-support-bookings";
 
 function Field({
@@ -32,10 +31,8 @@ function Field({
 }
 
 /** Every real booking is agreed over WhatsApp first — this form is where
- *  that agreement gets written down. `settings` is null when the pricing
- *  policy failed to load — the form still works, it just can't show a
- *  live estimate (recording the booking matters more than the preview). */
-export function BookingCreateForm({ items, settings }: { items: AdminEventItem[]; settings: AdminEventSupportSettings | null }) {
+ *  that agreement gets written down. */
+export function BookingCreateForm({ items }: { items: AdminEventItem[] }) {
   const router = useRouter();
   const [customerName, setCustomerName] = useState("");
   const [phone, setPhone] = useState("");
@@ -143,7 +140,6 @@ export function BookingCreateForm({ items, settings }: { items: AdminEventItem[]
         ) : (
           <BookingItemPicker
             items={items}
-            settings={settings}
             sharedDropoffAt={sharedDropoffAt}
             sharedPickupAt={sharedPickupAt}
             onSharedWindowChange={(dropoffAt, pickupAt) => {

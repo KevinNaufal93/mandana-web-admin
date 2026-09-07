@@ -11,27 +11,17 @@ import type { components } from "@/lib/api/schema";
  * POST, no DELETE.
  *
  * GET auto-seeds server-side if the row is missing, so this never 404s.
- * Changing any of this reprices every subsequent quote/booking
- * immediately — nothing here retroactively changes a booking already
- * recorded, since each line snapshots its own unitPrice/billingMode at
+ * As of the 8-hour-pricing rewrite (2026-09-08) there is no pricing policy
+ * left here at all — the old hourly/daily threshold, rounding step,
+ * minimum-hours fallback, and over-threshold mode are gone; "8 hours" is a
+ * server-side constant, not a setting. This singleton now holds only the
+ * Jabodetabek-delivery disclosure. Changing it reprices nothing already
+ * quoted or booked — each line snapshots its own unitPrice/billingMode at
  * creation time.
  */
 
 export interface AdminEventSupportSettings {
-  /** The hourly/daily cutoff, in hours. */
-  hourlyThresholdHours: number;
-  /** Whether a window exactly at hourlyThresholdHours still bills hourly
-   *  (<=) or falls to daily (<). */
-  hourlyThresholdInclusive: boolean;
-  /** Fallback minimum billable hours when an item sets no minimumHours
-   *  of its own. */
-  defaultMinimumHours: number;
-  /** Billable-hours rounding step, in minutes. */
-  roundingUnitMinutes: number;
-  /** When true, an hourly line total never exceeds pricePerDay * quantity. */
-  capHourlyAtDailyRate: boolean;
-  overThresholdMode: "whole_days" | "day_plus_hourly";
-  /** Whether pricePerDay/hourlyRate already include Jabodetabek delivery. */
+  /** Whether pricePerDay/eightHourRate already include Jabodetabek delivery. */
   priceIncludesJabodetabekDelivery: boolean;
   outsideJabodetabekNote: string | null;
 }
@@ -44,12 +34,6 @@ export const getEventSupportSettings = cache(async (): Promise<ApiResult<AdminEv
 });
 
 export interface EventSupportSettingsInput {
-  hourlyThresholdHours?: number;
-  hourlyThresholdInclusive?: boolean;
-  defaultMinimumHours?: number;
-  roundingUnitMinutes?: number;
-  capHourlyAtDailyRate?: boolean;
-  overThresholdMode?: "whole_days" | "day_plus_hourly";
   priceIncludesJabodetabekDelivery?: boolean;
   /** null clears the note. */
   outsideJabodetabekNote?: string | null;

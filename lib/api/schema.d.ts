@@ -1004,7 +1004,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** SSE stream of notification.created / notification.resolved / notification.read events for the admin panel. Auth via short-lived ?ticket= (see POST /admin/notifications/stream-ticket) -- EventSource cannot send an Authorization header. */
+        /** SSE stream of notification.snapshot (fired immediately on every connect) / notification.created / notification.resolved / notification.read events for the admin panel. Auth via short-lived ?ticket= (see POST /admin/notifications/stream-ticket) -- EventSource cannot send an Authorization header. */
         get: operations["NotificationsAdminStreamController_stream_v1"];
         put?: never;
         post?: never;
@@ -1459,7 +1459,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Hourly-pricing policy (threshold, rounding step, minimum hours, ...) — fetch these instead of hardcoding them client-side */
+        /** Delivery-area disclosure settings — fetch these instead of hardcoding them client-side */
         get: operations["EventSupportController_getPricingConfig_v1"];
         put?: never;
         post?: never;
@@ -1721,14 +1721,14 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get the Event Support hourly-pricing policy */
+        /** Get the Event Support commercial settings */
         get: operations["EventSupportSettingsAdminController_get_v1"];
         put?: never;
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
-        /** Update the Event Support hourly-pricing policy */
+        /** Update the Event Support commercial settings */
         patch: operations["EventSupportSettingsAdminController_update_v1"];
         trace?: never;
     };
@@ -3631,19 +3631,7 @@ export interface components {
             data: components["schemas"]["EventCategoryDto"][];
         };
         EventSupportSettingsDto: {
-            /** @description The hourly/daily cutoff, in hours */
-            hourlyThresholdHours: number;
-            /** @description Whether a window exactly at hourlyThresholdHours still bills hourly (<=) or falls to daily (<) */
-            hourlyThresholdInclusive: boolean;
-            /** @description Fallback minimum billable hours when an item sets no minimumHours of its own */
-            defaultMinimumHours: number;
-            /** @description Billable-hours rounding step, in minutes */
-            roundingUnitMinutes: number;
-            /** @description When true, an hourly line total never exceeds pricePerDay * quantity */
-            capHourlyAtDailyRate: boolean;
-            /** @enum {string} */
-            overThresholdMode: "whole_days" | "day_plus_hourly";
-            /** @description Whether pricePerDay/hourlyRate already include Jabodetabek delivery */
+            /** @description Whether pricePerDay/eightHourRate already include Jabodetabek delivery */
             priceIncludesJabodetabekDelivery: boolean;
             outsideJabodetabekNote?: string | null;
         };
@@ -3654,8 +3642,8 @@ export interface components {
             /** @description Rupiah, integer */
             amount: number;
             /** @enum {string} */
-            unit: "hour" | "day";
-            /** @example jam */
+            unit: "eight_hour" | "day";
+            /** @example 8 jam */
             label: string;
         };
         EventItemListDto: {
@@ -3746,17 +3734,13 @@ export interface components {
             startDate: string;
             endDate: string;
             /** @enum {string} */
-            billingMode: "hourly" | "daily";
+            billingMode: "eight_hour" | "daily";
             /** @description Rupiah, integer — the rate actually applied */
             unitPrice: number;
             /** @enum {string} */
-            unitLabel: "jam" | "hari";
-            /** @description Hours (billingMode: hourly) or days (billingMode: daily). Fractional when the rounding step is under 60 minutes. */
+            unitLabel: "8 jam" | "hari";
+            /** @description Always 1 under billingMode "eight_hour" (one block); the whole-day count under "daily". */
             billableUnits: number;
-            /** @description Only set under the day_plus_hourly over-threshold mode */
-            extraHours?: number | null;
-            /** @description Rupiah, integer */
-            extraHoursTotal?: number | null;
             /** @description Rupiah, integer */
             lineTotal: number;
             /** @description Units still free over this line's date range */
@@ -3841,10 +3825,9 @@ export interface components {
             descriptionText?: string | null;
             /** @description Rupiah, integer */
             pricePerDay: number;
-            /** @description Rupiah, integer */
-            hourlyRate?: number | null;
-            supportsHourly: boolean;
-            minimumHours?: number | null;
+            /** @description Rupiah, integer — the price for one 8-hour rental block */
+            eightHourRate?: number | null;
+            supportsEightHour: boolean;
             stockQuantity: number;
             /** @enum {string} */
             status: "draft" | "published" | "archived";
@@ -3890,17 +3873,15 @@ export interface components {
             /** @example 3 */
             stockQuantity: number;
             /**
-             * @description Rupiah, integer. Independent of pricePerDay — never derived from it. Required (and must be > 0) when supportsHourly is true.
-             * @example 75000
+             * @description Rupiah, integer. The price for one 8-hour rental block — independent of pricePerDay, never derived from it. Required (and must be > 0, and must not exceed pricePerDay) when supportsEightHour is true.
+             * @example 900000
              */
-            hourlyRate?: number;
+            eightHourRate?: number;
             /**
-             * @description Opts this item into hourly pricing for windows at/under the pricing-policy threshold. Requires a positive hourlyRate.
+             * @description Opts this item into 8-hour block pricing for a rental window at or under 8 hours. Requires a positive eightHourRate no greater than pricePerDay.
              * @default false
              */
-            supportsHourly: boolean;
-            /** @description Smallest billable hourly block for this item. Omit to use the pricing-policy default (EventSupportSettings.defaultMinimumHours). */
-            minimumHours?: number;
+            supportsEightHour: boolean;
             /** @description Upload an image first via POST /admin/media/upload, then pass its id */
             mediaAssetId?: string;
             /** @default 0 */
@@ -3934,17 +3915,15 @@ export interface components {
             /** @example 3 */
             stockQuantity?: number;
             /**
-             * @description Rupiah, integer. Independent of pricePerDay — never derived from it. Required (and must be > 0) when supportsHourly is true.
-             * @example 75000
+             * @description Rupiah, integer. The price for one 8-hour rental block — independent of pricePerDay, never derived from it. Required (and must be > 0, and must not exceed pricePerDay) when supportsEightHour is true.
+             * @example 900000
              */
-            hourlyRate?: number;
+            eightHourRate?: number;
             /**
-             * @description Opts this item into hourly pricing for windows at/under the pricing-policy threshold. Requires a positive hourlyRate.
+             * @description Opts this item into 8-hour block pricing for a rental window at or under 8 hours. Requires a positive eightHourRate no greater than pricePerDay.
              * @default false
              */
-            supportsHourly: boolean;
-            /** @description Smallest billable hourly block for this item. Omit to use the pricing-policy default (EventSupportSettings.defaultMinimumHours). */
-            minimumHours?: number;
+            supportsEightHour: boolean;
             /** @description Upload an image first via POST /admin/media/upload, then pass its id */
             mediaAssetId?: string;
             /** @default 0 */
@@ -4026,17 +4005,14 @@ export interface components {
             days: number;
             endDate: string;
             /** @enum {string} */
-            billingMode: "hourly" | "daily";
+            billingMode: "eight_hour" | "daily";
             /** @description Rupiah, integer */
             pricePerDay: number;
             /** @description Rupiah, integer — the rate actually applied */
             unitPrice: number;
             /** @enum {string} */
-            unitLabel: "jam" | "hari";
+            unitLabel: "8 jam" | "hari";
             billableUnits: number;
-            extraHours?: number | null;
-            /** @description Rupiah, integer */
-            extraHoursTotal?: number | null;
             /** @description Rupiah, integer */
             lineTotal: number;
         };
@@ -4120,37 +4096,7 @@ export interface components {
         };
         UpdateEventSupportSettingsDto: {
             /**
-             * @description The hourly/daily cutoff, in hours (§6.1).
-             * @example 24
-             */
-            hourlyThresholdHours?: number;
-            /**
-             * @description Whether a window exactly at hourlyThresholdHours still bills hourly (<=) or falls to daily (<).
-             * @example true
-             */
-            hourlyThresholdInclusive?: boolean;
-            /**
-             * @description Fallback minimum billable hours when an item sets no minimumHours of its own (§6.3).
-             * @example 2
-             */
-            defaultMinimumHours?: number;
-            /**
-             * @description Billable-hours rounding step, in minutes (§6.4).
-             * @example 30
-             */
-            roundingUnitMinutes?: number;
-            /**
-             * @description When true, an hourly line total never exceeds pricePerDay * quantity (§6.2).
-             * @example true
-             */
-            capHourlyAtDailyRate?: boolean;
-            /**
-             * @description How a daily-billed window that is not a whole number of days prices (§6.5).
-             * @enum {string}
-             */
-            overThresholdMode?: "whole_days" | "day_plus_hourly";
-            /**
-             * @description Whether pricePerDay/hourlyRate already include Jabodetabek delivery (§6.6).
+             * @description Whether pricePerDay/eightHourRate already include Jabodetabek delivery.
              * @example true
              */
             priceIncludesJabodetabekDelivery?: boolean;

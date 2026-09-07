@@ -55,9 +55,9 @@ export function EventBookingPdfDocument({ booking }: { booking: AdminEventBookin
                   ? formatDateTimeRangeID(line.dropoffAt, line.pickupAt)
                   : formatDateRangeID(line.startDate, line.endDate)
               } · ${line.days} hari · ${line.quantity} unit`,
-              `${formatIDRFull(line.unitPrice)}/${line.unitLabel} × ${line.billableUnits} ${line.unitLabel}${
-                line.extraHours != null ? ` · +${line.extraHours} jam ekstra (${formatIDRFull(line.extraHoursTotal ?? 0)})` : ""
-              }`,
+              line.unitLabel === "8 jam"
+                ? `${formatIDRFull(line.unitPrice)}/8 jam`
+                : `${formatIDRFull(line.unitPrice)}/hari × ${line.billableUnits} hari`,
             ];
             return (
               <LineItem

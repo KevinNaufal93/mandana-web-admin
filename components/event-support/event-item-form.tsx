@@ -57,9 +57,8 @@ export function EventItemForm(props: EventItemFormProps) {
   const [kind, setKind] = useState<EventItemKind>(item?.kind ?? "package");
   const [description, setDescription] = useState(item?.description ?? "");
   const [pricePerDay, setPricePerDay] = useState(item ? String(item.pricePerDay) : "");
-  const [supportsHourly, setSupportsHourly] = useState(item?.supportsHourly ?? false);
-  const [hourlyRate, setHourlyRate] = useState(item?.hourlyRate != null ? String(item.hourlyRate) : "");
-  const [minimumHours, setMinimumHours] = useState(item?.minimumHours != null ? String(item.minimumHours) : "");
+  const [supportsEightHour, setSupportsEightHour] = useState(item?.supportsEightHour ?? false);
+  const [eightHourRate, setEightHourRate] = useState(item?.eightHourRate != null ? String(item.eightHourRate) : "");
   const [stockQuantity, setStockQuantity] = useState(item ? String(item.stockQuantity) : "");
   const [sortOrder, setSortOrder] = useState(item ? String(item.sortOrder) : "0");
   const [image, setImage] = useState<ImagePickerValue>({
@@ -86,19 +85,15 @@ export function EventItemForm(props: EventItemFormProps) {
       setError("Harga per hari harus berupa bilangan bulat (Rupiah), 0 atau lebih.");
       return;
     }
-    let hourlyRateNumber: number | undefined;
-    if (supportsHourly) {
-      hourlyRateNumber = Number(hourlyRate);
-      if (hourlyRate.trim() === "" || !Number.isInteger(hourlyRateNumber) || hourlyRateNumber <= 0) {
-        setError("Harga per jam wajib diisi dan lebih dari 0 bila sewa per jam diaktifkan.");
+    let eightHourRateNumber: number | undefined;
+    if (supportsEightHour) {
+      eightHourRateNumber = Number(eightHourRate);
+      if (eightHourRate.trim() === "" || !Number.isInteger(eightHourRateNumber) || eightHourRateNumber <= 0) {
+        setError("Harga per 8 jam wajib diisi dan lebih dari 0 bila sewa per 8 jam diaktifkan.");
         return;
       }
-    }
-    let minimumHoursNumber: number | undefined;
-    if (minimumHours.trim() !== "") {
-      minimumHoursNumber = Number(minimumHours);
-      if (!Number.isInteger(minimumHoursNumber) || minimumHoursNumber < 1) {
-        setError("Minimum jam harus berupa bilangan bulat 1 atau lebih.");
+      if (eightHourRateNumber > price) {
+        setError("Harga per 8 jam tidak boleh melebihi harga per hari.");
         return;
       }
     }
@@ -120,9 +115,8 @@ export function EventItemForm(props: EventItemFormProps) {
       kind,
       description: description || undefined,
       pricePerDay: price,
-      supportsHourly,
-      hourlyRate: supportsHourly ? hourlyRateNumber : undefined,
-      minimumHours: minimumHoursNumber,
+      supportsEightHour,
+      eightHourRate: supportsEightHour ? eightHourRateNumber : undefined,
       stockQuantity: stock,
       mediaAssetId: image.mediaAssetId ?? undefined,
       sortOrder: sortOrderNumber,
@@ -239,44 +233,28 @@ export function EventItemForm(props: EventItemFormProps) {
               <input
                 type="checkbox"
                 className="accent-primary"
-                checked={supportsHourly}
-                onChange={(e) => setSupportsHourly(e.target.checked)}
+                checked={supportsEightHour}
+                onChange={(e) => setSupportsEightHour(e.target.checked)}
                 disabled={pending}
               />
-              Dukung sewa per jam
+              Dukung sewa per 8 jam
             </label>
 
-            {supportsHourly && (
-              <>
-                <Field label="Harga per jam (Rp)" htmlFor="item-hourly-rate">
-                  <Input
-                    id="item-hourly-rate"
-                    type="number"
-                    min={0}
-                    step={1}
-                    value={hourlyRate}
-                    onChange={(e) => setHourlyRate(e.target.value)}
-                    disabled={pending}
-                  />
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Ditetapkan terpisah, bukan hasil bagi harga harian.
-                  </p>
-                </Field>
-                <Field label="Minimum jam (opsional)" htmlFor="item-minimum-hours">
-                  <Input
-                    id="item-minimum-hours"
-                    type="number"
-                    min={1}
-                    step={1}
-                    value={minimumHours}
-                    onChange={(e) => setMinimumHours(e.target.value)}
-                    disabled={pending}
-                  />
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Kosongkan untuk memakai default kebijakan.
-                  </p>
-                </Field>
-              </>
+            {supportsEightHour && (
+              <Field label="Harga per 8 jam (Rp)" htmlFor="item-eight-hour-rate">
+                <Input
+                  id="item-eight-hour-rate"
+                  type="number"
+                  min={0}
+                  step={1}
+                  value={eightHourRate}
+                  onChange={(e) => setEightHourRate(e.target.value)}
+                  disabled={pending}
+                />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Ditetapkan terpisah, bukan hasil bagi harga harian — tidak boleh melebihi harga per hari.
+                </p>
+              </Field>
             )}
 
             <Field label="Stok total" htmlFor="item-stock">
