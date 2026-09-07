@@ -11,6 +11,7 @@ import { StorageUnitStatusBadge } from "@/components/storage/storage-unit-status
 import { bulkDeleteStorageUnitsAction } from "@/app/actions/storage-units";
 import type { AdminStorageUnit } from "@/lib/api/storage-units";
 import type { AdminStorageFacility, AdminStorageUnitType } from "@/lib/api/storage";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 
 const COLUMN_COUNT = 6;
 
@@ -39,6 +40,7 @@ export function StorageUnitsTable({
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [failures, setFailures] = useState<Map<string, string>>(new Map());
   const [pending, startTransition] = useTransition();
+  const { confirm, dialog } = useConfirmDialog();
 
   const rowIds = useMemo(() => rows.map((r) => r.id), [rows]);
   const allSelected = rowIds.length > 0 && rowIds.every((id) => selected.has(id));
@@ -57,10 +59,16 @@ export function StorageUnitsTable({
     });
   }
 
-  function handleBulkDelete() {
+  async function handleBulkDelete() {
     const ids = Array.from(selected);
     if (ids.length === 0) return;
-    if (!window.confirm(`Hapus ${ids.length} unit terpilih? Tindakan ini tidak dapat dibatalkan.`)) return;
+    const ok = await confirm({
+      title: `Hapus ${ids.length} unit terpilih?`,
+      description: "Tindakan ini tidak dapat dibatalkan.",
+      confirmLabel: "Hapus",
+      variant: "destructive",
+    });
+    if (!ok) return;
 
     setFailures(new Map());
     startTransition(async () => {
@@ -157,6 +165,7 @@ export function StorageUnitsTable({
           )}
         </TableBody>
       </Table>
+      {dialog}
     </div>
   );
 }

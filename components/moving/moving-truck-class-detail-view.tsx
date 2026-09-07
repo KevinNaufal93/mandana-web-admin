@@ -12,6 +12,7 @@ import { MovingTruckClassForm } from "@/components/moving/moving-truck-class-for
 import { deleteMovingTruckClassAction } from "@/app/actions/moving";
 import { formatIDRFull } from "@/lib/format";
 import type { AdminMovingTruckClass } from "@/lib/api/moving";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export function MovingTruckClassDetailView({ truckClass: initialTruckClass }: { truckClass: AdminMovingTruckClass }) {
   const router = useRouter();
@@ -19,14 +20,21 @@ export function MovingTruckClassDetailView({ truckClass: initialTruckClass }: { 
   const [mode, setMode] = useState<"view" | "edit">("view");
   const [deletePending, startDeleteTransition] = useTransition();
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const { confirm, dialog } = useConfirmDialog();
 
   function handleSaved(fresh: AdminMovingTruckClass) {
     setTruckClass(fresh);
     setMode("view");
   }
 
-  function handleDelete() {
-    if (!window.confirm(`Hapus tipe truk "${truckClass.name}"? Tindakan ini tidak dapat dibatalkan.`)) return;
+  async function handleDelete() {
+    const ok = await confirm({
+      title: `Hapus tipe truk "${truckClass.name}"?`,
+      description: "Tindakan ini tidak dapat dibatalkan.",
+      confirmLabel: "Hapus",
+      variant: "destructive",
+    });
+    if (!ok) return;
     setDeleteError(null);
     startDeleteTransition(async () => {
       const result = await deleteMovingTruckClassAction(truckClass.id);
@@ -136,6 +144,7 @@ export function MovingTruckClassDetailView({ truckClass: initialTruckClass }: { 
           </div>
         </div>
       )}
+      {dialog}
     </div>
   );
 }

@@ -11,6 +11,7 @@ import { UserPhotoCard } from "@/components/users/user-photo-card";
 import { deleteUserAction } from "@/app/actions/users";
 import { formatDateID } from "@/lib/format";
 import type { AdminUser, UserRole } from "@/lib/api/users";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 
 const ROLE_LABEL: Record<UserRole, string> = { admin: "Admin", editor: "Editor" };
 
@@ -28,6 +29,7 @@ export function UserDetailView({
   const [mode, setMode] = useState<"view" | "edit">("view");
   const [deletePending, startDeleteTransition] = useTransition();
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const { confirm, dialog } = useConfirmDialog();
 
   const isSelf = user.id === currentUserId;
 
@@ -40,8 +42,14 @@ export function UserDetailView({
     setUser(fresh);
   }
 
-  function handleDelete() {
-    if (!window.confirm(`Hapus pengguna "${user.name}"? Tindakan ini tidak dapat dibatalkan.`)) return;
+  async function handleDelete() {
+    const ok = await confirm({
+      title: `Hapus pengguna "${user.name}"?`,
+      description: "Tindakan ini tidak dapat dibatalkan.",
+      confirmLabel: "Hapus",
+      variant: "destructive",
+    });
+    if (!ok) return;
     setDeleteError(null);
     startDeleteTransition(async () => {
       const result = await deleteUserAction(user.id);
@@ -132,6 +140,7 @@ export function UserDetailView({
           </div>
         </div>
       )}
+      {dialog}
     </div>
   );
 }

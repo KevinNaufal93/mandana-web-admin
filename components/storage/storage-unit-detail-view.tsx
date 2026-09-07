@@ -11,6 +11,7 @@ import { StorageUnitForm } from "@/components/storage/storage-unit-form";
 import { deleteStorageUnitAction } from "@/app/actions/storage-units";
 import type { AdminStorageUnit } from "@/lib/api/storage-units";
 import type { AdminStorageFacility, AdminStorageUnitType } from "@/lib/api/storage";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export function StorageUnitDetailView({
   unit: initialUnit,
@@ -26,6 +27,7 @@ export function StorageUnitDetailView({
   const [mode, setMode] = useState<"view" | "edit">("view");
   const [deletePending, startDeleteTransition] = useTransition();
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const { confirm, dialog } = useConfirmDialog();
 
   const facility = facilities.find((f) => f.id === unit.facilityId);
   const unitType = unitTypes.find((t) => t.id === unit.unitTypeId);
@@ -35,8 +37,14 @@ export function StorageUnitDetailView({
     setMode("view");
   }
 
-  function handleDelete() {
-    if (!window.confirm(`Hapus unit "${unit.code}"? Tindakan ini tidak dapat dibatalkan.`)) return;
+  async function handleDelete() {
+    const ok = await confirm({
+      title: `Hapus unit "${unit.code}"?`,
+      description: "Tindakan ini tidak dapat dibatalkan.",
+      confirmLabel: "Hapus",
+      variant: "destructive",
+    });
+    if (!ok) return;
     setDeleteError(null);
     startDeleteTransition(async () => {
       const result = await deleteStorageUnitAction(unit.id);
@@ -122,6 +130,7 @@ export function StorageUnitDetailView({
           </div>
         </div>
       )}
+      {dialog}
     </div>
   );
 }

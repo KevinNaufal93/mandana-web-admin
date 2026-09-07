@@ -20,8 +20,10 @@
  *
  * The Items/Categories sections below have no booking-list equivalent and
  * stay a "copy, don't generify" file of their own — see
- * lib/properties/query.ts's `toSearchString` for that precedent
- * (PropertiesPagination is typed to PropertyQuery specifically).
+ * lib/properties/query.ts's `toSearchString` for that precedent (each
+ * domain's toXSearchString stays typed to its own Query specifically; only
+ * the pagination *component* that consumes them was generified — see
+ * components/ui/pagination.tsx).
  */
 import {
   BookingListQuery,

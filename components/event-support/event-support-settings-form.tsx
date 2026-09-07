@@ -123,7 +123,7 @@ export function EventSupportSettingsForm({ settings }: { settings: AdminEventSup
       )}
 
       <div className="flex flex-col gap-4">
-        <h3 className="text-sm font-semibold text-primary">Batas jam/hari</h3>
+        <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Batas jam/hari</h3>
         <Field
           label="Batas jam (§6.1)"
           htmlFor="settings-hourly-threshold-hours"
@@ -156,7 +156,7 @@ export function EventSupportSettingsForm({ settings }: { settings: AdminEventSup
           Durasi tepat di batas tetap dihitung per jam
         </label>
 
-        <h3 className="mt-2 text-sm font-semibold text-primary">Perhitungan jam</h3>
+        <h3 className="mt-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">Perhitungan jam</h3>
         <Field
           label="Minimum jam default (§6.3)"
           htmlFor="settings-default-minimum-hours"
@@ -207,7 +207,7 @@ export function EventSupportSettingsForm({ settings }: { settings: AdminEventSup
           Total per jam tidak boleh melebihi harga per hari (§6.2)
         </label>
 
-        <h3 className="mt-2 text-sm font-semibold text-primary">Di atas batas</h3>
+        <h3 className="mt-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">Di atas batas</h3>
         <Field
           label="Mode perhitungan (§6.5)"
           htmlFor="settings-over-threshold-mode"
@@ -231,7 +231,7 @@ export function EventSupportSettingsForm({ settings }: { settings: AdminEventSup
           </Select>
         </Field>
 
-        <h3 className="mt-2 text-sm font-semibold text-primary">Ongkir</h3>
+        <h3 className="mt-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">Ongkir</h3>
         <label className="flex items-center gap-2 text-sm text-primary">
           <input
             type="checkbox"

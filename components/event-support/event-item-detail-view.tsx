@@ -14,6 +14,7 @@ import { updateEventItemStatusAction, deleteEventItemAction } from "@/app/action
 import { formatIDRFull, formatDateID } from "@/lib/format";
 import type { AdminEventCategory, AdminEventItem } from "@/lib/api/event-support";
 import type { EventItemStatus } from "@/lib/event-support/query";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export function EventItemDetailView({
   item: initialItem,
@@ -30,6 +31,7 @@ export function EventItemDetailView({
   const [transitionConflict, setTransitionConflict] = useState(false);
   const [deletePending, startDeleteTransition] = useTransition();
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const { confirm, dialog } = useConfirmDialog();
 
   // `status !== "draft"`, not properties' `=== "published"` — this API
   // 409s a PATCH on BOTH published and archived items, and status is not
@@ -69,8 +71,14 @@ export function EventItemDetailView({
     });
   }
 
-  function handleDelete() {
-    if (!window.confirm(`Hapus item "${item.name}"? Tindakan ini tidak dapat dibatalkan.`)) return;
+  async function handleDelete() {
+    const ok = await confirm({
+      title: `Hapus item "${item.name}"?`,
+      description: "Tindakan ini tidak dapat dibatalkan.",
+      confirmLabel: "Hapus",
+      variant: "destructive",
+    });
+    if (!ok) return;
     setDeleteError(null);
     startDeleteTransition(async () => {
       const result = await deleteEventItemAction(item.id);
@@ -230,6 +238,7 @@ export function EventItemDetailView({
           </div>
         </div>
       )}
+      {dialog}
     </div>
   );
 }

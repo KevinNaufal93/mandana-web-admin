@@ -6,7 +6,7 @@ import { parseStorageBookingQuery, toStorageBookingSearchString } from "@/lib/st
 import { exportStorageBookingsAction } from "@/app/actions/booking-exports";
 import { StorageBookingFilters } from "@/components/storage/storage-booking-filters";
 import { StorageBookingsTable } from "@/components/storage/storage-bookings-table";
-import { StorageBookingsPagination } from "@/components/storage/storage-bookings-pagination";
+import { Pagination } from "@/components/ui/pagination";
 import { ExportBookingsButton } from "@/components/bookings/export-bookings-button";
 import type { ApiError } from "@/lib/api/errors";
 
@@ -53,7 +53,7 @@ export default async function StorageBookingsPage({
             query={query}
             basePath="/storage/bookings"
           />
-          <StorageBookingsPagination query={query} meta={bookingsResult.data.meta} basePath="/storage/bookings" />
+          <Pagination meta={bookingsResult.data.meta} noun="pemesanan" hrefForPage={(page) => `/storage/bookings${toStorageBookingSearchString(query, { page })}`} />
         </>
       )}
     </div>

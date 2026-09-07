@@ -4,10 +4,10 @@ import { Plus, Layers } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth/dal";
 import { listStorageUnits } from "@/lib/api/storage-units";
 import { listStorageFacilities, listStorageUnitTypes } from "@/lib/api/storage";
-import { parseStorageUnitQuery } from "@/lib/storage/query";
+import { parseStorageUnitQuery, toUnitSearchString } from "@/lib/storage/query";
 import { StorageUnitFilters } from "@/components/storage/storage-unit-filters";
 import { StorageUnitsTable } from "@/components/storage/storage-units-table";
-import { StorageUnitsPagination } from "@/components/storage/storage-units-pagination";
+import { Pagination } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
 import type { ApiError } from "@/lib/api/errors";
 
@@ -61,7 +61,7 @@ export default async function StorageUnitsPage({
             unitTypes={unitTypes}
             hasActiveFilters={hasActiveFilters}
           />
-          <StorageUnitsPagination query={query} meta={unitsResult.data.meta} basePath="/storage/units" />
+          <Pagination meta={unitsResult.data.meta} noun="unit" hrefForPage={(page) => `/storage/units${toUnitSearchString(query, { page })}`} />
         </>
       )}
     </div>

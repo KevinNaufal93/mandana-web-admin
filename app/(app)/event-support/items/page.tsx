@@ -3,10 +3,10 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth/dal";
 import { listEventItems, listEventCategories } from "@/lib/api/event-support";
-import { parseEventItemQuery } from "@/lib/event-support/query";
+import { parseEventItemQuery, toItemSearchString } from "@/lib/event-support/query";
 import { EventItemFilters } from "@/components/event-support/event-item-filters";
 import { EventItemsTable } from "@/components/event-support/event-items-table";
-import { EventItemsPagination } from "@/components/event-support/event-items-pagination";
+import { Pagination } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
 import type { ApiError } from "@/lib/api/errors";
 
@@ -44,7 +44,7 @@ export default async function EventItemsPage({
       ) : (
         <>
           <EventItemsTable rows={itemsResult.data.items} hasActiveFilters={hasActiveFilters} />
-          <EventItemsPagination query={query} meta={itemsResult.data.meta} basePath="/event-support/items" />
+          <Pagination meta={itemsResult.data.meta} noun="item" hrefForPage={(page) => `/event-support/items${toItemSearchString(query, { page })}`} />
         </>
       )}
     </div>

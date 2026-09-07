@@ -5,7 +5,7 @@ import { parseMovingBookingQuery, toMovingBookingSearchString } from "@/lib/movi
 import { exportMovingBookingsAction } from "@/app/actions/booking-exports";
 import { MovingBookingFilters } from "@/components/moving/moving-booking-filters";
 import { MovingBookingsTable } from "@/components/moving/moving-bookings-table";
-import { MovingBookingsPagination } from "@/components/moving/moving-bookings-pagination";
+import { Pagination } from "@/components/ui/pagination";
 import { ExportBookingsButton } from "@/components/bookings/export-bookings-button";
 import type { ApiError } from "@/lib/api/errors";
 
@@ -43,7 +43,7 @@ export default async function MovingBookingsPage({
             query={query}
             basePath="/moving/bookings"
           />
-          <MovingBookingsPagination query={query} meta={result.data.meta} basePath="/moving/bookings" />
+          <Pagination meta={result.data.meta} noun="pemesanan" hrefForPage={(page) => `/moving/bookings${toMovingBookingSearchString(query, { page })}`} />
         </>
       )}
     </div>

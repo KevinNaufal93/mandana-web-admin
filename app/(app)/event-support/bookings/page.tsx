@@ -7,7 +7,7 @@ import { parseEventBookingQuery, toBookingSearchString } from "@/lib/event-suppo
 import { exportEventBookingsAction } from "@/app/actions/booking-exports";
 import { BookingFilters } from "@/components/event-support/booking-filters";
 import { BookingsTable } from "@/components/event-support/bookings-table";
-import { BookingsPagination } from "@/components/event-support/bookings-pagination";
+import { Pagination } from "@/components/ui/pagination";
 import { ExportBookingsButton } from "@/components/bookings/export-bookings-button";
 import { Button } from "@/components/ui/button";
 import type { ApiError } from "@/lib/api/errors";
@@ -49,7 +49,7 @@ export default async function EventBookingsPage({
             query={query}
             basePath="/event-support/bookings"
           />
-          <BookingsPagination query={query} meta={result.data.meta} basePath="/event-support/bookings" />
+          <Pagination meta={result.data.meta} noun="pemesanan" hrefForPage={(page) => `/event-support/bookings${toBookingSearchString(query, { page })}`} />
         </>
       )}
     </div>

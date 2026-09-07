@@ -168,7 +168,7 @@ export function UserForm(props: UserFormProps) {
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-3 rounded-lg border border-border p-4">
-            <h3 className="text-sm font-semibold text-primary">Akun</h3>
+            <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Akun</h3>
 
             {props.mode === "create" ? (
               <Field label="Email" htmlFor="user-email">
@@ -233,7 +233,7 @@ export function UserForm(props: UserFormProps) {
           </div>
 
           <div className="flex flex-col gap-3 rounded-lg border border-border p-4">
-            <h3 className="text-sm font-semibold text-primary">
+            <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               {props.mode === "create" ? "Password" : "Ganti password"}
             </h3>
             <Field
@@ -264,7 +264,7 @@ export function UserForm(props: UserFormProps) {
         </div>
 
         <div className="flex flex-col gap-3 rounded-lg border border-border p-4">
-          <h3 className="text-sm font-semibold text-primary">Profil agen</h3>
+          <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Profil agen</h3>
           <p className="text-xs text-muted-foreground">Ditampilkan pada kartu agen di halaman detail properti.</p>
           <Field label="Jabatan (opsional)" htmlFor="user-title">
             <Input

@@ -14,6 +14,7 @@ import type { AdminContentBlock, ContentBlockInput } from "@/lib/api/content-blo
 import type { ContentBlockTypeDef } from "@/lib/content-blocks/types";
 import { LISTING_TYPES, type ListingType } from "@/lib/properties/query";
 import { LISTING_LABEL } from "@/components/properties/property-status-badge";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 
 function Field({ label, htmlFor, children }: { label: string; htmlFor?: string; children: React.ReactNode }) {
   return (
@@ -63,6 +64,7 @@ export function ContentBlockForm(props: ContentBlockFormProps) {
   const [saved, setSaved] = useState(false);
   const [pending, startTransition] = useTransition();
   const [deletePending, startDeleteTransition] = useTransition();
+  const { confirm, dialog } = useConfirmDialog();
 
   function toggleScope(listingType: ListingType) {
     setScope((prev) => (prev.includes(listingType) ? prev.filter((v) => v !== listingType) : [...prev, listingType]));
@@ -140,9 +142,15 @@ export function ContentBlockForm(props: ContentBlockFormProps) {
     });
   }
 
-  function handleDelete() {
+  async function handleDelete() {
     if (props.mode !== "edit") return;
-    if (!window.confirm(`Hapus "${props.block.title}"? Tindakan ini tidak dapat dibatalkan.`)) return;
+    const ok = await confirm({
+      title: `Hapus "${props.block.title}"?`,
+      description: "Tindakan ini tidak dapat dibatalkan.",
+      confirmLabel: "Hapus",
+      variant: "destructive",
+    });
+    if (!ok) return;
     setError(null);
     startDeleteTransition(async () => {
       const result = await deleteContentBlockAction(props.block.id, typeDef.type);
@@ -340,6 +348,7 @@ export function ContentBlockForm(props: ContentBlockFormProps) {
           />
         </div>
       </div>
+      {dialog}
     </div>
   );
 }

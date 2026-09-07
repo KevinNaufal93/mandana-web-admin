@@ -17,6 +17,7 @@ import {
 import type { BookingPdfResult } from "@/app/actions/booking-pdfs";
 import { formatIDRFull, formatDateID, toWaNumber } from "@/lib/format";
 import type { AdminStorageBooking } from "@/lib/api/storage-bookings";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 
 /**
  * No line-item table — unlike Event Support's BookingDetailView, a
@@ -40,6 +41,7 @@ export function StorageBookingDetailView({
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [conflict, setConflict] = useState(false);
+  const { confirm, dialog } = useConfirmDialog();
 
   function runTransition(
     action: (id: string, input: { adminNote?: string }) => Promise<
@@ -60,13 +62,25 @@ export function StorageBookingDetailView({
     });
   }
 
-  function handleReject() {
-    if (!window.confirm("Tolak pemesanan ini? Tindakan ini tidak dapat dibatalkan.")) return;
+  async function handleReject() {
+    const ok = await confirm({
+      title: "Tolak pemesanan ini?",
+      description: "Tindakan ini tidak dapat dibatalkan.",
+      confirmLabel: "Tolak",
+      variant: "destructive",
+    });
+    if (!ok) return;
     runTransition(rejectStorageBookingAction);
   }
 
-  function handleCancel() {
-    if (!window.confirm("Batalkan pemesanan ini? Tindakan ini tidak dapat dibatalkan.")) return;
+  async function handleCancel() {
+    const ok = await confirm({
+      title: "Batalkan pemesanan ini?",
+      description: "Tindakan ini tidak dapat dibatalkan.",
+      confirmLabel: "Batalkan",
+      variant: "destructive",
+    });
+    if (!ok) return;
     runTransition(cancelStorageBookingAction);
   }
 
@@ -232,6 +246,7 @@ export function StorageBookingDetailView({
           {booking.status === "rejected" ? "ditolak" : booking.status === "cancelled" ? "dibatalkan" : "selesai"}.
         </p>
       )}
+      {dialog}
     </div>
   );
 }

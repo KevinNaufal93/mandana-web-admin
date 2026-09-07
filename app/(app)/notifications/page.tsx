@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { getCurrentUser } from "@/lib/auth/dal";
 import { listNotifications } from "@/lib/api/notifications";
-import { parseNotificationsQuery } from "@/lib/notifications/query";
+import { parseNotificationsQuery, toNotificationsSearchString } from "@/lib/notifications/query";
 import { NotificationFilters } from "@/components/notifications/notification-filters";
 import { NotificationsTable } from "@/components/notifications/notifications-table";
-import { NotificationsPagination } from "@/components/notifications/notifications-pagination";
+import { Pagination } from "@/components/ui/pagination";
 import type { ApiError } from "@/lib/api/errors";
 
 export const metadata: Metadata = { title: "Notifikasi — Mandana Admin" };
@@ -31,7 +31,7 @@ export default async function NotificationsPage({
       ) : (
         <>
           <NotificationsTable rows={result.data.items} hasActiveFilters={hasActiveFilters} />
-          <NotificationsPagination query={query} meta={result.data.meta} basePath="/notifications" />
+          <Pagination meta={result.data.meta} noun="notifikasi" hrefForPage={(page) => `/notifications${toNotificationsSearchString(query, { page })}`} />
         </>
       )}
     </div>

@@ -12,6 +12,7 @@ import { MovingAddonForm } from "@/components/moving/moving-addon-form";
 import { deleteMovingAddonAction } from "@/app/actions/moving";
 import { formatIDRFull } from "@/lib/format";
 import type { AdminMovingAddon } from "@/lib/api/moving";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 
 const KIND_LABEL: Record<string, string> = {
   helper: "Helper",
@@ -34,14 +35,21 @@ export function MovingAddonDetailView({ addon: initialAddon }: { addon: AdminMov
   const [mode, setMode] = useState<"view" | "edit">("view");
   const [deletePending, startDeleteTransition] = useTransition();
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const { confirm, dialog } = useConfirmDialog();
 
   function handleSaved(fresh: AdminMovingAddon) {
     setAddon(fresh);
     setMode("view");
   }
 
-  function handleDelete() {
-    if (!window.confirm(`Hapus add-on "${addon.name}"? Tindakan ini tidak dapat dibatalkan.`)) return;
+  async function handleDelete() {
+    const ok = await confirm({
+      title: `Hapus add-on "${addon.name}"?`,
+      description: "Tindakan ini tidak dapat dibatalkan.",
+      confirmLabel: "Hapus",
+      variant: "destructive",
+    });
+    if (!ok) return;
     setDeleteError(null);
     startDeleteTransition(async () => {
       const result = await deleteMovingAddonAction(addon.id);
@@ -143,6 +151,7 @@ export function MovingAddonDetailView({ addon: initialAddon }: { addon: AdminMov
           </div>
         </div>
       )}
+      {dialog}
     </div>
   );
 }

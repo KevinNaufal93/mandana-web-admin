@@ -10,6 +10,7 @@ import { RichTextView } from "@/components/ui/rich-text-view";
 import { EventCategoryForm } from "@/components/event-support/event-category-form";
 import { deleteEventCategoryAction } from "@/app/actions/event-support";
 import type { AdminEventCategory } from "@/lib/api/event-support";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export function EventCategoryDetailView({ category: initialCategory }: { category: AdminEventCategory }) {
   const router = useRouter();
@@ -17,14 +18,21 @@ export function EventCategoryDetailView({ category: initialCategory }: { categor
   const [mode, setMode] = useState<"view" | "edit">("view");
   const [deletePending, startDeleteTransition] = useTransition();
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const { confirm, dialog } = useConfirmDialog();
 
   function handleSaved(fresh: AdminEventCategory) {
     setCategory(fresh);
     setMode("view");
   }
 
-  function handleDelete() {
-    if (!window.confirm(`Hapus kategori "${category.name}"? Tindakan ini tidak dapat dibatalkan.`)) return;
+  async function handleDelete() {
+    const ok = await confirm({
+      title: `Hapus kategori "${category.name}"?`,
+      description: "Tindakan ini tidak dapat dibatalkan.",
+      confirmLabel: "Hapus",
+      variant: "destructive",
+    });
+    if (!ok) return;
     setDeleteError(null);
     startDeleteTransition(async () => {
       const result = await deleteEventCategoryAction(category.id);
@@ -95,6 +103,7 @@ export function EventCategoryDetailView({ category: initialCategory }: { categor
           </div>
         </div>
       )}
+      {dialog}
     </div>
   );
 }

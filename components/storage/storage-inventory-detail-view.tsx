@@ -11,6 +11,7 @@ import { deleteStorageInventoryAction } from "@/app/actions/storage-inventory";
 import { formatIDRFull } from "@/lib/format";
 import type { AdminStorageInventory } from "@/lib/api/storage-inventory";
 import type { AdminStorageFacility, AdminStorageUnitType } from "@/lib/api/storage";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 
 /** Few enough fields that a separate detail-view could arguably be an
  *  inline edit instead — kept as its own component for consistency with
@@ -30,6 +31,7 @@ export function StorageInventoryDetailView({
   const [mode, setMode] = useState<"view" | "edit">("view");
   const [deletePending, startDeleteTransition] = useTransition();
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const { confirm, dialog } = useConfirmDialog();
 
   const facility = facilities.find((f) => f.id === inventory.facilityId);
   const unitType = unitTypes.find((t) => t.id === inventory.unitTypeId);
@@ -41,8 +43,14 @@ export function StorageInventoryDetailView({
     setMode("view");
   }
 
-  function handleDelete() {
-    if (!window.confirm("Hapus baris inventaris ini? Tindakan ini tidak dapat dibatalkan.")) return;
+  async function handleDelete() {
+    const ok = await confirm({
+      title: "Hapus baris inventaris ini?",
+      description: "Tindakan ini tidak dapat dibatalkan.",
+      confirmLabel: "Hapus",
+      variant: "destructive",
+    });
+    if (!ok) return;
     setDeleteError(null);
     startDeleteTransition(async () => {
       const result = await deleteStorageInventoryAction(inventory.id);
@@ -139,6 +147,7 @@ export function StorageInventoryDetailView({
           </div>
         </div>
       )}
+      {dialog}
     </div>
   );
 }

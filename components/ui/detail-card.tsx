@@ -61,7 +61,7 @@ export function DetailRow({ label, value }: { label: string; value: React.ReactN
   return (
     <div className="flex items-start justify-between gap-4 text-sm">
       <span className="shrink-0 text-muted-foreground">{label}</span>
-      <span className="text-right font-medium text-primary">{value}</span>
+      <span className="text-right font-medium tabular-nums text-primary">{value}</span>
     </div>
   );
 }

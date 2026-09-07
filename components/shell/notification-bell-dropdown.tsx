@@ -88,6 +88,12 @@ interface NotificationBellDropdownProps {
 export function NotificationBellDropdown({ initialItems, initialSummary, streamBaseUrl }: NotificationBellDropdownProps) {
   const [items, setItems] = useState(initialItems);
   const [summary, setSummary] = useState(initialSummary);
+  // Id of the row that just arrived live via notification.created, so only
+  // that one plays an enter animation instead of the whole list replaying
+  // it on every re-render. Cleared shortly after so a later dropdown
+  // reopen (which remounts every row through Radix Presence) does not
+  // replay it for an item that is no longer actually new.
+  const [newestId, setNewestId] = useState<string | null>(null);
 
   useEffect(() => {
     // Browser autoplay policy blocks audio until the page has seen one real
@@ -169,6 +175,12 @@ export function NotificationBellDropdown({ initialItems, initialSummary, streamB
           const payload = JSON.parse(e.data) as NotificationCreatedEvent;
           setItems((prev) => [payload, ...prev].slice(0, MAX_DROPDOWN_ITEMS));
           setSummary({ unresolvedCount: payload.unresolvedCount, unreadCount: payload.unreadCount });
+          // Same-frame visual for the same-frame sound (Apple's audio-haptic
+          // "harmony" rule) -- see NotificationRow's isNew prop below.
+          // Cleared once the animation has had time to finish so it never
+          // replays for a row that is no longer actually new.
+          setNewestId(payload.id);
+          window.setTimeout(() => setNewestId((current) => (current === payload.id ? null : current)), 400);
           // Not played for notification.snapshot -- that one backfills
           // history on every (re)connect, including the very first, and
           // would otherwise chime for bookings that arrived before this
@@ -256,7 +268,13 @@ export function NotificationBellDropdown({ initialItems, initialSummary, streamB
         >
           <Bell className={cn("size-5", summary.unreadCount > 0 ? "text-card" : "text-card/70")} />
           {summary.unresolvedCount > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold leading-none text-white">
+            // Keyed by the count itself: a real DOM remount every time the
+            // number changes is what makes zoom-in-50 replay as a "pop" on
+            // each change, not just once on first mount.
+            <span
+              key={summary.unresolvedCount}
+              className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 animate-in items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold leading-none text-white zoom-in-50 duration-fast ease-standard"
+            >
               {summary.unresolvedCount > 99 ? "99+" : summary.unresolvedCount}
             </span>
           )}
@@ -274,7 +292,7 @@ export function NotificationBellDropdown({ initialItems, initialSummary, streamB
           {items.length === 0 ? (
             <p className="px-2 py-8 text-center text-sm text-muted-foreground">Belum ada notifikasi.</p>
           ) : (
-            items.map((n) => <NotificationRow key={n.id} notification={n} />)
+            items.map((n) => <NotificationRow key={n.id} notification={n} isNew={n.id === newestId} />)
           )}
         </div>
         <DropdownMenuSeparator className="my-0" />
@@ -286,13 +304,31 @@ export function NotificationBellDropdown({ initialItems, initialSummary, streamB
   );
 }
 
-function NotificationRow({ notification }: { notification: AdminNotification }) {
+function NotificationRow({
+  notification,
+  isNew = false,
+}: {
+  notification: AdminNotification;
+  /** True only for the row that just arrived live via notification.created
+   *  -- plays a same-frame entrance so the visual matches the sound that
+   *  fires alongside it (Apple "harmony"). Never true for rows already in
+   *  the list on mount (initialItems / notification.snapshot), so opening
+   *  the dropdown never animates the whole list at once. */
+  isNew?: boolean;
+}) {
   const isResolved = notification.resolvedAt !== null;
   const isUnread = notification.readAt === null;
   const showDot = isUnread && !isResolved;
 
   return (
-    <DropdownMenuItem asChild className={cn("flex-col items-stretch gap-1 p-2", isResolved && "opacity-60")}>
+    <DropdownMenuItem
+      asChild
+      className={cn(
+        "flex-col items-stretch gap-1 p-2",
+        isResolved && "opacity-60",
+        isNew && "animate-in fade-in-0 slide-in-from-top-2 duration-base ease-standard",
+      )}
+    >
       <Link href={sourceModuleBookingHref(notification.sourceModule, notification.sourceId)}>
         <div className="flex items-center gap-2">
           <span

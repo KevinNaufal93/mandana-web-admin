@@ -17,6 +17,7 @@ import {
 import type { BookingPdfResult } from "@/app/actions/booking-pdfs";
 import { formatIDRFull, formatDateID, formatDateRangeID, formatDateTimeRangeID, toWaNumber } from "@/lib/format";
 import type { AdminEventBooking } from "@/lib/api/event-support-bookings";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 
 /** Bookings are never edited in place — no PATCH for fields exists.
  *  Everything below the header is read-only except the three transition
@@ -33,6 +34,7 @@ export function BookingDetailView({
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [conflict, setConflict] = useState(false);
+  const { confirm, dialog } = useConfirmDialog();
 
   function runTransition(action: (id: string, input: { adminNote?: string }) => Promise<{ ok: true; data: AdminEventBooking } | { ok: false; error: string; conflict?: true }>) {
     setError(null);
@@ -49,8 +51,14 @@ export function BookingDetailView({
     });
   }
 
-  function handleCancel() {
-    if (!window.confirm("Batalkan pemesanan ini? Tindakan ini tidak dapat dibatalkan.")) return;
+  async function handleCancel() {
+    const ok = await confirm({
+      title: "Batalkan pemesanan ini?",
+      description: "Tindakan ini tidak dapat dibatalkan.",
+      confirmLabel: "Batalkan",
+      variant: "destructive",
+    });
+    if (!ok) return;
     runTransition(cancelEventBookingAction);
   }
 
@@ -255,6 +263,7 @@ export function BookingDetailView({
           Pemesanan ini sudah {booking.status === "cancelled" ? "dibatalkan" : "selesai"}.
         </p>
       )}
+      {dialog}
     </div>
   );
 }

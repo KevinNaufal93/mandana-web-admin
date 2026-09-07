@@ -12,6 +12,7 @@ import { StorageFacilityForm } from "@/components/storage/storage-facility-form"
 import { deleteStorageFacilityAction } from "@/app/actions/storage";
 import { composeLocation } from "@/lib/format";
 import type { AdminStorageFacility } from "@/lib/api/storage";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export function StorageFacilityDetailView({ facility: initialFacility }: { facility: AdminStorageFacility }) {
   const router = useRouter();
@@ -19,14 +20,21 @@ export function StorageFacilityDetailView({ facility: initialFacility }: { facil
   const [mode, setMode] = useState<"view" | "edit">("view");
   const [deletePending, startDeleteTransition] = useTransition();
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const { confirm, dialog } = useConfirmDialog();
 
   function handleSaved(fresh: AdminStorageFacility) {
     setFacility(fresh);
     setMode("view");
   }
 
-  function handleDelete() {
-    if (!window.confirm(`Hapus fasilitas "${facility.name}"? Tindakan ini tidak dapat dibatalkan.`)) return;
+  async function handleDelete() {
+    const ok = await confirm({
+      title: `Hapus fasilitas "${facility.name}"?`,
+      description: "Tindakan ini tidak dapat dibatalkan.",
+      confirmLabel: "Hapus",
+      variant: "destructive",
+    });
+    if (!ok) return;
     setDeleteError(null);
     startDeleteTransition(async () => {
       const result = await deleteStorageFacilityAction(facility.id);
@@ -115,6 +123,7 @@ export function StorageFacilityDetailView({ facility: initialFacility }: { facil
           </div>
         </div>
       )}
+      {dialog}
     </div>
   );
 }

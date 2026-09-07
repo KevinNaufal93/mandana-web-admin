@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { toBookingSearchString, type EventBookingQuery } from "@/lib/event-support/query";
 import type { PageMeta } from "@/lib/api/server-client";
 
 type PageItem = number | "ellipsis";
 
-/** Copy of event-items-pagination.tsx, retyped to EventBookingQuery. */
+/**
+ * Always includes 1, totalPages, and a window around `current`, collapsing
+ * any gap into a single "ellipsis" marker — e.g. [1, "ellipsis", 4, 5, 6,
+ * "ellipsis", 12] for page 5 of 12.
+ */
 function buildPageList(current: number, total: number): PageItem[] {
   const keep = new Set<number>([1, 2, total - 1, total, current - 1, current, current + 1]);
   const sorted = [...keep].filter((p) => p >= 1 && p <= total).sort((a, b) => a - b);
@@ -22,18 +25,29 @@ function buildPageList(current: number, total: number): PageItem[] {
 
 const pageLinkClass = (active: boolean) =>
   cn(
-    "flex h-9 min-w-9 items-center justify-center rounded-lg border px-2 text-sm font-medium transition-colors",
+    "flex h-9 min-w-9 items-center justify-center rounded-lg border px-2 text-sm font-medium tabular-nums transition-colors duration-fast ease-standard active:scale-[0.97]",
     active ? "border-primary bg-primary text-card" : "border-border text-primary hover:bg-muted",
   );
 
-export function BookingsPagination({
-  query,
+/**
+ * Shared, domain-agnostic pagination — replaces 7 near-identical copies
+ * (one per module) that differed only in their query-serializer and the
+ * noun in "Menampilkan X–Y dari Z {noun}". Each caller supplies its own
+ * `toXSearchString` helper through `hrefForPage`, so this component never
+ * needs to know about any module's Query type.
+ */
+export function Pagination({
   meta,
-  basePath,
+  noun,
+  hrefForPage,
 }: {
-  query: EventBookingQuery;
   meta: PageMeta;
-  basePath: string;
+  /** The Indonesian noun completing "Menampilkan X–Y dari Z {noun}" —
+   *  e.g. "properti", "pemesanan", "unit". */
+  noun: string;
+  /** Builds the href for a given page number, using the caller's own
+   *  query + basePath + toXSearchString serializer. */
+  hrefForPage: (page: number) => string;
 }) {
   if (meta.total === 0) return null;
 
@@ -43,7 +57,7 @@ export function BookingsPagination({
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
       <p className="text-sm text-muted-foreground">
-        Menampilkan {from}–{to} dari {meta.total} pemesanan
+        Menampilkan {from}–{to} dari {meta.total} {noun}
       </p>
 
       {meta.totalPages > 1 && (
@@ -56,7 +70,7 @@ export function BookingsPagination({
             ) : (
               <Link
                 key={item}
-                href={`${basePath}${toBookingSearchString(query, { page: item })}`}
+                href={hrefForPage(item)}
                 aria-current={item === meta.page ? "page" : undefined}
                 className={pageLinkClass(item === meta.page)}
               >

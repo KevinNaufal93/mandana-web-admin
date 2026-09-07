@@ -12,6 +12,7 @@ import { StorageUnitTypeForm } from "@/components/storage/storage-unit-type-form
 import { deleteStorageUnitTypeAction } from "@/app/actions/storage";
 import { formatIDRFull } from "@/lib/format";
 import type { AdminStorageUnitType } from "@/lib/api/storage";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export function StorageUnitTypeDetailView({ unitType: initialUnitType }: { unitType: AdminStorageUnitType }) {
   const router = useRouter();
@@ -19,14 +20,21 @@ export function StorageUnitTypeDetailView({ unitType: initialUnitType }: { unitT
   const [mode, setMode] = useState<"view" | "edit">("view");
   const [deletePending, startDeleteTransition] = useTransition();
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const { confirm, dialog } = useConfirmDialog();
 
   function handleSaved(fresh: AdminStorageUnitType) {
     setUnitType(fresh);
     setMode("view");
   }
 
-  function handleDelete() {
-    if (!window.confirm(`Hapus tipe unit "${unitType.name}"? Tindakan ini tidak dapat dibatalkan.`)) return;
+  async function handleDelete() {
+    const ok = await confirm({
+      title: `Hapus tipe unit "${unitType.name}"?`,
+      description: "Tindakan ini tidak dapat dibatalkan.",
+      confirmLabel: "Hapus",
+      variant: "destructive",
+    });
+    if (!ok) return;
     setDeleteError(null);
     startDeleteTransition(async () => {
       const result = await deleteStorageUnitTypeAction(unitType.id);
@@ -128,6 +136,7 @@ export function StorageUnitTypeDetailView({ unitType: initialUnitType }: { unitT
           </div>
         </div>
       )}
+      {dialog}
     </div>
   );
 }

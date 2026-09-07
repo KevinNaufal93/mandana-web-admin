@@ -16,6 +16,7 @@ import {
 import type { BookingPdfResult } from "@/app/actions/booking-pdfs";
 import { formatIDRFull, formatDateID, toWaNumber } from "@/lib/format";
 import type { AdminMovingBooking } from "@/lib/api/moving-bookings";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 
 function stopLabel(address: string | null, lat: number, lng: number): string {
   return address ?? `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
@@ -45,6 +46,7 @@ export function MovingBookingDetailView({
   const [adminNote, setAdminNote] = useState("");
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const { confirm, dialog } = useConfirmDialog();
 
   const hasContact = Boolean(booking.customerName || booking.phone || booking.email || booking.notes);
 
@@ -65,13 +67,25 @@ export function MovingBookingDetailView({
     });
   }
 
-  function handleReject() {
-    if (!window.confirm("Tolak pemesanan ini? Tindakan ini tidak dapat dibatalkan.")) return;
+  async function handleReject() {
+    const ok = await confirm({
+      title: "Tolak pemesanan ini?",
+      description: "Tindakan ini tidak dapat dibatalkan.",
+      confirmLabel: "Tolak",
+      variant: "destructive",
+    });
+    if (!ok) return;
     runTransition(rejectMovingBookingAction);
   }
 
-  function handleCancel() {
-    if (!window.confirm("Batalkan pemesanan ini? Tindakan ini tidak dapat dibatalkan.")) return;
+  async function handleCancel() {
+    const ok = await confirm({
+      title: "Batalkan pemesanan ini?",
+      description: "Tindakan ini tidak dapat dibatalkan.",
+      confirmLabel: "Batalkan",
+      variant: "destructive",
+    });
+    if (!ok) return;
     runTransition(cancelMovingBookingAction);
   }
 
@@ -293,6 +307,7 @@ export function MovingBookingDetailView({
           {booking.status === "rejected" ? "ditolak" : booking.status === "cancelled" ? "dibatalkan" : "selesai"}.
         </p>
       )}
+      {dialog}
     </div>
   );
 }

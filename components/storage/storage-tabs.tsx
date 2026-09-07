@@ -33,7 +33,7 @@ export function StorageTabs() {
             href={href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "-mb-px shrink-0 border-b-2 px-3 py-2 text-sm font-medium transition-colors",
+              "-mb-px shrink-0 border-b-2 px-3 py-2 text-sm font-medium transition-[color,border-color,transform] duration-fast ease-standard active:scale-[0.97]",
               active
                 ? "border-primary text-primary"
                 : "border-transparent text-muted-foreground hover:text-primary",

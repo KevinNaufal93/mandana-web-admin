@@ -15,7 +15,17 @@
   --accent: #dac39a;
   --accent-foreground: #356354;
   --destructive: #c0392b;
+  /* Intentionally identical to --primary (palette parity with the sibling
+     mandana-web site — see the --foreground note above). That's harmless
+     on the light surfaces border-border is used on 150+ times (cards,
+     dialogs, tables, inputs) — it reads as a deliberate, fairly bold
+     outline there. It only breaks on a bg-primary surface itself, where
+     it becomes invisible; app-sidebar.tsx hit this and now uses a shadow
+     instead (see its own comment) for its outer edge, and border-on-dark
+     below for its internal header divider — reach for that token, not
+     border-border, on any future bg-primary surface. */
   --border: #1d3b31;
+  --border-on-dark: rgba(250, 250, 250, 0.1);
   --ring: #259678;
   --radius: 0.5rem;
   --footer: #23312b;
@@ -36,6 +46,7 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-border: var(--border);
+  --color-border-on-dark: var(--border-on-dark);
   --color-ring: var(--ring);
   /* mandana-web/app/globals.css is missing the semicolon after
      var(--footer) here, which silently merges this with --font-sans and
@@ -44,6 +55,18 @@
   --font-sans: var(--font-inter);
   --font-serif: var(--font-gambetta);
   --radius: var(--radius);
+
+  /* Motion. Enter decelerates (ease-out-like); exit may accelerate.
+     `ease` — the tw-animate-css default everything previously inherited —
+     is symmetric and wrong for entering material (Apple "Designing Fluid
+     Interfaces": response + interruptibility). Duration namespace is
+     --transition-duration-* (not --duration-*) per Tailwind v4's
+     `duration` utility. */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --transition-duration-fast: 120ms;   /* press feedback, hovers */
+  --transition-duration-base: 180ms;   /* popovers, dropdowns, selects */
+  --transition-duration-slow: 260ms;   /* dialogs, sidebar width */
 }
 
 body {
@@ -118,4 +141,40 @@ body {
     color: var(--muted-foreground);
     font-style: normal;
   }
+}
+
+/* Reduced motion: gentler, not zero (Apple §14). Forcing near-0
+   durations (rather than `animation: none`) keeps every element's *end
+   state* correct and still fires animationend/transitionend, which Radix
+   Presence listens for to unmount exited content — removing the
+   animation outright would leave dialogs/popovers stuck mounted. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Size-specific tracking/leading (Apple §15: tracking is never one value
+   for all sizes). Targets the two heading patterns used ~56 times across
+   the app by their existing utility combination, rather than editing
+   every call site. Deliberately unlayered so it wins over Tailwind's own
+   layered utility output (text-2xl's bundled line-height) regardless of
+   source order. */
+.text-2xl.font-semibold {
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+.text-lg.font-semibold {
+  letter-spacing: -0.01em;
+}
+
+/* tabular-nums safety net for any right-aligned numeric cell that isn't
+   going through <TableCell>/<DetailRow> (which set it directly — see
+   components/ui/table.tsx, components/ui/detail-card.tsx). */
+td.text-right,
+th.text-right {
+  font-variant-numeric: tabular-nums;
 }

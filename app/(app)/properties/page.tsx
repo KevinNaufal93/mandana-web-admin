@@ -3,10 +3,10 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth/dal";
 import { listAdminProperties, listPropertyTypes } from "@/lib/api/properties";
-import { parsePropertyQuery } from "@/lib/properties/query";
+import { parsePropertyQuery, toSearchString } from "@/lib/properties/query";
 import { PropertyFilters } from "@/components/properties/property-filters";
 import { PropertiesTable } from "@/components/properties/properties-table";
-import { PropertiesPagination } from "@/components/properties/properties-pagination";
+import { Pagination } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
 import type { ApiError } from "@/lib/api/errors";
 
@@ -56,7 +56,7 @@ export default async function PropertiesPage({
       ) : (
         <>
           <PropertiesTable rows={propertiesResult.data.items} hasActiveFilters={hasActiveFilters} />
-          <PropertiesPagination query={query} meta={propertiesResult.data.meta} basePath="/properties" />
+          <Pagination meta={propertiesResult.data.meta} noun="properti" hrefForPage={(page) => `/properties${toSearchString(query, { page })}`} />
         </>
       )}
     </div>

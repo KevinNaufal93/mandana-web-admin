@@ -34,7 +34,7 @@ export function AppSidebar() {
         // Only the width animates. Transitioning `all` here would also
         // animate the shadow and the child colors and turn every hover
         // into a 200ms fade.
-        "transition-[width] duration-200 ease-in-out motion-reduce:transition-none",
+        "transition-[width] duration-slow ease-standard motion-reduce:transition-none",
         collapsed ? "w-16" : "w-64",
       )}
     >
@@ -44,7 +44,11 @@ export function AppSidebar() {
           that alignment. The mark gets its own slot below instead. */}
       <div
         className={cn(
-          "flex h-16 shrink-0 items-center border-b border-card/10",
+          // border-on-dark, not border-card/10 (an equivalent magic value
+          // that predates this token) — see globals.css's --border comment
+          // for why border-border itself is unusable on this bg-primary
+          // rail.
+          "flex h-16 shrink-0 items-center border-b border-border-on-dark",
           collapsed ? "justify-center px-2" : "justify-between gap-2 px-6",
         )}
       >
@@ -102,7 +106,7 @@ export function AppSidebar() {
               title={collapsed ? label : undefined}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex h-10 items-center rounded-lg text-sm font-medium transition-colors",
+                "flex h-10 items-center rounded-lg text-sm font-medium transition-[background-color,color,transform] duration-fast ease-standard active:scale-[0.97]",
                 // Active gets its own fill instead of sharing hover's
                 // bg-card/10 — the two used to be visually identical, so
                 // there was no way to tell "current page" from "page I'm

@@ -20,7 +20,7 @@ function TableBody({ className, ...props }: React.ComponentProps<"tbody">) {
 function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
   return (
     <tr
-      className={cn("border-b border-border transition-colors hover:bg-muted/40", className)}
+      className={cn("border-b border-border transition-colors duration-fast ease-standard hover:bg-muted/40", className)}
       {...props}
     />
   );
@@ -30,7 +30,7 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
   return (
     <th
       className={cn(
-        "h-10 whitespace-nowrap px-4 text-left align-middle text-xs font-medium uppercase tracking-wide text-muted-foreground",
+        "h-10 whitespace-nowrap px-4 text-left align-middle text-xs font-medium uppercase tracking-wide tabular-nums text-muted-foreground",
         className,
       )}
       {...props}
@@ -39,7 +39,7 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
 }
 
 function TableCell({ className, ...props }: React.ComponentProps<"td">) {
-  return <td className={cn("px-4 py-3 align-middle", className)} {...props} />;
+  return <td className={cn("px-4 py-3 align-middle tabular-nums", className)} {...props} />;
 }
 
 function TableEmpty({ colSpan, children }: { colSpan: number; children: React.ReactNode }) {
