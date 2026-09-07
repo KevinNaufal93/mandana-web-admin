@@ -13,6 +13,7 @@ import {
 import { NotificationStatusChip } from "@/components/notifications/notification-status-chip";
 import { mintStreamTicketAction, markAllNotificationsReadAction } from "@/app/actions/notifications";
 import { sourceModuleBookingHref, SOURCE_MODULE_LABEL } from "@/lib/notifications/source";
+import { playNotificationSound, unlockNotificationSound } from "@/lib/notifications/sound";
 import type { AdminNotification, NotificationSummary } from "@/lib/api/notifications";
 import type { NotificationSourceModule } from "@/lib/notifications/query";
 import { formatIDRFull } from "@/lib/format";
@@ -34,9 +35,9 @@ interface NotificationReadEvent {
   ids: string[];
   unreadCount: number;
 }
-/** Fired once, immediately, on every connect (first load, tab-visibility
- *  reconnect, error retry, ticket refresh) -- see the API's
- *  NotificationsService.stream() doc comment for why. */
+/** Fired once, immediately, on every connect (first load, error retry,
+ *  ticket refresh) -- see the API's NotificationsService.stream() doc
+ *  comment for why. */
 interface NotificationSnapshotEvent {
   items: AdminNotification[];
   unresolvedCount: number;
@@ -78,10 +79,28 @@ interface NotificationBellDropdownProps {
  * comes from the stream (notification.snapshot backfills on every
  * connect -- see NotificationSnapshotEvent above -- so a reconnect never
  * has to fall back to polling or router.refresh() either).
+ *
+ * The connection is kept open even while the tab is hidden: the whole point
+ * of the sound + badge is to alert an admin who is not looking at this tab,
+ * so a visibility-based disconnect would silence the one case that matters
+ * most. The cost is one open connection per idle admin tab indefinitely.
  */
 export function NotificationBellDropdown({ initialItems, initialSummary, streamBaseUrl }: NotificationBellDropdownProps) {
   const [items, setItems] = useState(initialItems);
   const [summary, setSummary] = useState(initialSummary);
+
+  useEffect(() => {
+    // Browser autoplay policy blocks audio until the page has seen one real
+    // user gesture; after that, it stays unlocked for the rest of the tab's
+    // lifetime, so this only needs to fire once. { once: true } removes it
+    // after the first hit.
+    document.addEventListener("pointerdown", unlockNotificationSound, { once: true });
+    document.addEventListener("keydown", unlockNotificationSound, { once: true });
+    return () => {
+      document.removeEventListener("pointerdown", unlockNotificationSound);
+      document.removeEventListener("keydown", unlockNotificationSound);
+    };
+  }, []);
 
   useEffect(() => {
     // Plain closure-local state, deliberately NOT refs: a ref is shared
@@ -97,20 +116,16 @@ export function NotificationBellDropdown({ initialItems, initialSummary, streamB
     let cancelled = false;
     let eventSource: EventSource | null = null;
     // Guards the async gap between "connect() started" and "eventSource
-    // is actually assigned" -- without it, a fast hide/show/hide/show via
-    // handleVisibilityChange can call connect() a second time while the
-    // first call is still awaiting its ticket, opening two live
-    // connections (the same class of race the comment above describes
-    // for Strict Mode, but reachable here too, post-mount).
+    // is actually assigned" -- without it, two overlapping calls to
+    // connect() (e.g. a reconnect timer firing while a prior attempt is
+    // still awaiting its ticket) can open two live connections (the same
+    // class of race the comment above describes for Strict Mode, but
+    // reachable here too, post-mount).
     let connecting = false;
     let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
 
     function scheduleReconnect() {
-      // Never reconnect a hidden tab: handleVisibilityChange() below
-      // already reconnects, with a fresh ticket, the moment it becomes
-      // visible again -- a timer armed while hidden would only open a
-      // connection nobody is looking at.
-      if (cancelled || document.hidden) return;
+      if (cancelled) return;
       reconnectTimer = setTimeout(connect, RECONNECT_DELAY_MS);
     }
 
@@ -134,13 +149,12 @@ export function NotificationBellDropdown({ initialItems, initialSummary, streamB
           scheduleReconnect();
           return;
         }
-        if (document.hidden) return; // went hidden during the round trip above
 
         const es = new EventSource(`${streamBaseUrl}/admin/notifications/stream?ticket=${ticketResult.data.ticket}`);
         eventSource = es;
 
-        // Fired once, immediately, by every connection (first load, tab
-        // return, error retry, ticket refresh). Replaces state wholesale
+        // Fired once, immediately, by every connection (first load, error
+        // retry, ticket refresh). Replaces state wholesale
         // rather than merging, so it also backfills anything that fired
         // while this tab had no stream open -- events$ on the server is a
         // plain Subject with no replay buffer, so those would otherwise
@@ -155,6 +169,11 @@ export function NotificationBellDropdown({ initialItems, initialSummary, streamB
           const payload = JSON.parse(e.data) as NotificationCreatedEvent;
           setItems((prev) => [payload, ...prev].slice(0, MAX_DROPDOWN_ITEMS));
           setSummary({ unresolvedCount: payload.unresolvedCount, unreadCount: payload.unreadCount });
+          // Not played for notification.snapshot -- that one backfills
+          // history on every (re)connect, including the very first, and
+          // would otherwise chime for bookings that arrived before this
+          // tab ever opened.
+          playNotificationSound();
         });
 
         es.addEventListener("notification.resolved", (e: MessageEvent<string>) => {
@@ -200,29 +219,13 @@ export function NotificationBellDropdown({ initialItems, initialSummary, streamB
       }
     }
 
-    function disconnect() {
-      clearTimeout(reconnectTimer);
-      eventSource?.close();
-      eventSource = null;
-    }
-
-    // Background tabs don't hold a connection open -- reconnect (with a
-    // fresh ticket) only once this tab is visible again.
-    function handleVisibilityChange() {
-      if (document.hidden) {
-        disconnect();
-      } else if (!eventSource) {
-        connect();
-      }
-    }
-
-    if (!document.hidden) connect();
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+    connect();
 
     return () => {
       cancelled = true;
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      disconnect();
+      clearTimeout(reconnectTimer);
+      eventSource?.close();
+      eventSource = null;
     };
     // streamBaseUrl is resolved once, server-side, by the parent Server
     // Component (see notification-bell.tsx) -- it cannot change during
