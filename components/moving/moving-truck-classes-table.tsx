@@ -16,7 +16,7 @@ export function MovingTruckClassesTable({ rows, hasActiveFilters }: { rows: Admi
           <TableHead>Tipe truk</TableHead>
           <TableHead>Status</TableHead>
           <TableHead className="text-right">Tarif dasar</TableHead>
-          <TableHead className="text-right">Tarif / km</TableHead>
+          <TableHead className="text-right">Tarif / 500 m</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -61,7 +61,7 @@ function TruckClassRow({ row }: { row: AdminMovingTruckClass }) {
         {formatIDRShort(row.baseFare)}
       </TableCell>
       <TableCell className="whitespace-nowrap text-right text-sm text-muted-foreground">
-        {formatIDRShort(row.perKmFare)}
+        {formatIDRShort(row.per500mFare)}
       </TableCell>
     </TableRow>
   );

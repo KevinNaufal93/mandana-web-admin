@@ -55,7 +55,7 @@ export function MovingTruckClassForm(props: MovingTruckClassFormProps) {
   const [heightCm, setHeightCm] = useState(truckClass?.dimensions ? String(truckClass.dimensions.heightCm) : "");
   const [helperCount, setHelperCount] = useState(truckClass?.helperCount != null ? String(truckClass.helperCount) : "");
   const [baseFare, setBaseFare] = useState(truckClass ? String(truckClass.baseFare) : "");
-  const [perKmFare, setPerKmFare] = useState(truckClass ? String(truckClass.perKmFare) : "");
+  const [per500mFare, setPer500mFare] = useState(truckClass ? String(truckClass.per500mFare) : "");
   const [includedKm, setIncludedKm] = useState(truckClass?.includedKm != null ? String(truckClass.includedKm) : "");
   const [minFare, setMinFare] = useState(truckClass?.minFare != null ? String(truckClass.minFare) : "");
   const [isActive, setIsActive] = useState(truckClass?.isActive ?? true);
@@ -80,9 +80,9 @@ export function MovingTruckClassForm(props: MovingTruckClassFormProps) {
       setError("Tarif dasar harus berupa bilangan bulat (Rupiah), 0 atau lebih.");
       return;
     }
-    const perKm = Number(perKmFare);
-    if (perKmFare.trim() === "" || !Number.isInteger(perKm) || perKm < 0) {
-      setError("Tarif per km harus berupa bilangan bulat (Rupiah), 0 atau lebih.");
+    const per500m = Number(per500mFare);
+    if (per500mFare.trim() === "" || !Number.isInteger(per500m) || per500m < 0) {
+      setError("Tarif per 500 m harus berupa bilangan bulat (Rupiah), 0 atau lebih.");
       return;
     }
     const sortOrderNumber = Number(sortOrder);
@@ -161,7 +161,7 @@ export function MovingTruckClassForm(props: MovingTruckClassFormProps) {
       heightCm: height,
       helperCount: helpers,
       baseFare: base,
-      perKmFare: perKm,
+      per500mFare: per500m,
       includedKm: included,
       minFare: minFareNumber,
       mediaAssetId: image.mediaAssetId ?? undefined,
@@ -317,14 +317,14 @@ export function MovingTruckClassForm(props: MovingTruckClassFormProps) {
                 disabled={pending}
               />
             </Field>
-            <Field label="Tarif per km (Rp)" htmlFor="truck-class-per-km-fare">
+            <Field label="Tarif per 500 m (Rp)" htmlFor="truck-class-per-500m-fare">
               <Input
-                id="truck-class-per-km-fare"
+                id="truck-class-per-500m-fare"
                 type="number"
                 min={0}
                 step={1}
-                value={perKmFare}
-                onChange={(e) => setPerKmFare(e.target.value)}
+                value={per500mFare}
+                onChange={(e) => setPer500mFare(e.target.value)}
                 disabled={pending}
               />
             </Field>

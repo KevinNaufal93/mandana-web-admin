@@ -131,7 +131,14 @@ export function MovingBookingDetailView({
             <div className="mt-2 border-t border-border pt-3">
               <DetailRow label="Jarak" value={`${booking.distanceKm} km`} />
               <DetailRow label="Km termasuk" value={`${booking.includedKm} km`} />
-              <DetailRow label="Km dikenakan biaya" value={`${booking.chargeableKm} km`} />
+              <DetailRow
+                label="Km dikenakan biaya"
+                value={
+                  booking.chargeableSteps != null
+                    ? `${booking.chargeableKm} km (${booking.chargeableSteps} × 500 m)`
+                    : `${booking.chargeableKm} km`
+                }
+              />
               <DetailRow label="Pulang-pergi" value={booking.roundTrip ? "Ya" : "Tidak"} />
               <DetailRow label="Rute tol" value={booking.tollRoute ? "Ya" : "Tidak"} />
               {booking.declaredValue != null && (
@@ -147,6 +154,7 @@ export function MovingBookingDetailView({
                   <div key={i} className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">
                       Etape {i + 1} · {leg.chargeableKm} km dikenakan biaya
+                      {leg.chargeableSteps != null && ` (${leg.chargeableSteps} × 500 m)`}
                     </span>
                     <span className="text-primary">{formatIDRFull(leg.subtotal)}</span>
                   </div>

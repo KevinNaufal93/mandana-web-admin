@@ -42,6 +42,10 @@ export interface MovingBookingLeg {
   distanceKm: number;
   includedKm: number;
   chargeableKm: number;
+  /** Whole 500 m steps billed on this leg — the multiplicand behind
+   *  distanceFare, not chargeableKm. Can be nonzero while chargeableKm
+   *  rounds to 0.0. null on a leg priced before 500 m step pricing shipped. */
+  chargeableSteps: number | null;
   /** Rupiah */
   baseFare: number;
   /** Rupiah */
@@ -63,6 +67,9 @@ export interface AdminMovingBooking {
   distanceKm: number;
   includedKm: number;
   chargeableKm: number;
+  /** Sum of every leg's chargeableSteps. null on a booking priced before
+   *  500 m step pricing shipped. */
+  chargeableSteps: number | null;
   roundTrip: boolean;
   tollRoute: boolean;
   declaredValue: number | null;

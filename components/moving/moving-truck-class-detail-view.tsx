@@ -117,7 +117,7 @@ export function MovingTruckClassDetailView({ truckClass: initialTruckClass }: { 
           <div className="flex flex-col gap-6">
             <DetailCard title="Harga">
               <DetailRow label="Tarif dasar" value={formatIDRFull(truckClass.baseFare)} />
-              <DetailRow label="Tarif per km" value={formatIDRFull(truckClass.perKmFare)} />
+              <DetailRow label="Tarif per 500 m" value={formatIDRFull(truckClass.per500mFare)} />
               <DetailRow
                 label="Km termasuk"
                 value={truckClass.includedKm != null ? `${truckClass.includedKm} km` : "Default pengaturan"}

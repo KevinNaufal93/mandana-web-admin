@@ -71,7 +71,14 @@ export function MovingBookingPdfDocument({ booking }: { booking: AdminMovingBook
           <View style={{ marginTop: pdfSpace.xs }}>
             <Row label="Jarak" value={`${booking.distanceKm} km`} />
             <Row label="Km termasuk" value={`${booking.includedKm} km`} />
-            <Row label="Km dikenakan biaya" value={`${booking.chargeableKm} km`} />
+            <Row
+              label="Km dikenakan biaya"
+              value={
+                booking.chargeableSteps != null
+                  ? `${booking.chargeableKm} km (${booking.chargeableSteps} × 500 m)`
+                  : `${booking.chargeableKm} km`
+              }
+            />
             <Row label="Pulang-pergi" value={booking.roundTrip ? "Ya" : "Tidak"} />
             <Row label="Rute tol" value={booking.tollRoute ? "Ya" : "Tidak"} />
             {booking.declaredValue != null && <Row label="Nilai barang dinyatakan" value={formatIDRFull(booking.declaredValue)} />}
@@ -80,7 +87,11 @@ export function MovingBookingPdfDocument({ booking }: { booking: AdminMovingBook
 
         <Section title="Rincian Harga" wrap>
           {booking.legs.map((leg, i) => (
-            <AmountRow key={i} label={`Etape ${i + 1} · ${leg.chargeableKm} km dikenakan biaya`} amount={formatIDRFull(leg.subtotal)} />
+            <AmountRow
+              key={i}
+              label={`Etape ${i + 1} · ${leg.chargeableKm} km dikenakan biaya${leg.chargeableSteps != null ? ` (${leg.chargeableSteps} × 500 m)` : ""}`}
+              amount={formatIDRFull(leg.subtotal)}
+            />
           ))}
           {booking.addons.map((line) => (
             <AmountRow key={line.slug} label={`${line.name} × ${line.quantity}`} amount={formatIDRFull(line.amount)} />

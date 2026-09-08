@@ -2233,8 +2233,8 @@ export interface components {
             helperCount?: number | null;
             /** @description Rupiah, integer */
             baseFare: number;
-            /** @description Rupiah per km, integer */
-            perKmFare: number;
+            /** @description Rupiah per 500 m step, integer */
+            per500mFare: number;
             includedKm?: number | null;
             minFare?: number | null;
             /** @description Raw id of the attached asset — what an admin edit form binds its image picker to. `image` below is the rendered projection of the same row. */
@@ -2351,6 +2351,8 @@ export interface components {
             distanceKm: number;
             includedKm: number;
             chargeableKm: number;
+            /** @description Whole 500 m steps billed on this leg — the multiplicand behind distanceFare. Counted from raw metres and rounded up, so this can be > 0 while chargeableKm displays 0.0. */
+            chargeableSteps: number;
             /** @description Rupiah */
             baseFare: number;
             /** @description Rupiah */
@@ -2363,6 +2365,8 @@ export interface components {
             distanceKm: number;
             includedKm: number;
             chargeableKm: number;
+            /** @description Sum of every leg's chargeableSteps. See MovingQuoteLegDto. */
+            chargeableSteps: number;
             roundTrip: boolean;
             /** @description 1 one-way, 2 round trip */
             tripMultiplier: number;
@@ -2439,12 +2443,12 @@ export interface components {
              */
             baseFare: number;
             /**
-             * @description Rupiah per km, integer
-             * @example 4500
+             * @description Rupiah per whole 500 m step charged beyond includedKm, per leg. Distance is billed in fixed 500 m steps rounded UP — against a 5 km allowance, 5.001 km bills 1 step, 5.500 km still bills 1, 5.501 km bills 2. The 500 m step size is fixed in the pricing engine and is not configurable.
+             * @example 2250
              */
-            perKmFare: number;
+            per500mFare: number;
             /**
-             * @description Km included in baseFare before perKmFare applies
+             * @description Km included in baseFare before per500mFare applies
              * @example 5
              */
             includedKm?: number;
@@ -2500,12 +2504,12 @@ export interface components {
              */
             baseFare?: number;
             /**
-             * @description Rupiah per km, integer
-             * @example 4500
+             * @description Rupiah per whole 500 m step charged beyond includedKm, per leg. Distance is billed in fixed 500 m steps rounded UP — against a 5 km allowance, 5.001 km bills 1 step, 5.500 km still bills 1, 5.501 km bills 2. The 500 m step size is fixed in the pricing engine and is not configurable.
+             * @example 2250
              */
-            perKmFare?: number;
+            per500mFare?: number;
             /**
-             * @description Km included in baseFare before perKmFare applies
+             * @description Km included in baseFare before per500mFare applies
              * @example 5
              */
             includedKm?: number;
@@ -2735,6 +2739,8 @@ export interface components {
             distanceKm: number;
             includedKm: number;
             chargeableKm: number;
+            /** @description Whole 500 m steps billed on this leg. null on a leg captured before 500 m step pricing shipped. */
+            chargeableSteps?: number | null;
             /** @description Rupiah */
             baseFare: number;
             /** @description Rupiah */
@@ -2757,6 +2763,8 @@ export interface components {
             distanceKm: number;
             includedKm: number;
             chargeableKm: number;
+            /** @description Sum of every leg's chargeableSteps. null on a booking captured before 500 m step pricing shipped. */
+            chargeableSteps?: number | null;
             roundTrip: boolean;
             tollRoute: boolean;
             declaredValue?: number | null;
@@ -2813,6 +2821,8 @@ export interface components {
             distanceKm: number;
             includedKm: number;
             chargeableKm: number;
+            /** @description Sum of every leg's chargeableSteps. null on a booking captured before 500 m step pricing shipped. */
+            chargeableSteps?: number | null;
             roundTrip: boolean;
             tollRoute: boolean;
             declaredValue?: number | null;

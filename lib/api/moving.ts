@@ -56,8 +56,8 @@ export interface AdminMovingTruckClass {
   helperCount: number | null;
   /** Rupiah, integer */
   baseFare: number;
-  /** Rupiah per km, integer */
-  perKmFare: number;
+  /** Rupiah per whole 500 m step beyond includedKm, per leg, rounded up. */
+  per500mFare: number;
   /** Falls back to settings' defaultIncludedKm when unset. */
   includedKm: number | null;
   /** Rupiah floor for the total fare. */
@@ -123,8 +123,8 @@ export interface MovingTruckClassInput {
   helperCount?: number;
   /** Rupiah, integer */
   baseFare?: number;
-  /** Rupiah per km, integer */
-  perKmFare?: number;
+  /** Rupiah per whole 500 m step beyond includedKm, per leg, rounded up. */
+  per500mFare?: number;
   includedKm?: number;
   minFare?: number;
   mediaAssetId?: string;
