@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { requireModule } from "@/lib/auth/dal";
 import { getEventItem, listEventCategories, type AdminEventItem } from "@/lib/api/event-support";
 import { EventItemDetailView } from "@/components/event-support/event-item-detail-view";
 import type { ApiError } from "@/lib/api/errors";
@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 }
 
 export default async function EventItemDetailPage({ params }: { params: Promise<Params> }) {
-  await getCurrentUser();
+  await requireModule("event-support");
   const { id } = await params;
 
   // The item is the page — a failure there 404s/throws. The edit form's

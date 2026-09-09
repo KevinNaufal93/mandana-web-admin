@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { requireModule } from "@/lib/auth/dal";
 import { getEventBooking, type AdminEventBooking } from "@/lib/api/event-support-bookings";
 import { BookingDetailView } from "@/components/event-support/booking-detail-view";
 import { exportEventBookingPdfAction } from "@/app/actions/booking-pdfs";
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 }
 
 export default async function EventBookingDetailPage({ params }: { params: Promise<Params> }) {
-  await getCurrentUser();
+  await requireModule("event-support");
   const { id } = await params;
   const booking = await loadBooking(id);
 

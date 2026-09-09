@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { requireModule } from "@/lib/auth/dal";
 import { MovingAddonForm } from "@/components/moving/moving-addon-form";
 
 export const metadata: Metadata = { title: "Add-on Baru — Mandana Admin" };
 
 export default async function NewMovingAddonPage() {
-  await getCurrentUser();
+  await requireModule("moving");
 
   return (
     <div className="flex flex-col gap-6">

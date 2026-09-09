@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { requireModule } from "@/lib/auth/dal";
 import { getStorageUnitType, type AdminStorageUnitType } from "@/lib/api/storage";
 import { StorageUnitTypeDetailView } from "@/components/storage/storage-unit-type-detail-view";
 import type { ApiError } from "@/lib/api/errors";
@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 }
 
 export default async function StorageUnitTypeDetailPage({ params }: { params: Promise<Params> }) {
-  await getCurrentUser();
+  await requireModule("storage");
   const { id } = await params;
   const unitType = await loadUnitType(id);
 

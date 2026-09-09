@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { requireModule } from "@/lib/auth/dal";
 import { listStorageUnitTypes } from "@/lib/api/storage";
 import { parseStorageCatalogQuery } from "@/lib/storage/query";
 import { StorageCatalogFilters } from "@/components/storage/storage-catalog-filters";
@@ -16,7 +16,7 @@ export default async function StorageUnitTypesPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  await getCurrentUser();
+  await requireModule("storage");
   const query = parseStorageCatalogQuery(await searchParams);
   const result = await listStorageUnitTypes(query);
   const hasActiveFilters = query.isActive !== undefined;

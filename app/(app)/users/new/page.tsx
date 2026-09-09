@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { requireAdmin } from "@/lib/auth/dal";
 import { UserForm } from "@/components/users/user-form";
 
 export const metadata: Metadata = { title: "Pengguna Baru — Mandana Admin" };
 
 export default async function NewUserPage() {
-  await getCurrentUser();
+  await requireAdmin();
 
   return (
     <div className="flex flex-col gap-6">

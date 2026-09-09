@@ -6,19 +6,22 @@ import { usePathname } from "next/navigation";
 import { useSidebar } from "@/components/shell/sidebar-provider";
 import { SidebarToggle } from "@/components/shell/sidebar-toggle";
 import { cn } from "@/lib/utils";
-import { NAV_ITEMS, isNavItemActive } from "@/lib/ui/nav-items";
+import { visibleNavItems, isNavItemActive } from "@/lib/ui/nav-items";
+import type { AccessModule } from "@/lib/rbac/modules";
 import logoTextWhite from "@/public/images/logo/logo_text_white.png";
 import logoMark from "@/public/images/logo/logo_pure_transparent.png";
 
 /**
- * Client component only because it reads the collapse state from context.
- * Nothing here fetches — the one session-dependent piece of the shell is
- * still <UserMenu/> in the topbar, so making this rail interactive costs
- * no extra data on the client.
+ * Client component only because it reads the collapse state from context
+ * and the current route. `modules` is the one piece of session data it
+ * needs (to filter which links to render) — fetched by the server wrapper
+ * <AppSidebarNav> in a <Suspense> (see app/(app)/layout.tsx) and passed
+ * down as a plain prop, same split as <UserMenu>/<UserMenuDropdown>.
  */
-export function AppSidebar() {
+export function AppSidebar({ modules }: { modules: AccessModule[] }) {
   const { collapsed } = useSidebar();
   const pathname = usePathname();
+  const items = visibleNavItems(modules);
 
   return (
     <aside
@@ -97,7 +100,7 @@ export function AppSidebar() {
           collapsed ? "px-2" : "px-4",
         )}
       >
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+        {items.map(({ href, label, icon: Icon }) => {
           const active = isNavItemActive(href, pathname);
           return (
             <Link

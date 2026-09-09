@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { requireModule } from "@/lib/auth/dal";
 import { listPropertyTypes, listAmenities } from "@/lib/api/properties";
 import { listUsers } from "@/lib/api/users";
 import { PropertyCreateForm } from "@/components/properties/property-create-form";
 
 export const metadata: Metadata = { title: "Properti Baru — Mandana Admin" };
 
-// Every page under (app) opens with getCurrentUser() — the render-time
-// security boundary; see app/(app)/page.tsx.
+// Every page under (app) opens with requireModule()/requireAdmin() — the
+// render-time security boundary; see lib/auth/dal.ts.
 export default async function NewPropertyPage() {
-  const currentUser = await getCurrentUser();
+  const currentUser = await requireModule("properties");
 
   // Every one of these is a supporting lookup list, not the page itself —
   // if any fails to load, the form still works with an empty picker

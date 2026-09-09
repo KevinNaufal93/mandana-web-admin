@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { requireModule } from "@/lib/auth/dal";
 import { listAdminProperties, listPropertyTypes } from "@/lib/api/properties";
 import { parsePropertyQuery, toSearchString } from "@/lib/properties/query";
 import { PropertyFilters } from "@/components/properties/property-filters";
@@ -12,14 +12,14 @@ import type { ApiError } from "@/lib/api/errors";
 
 export const metadata: Metadata = { title: "Manajemen Properti — Mandana Admin" };
 
-// Every page under (app) opens with getCurrentUser() — the render-time
+// Every page under (app) opens with requireModule()/requireAdmin() — the render-time
 // security boundary; see app/(app)/page.tsx.
 export default async function PropertiesPage({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  await getCurrentUser();
+  await requireModule("properties");
   const query = parsePropertyQuery(await searchParams);
 
   // Fired in parallel: the filter dropdown's options don't depend on the

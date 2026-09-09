@@ -1,10 +1,25 @@
 import type { LucideIcon } from "lucide-react";
-import { LayoutDashboard, Building2, PartyPopper, Warehouse, Truck, Images, Users } from "lucide-react";
+import {
+  LayoutDashboard,
+  Building2,
+  PartyPopper,
+  Warehouse,
+  Truck,
+  Images,
+  Users,
+  ShieldCheck,
+} from "lucide-react";
+import type { AccessModule } from "@/lib/rbac/modules";
 
 export interface NavItem {
   href: string;
   label: string;
   icon: LucideIcon;
+  /** RBAC gate for this link — see requireModule()/requireAdmin() in
+   *  lib/auth/dal.ts, which is the actual security boundary. Filtering
+   *  this list (visibleNavItems()) only keeps the rail honest about what
+   *  the viewer can reach; it is not itself an access control. */
+  module: AccessModule;
 }
 
 /**
@@ -13,13 +28,16 @@ export interface NavItem {
  * so the topbar's label can never drift out of sync with the rail's.
  */
 export const NAV_ITEMS: NavItem[] = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/properties", label: "Property Management", icon: Building2 },
-  { href: "/event-support", label: "Event Support", icon: PartyPopper },
-  { href: "/storage", label: "Smart Storage", icon: Warehouse },
-  { href: "/moving", label: "Moving Support", icon: Truck },
-  { href: "/content-media", label: "Content Media Management", icon: Images },
-  { href: "/users", label: "User Management", icon: Users },
+  { href: "/", label: "Dashboard", icon: LayoutDashboard, module: "dashboard" },
+  { href: "/properties", label: "Property Management", icon: Building2, module: "properties" },
+  { href: "/event-support", label: "Event Support", icon: PartyPopper, module: "event-support" },
+  { href: "/storage", label: "Smart Storage", icon: Warehouse, module: "storage" },
+  { href: "/moving", label: "Moving Support", icon: Truck, module: "moving" },
+  { href: "/content-media", label: "Content Media Management", icon: Images, module: "content-media" },
+  { href: "/users", label: "User Management", icon: Users, module: "users" },
+  // Top-level, not /users/rbac: isNavItemActive is a prefix match, so
+  // nesting under /users would leave the User Management link active too.
+  { href: "/rbac", label: "Roles & Permissions", icon: ShieldCheck, module: "rbac" },
 ];
 
 /**
@@ -30,6 +48,15 @@ export const NAV_ITEMS: NavItem[] = [
  */
 export function isNavItemActive(href: string, pathname: string): boolean {
   return href === "/" ? pathname === "/" : pathname.startsWith(href);
+}
+
+/**
+ * What <AppSidebar> actually renders: NAV_ITEMS filtered to the viewer's
+ * granted modules. Convenience only — the real gate on each page is
+ * requireModule()/requireAdmin() in lib/auth/dal.ts.
+ */
+export function visibleNavItems(modules: AccessModule[]): NavItem[] {
+  return NAV_ITEMS.filter((item) => modules.includes(item.module));
 }
 
 export interface TitleOnlyRoute {

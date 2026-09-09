@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { requireModule } from "@/lib/auth/dal";
 import { listStorageBookings } from "@/lib/api/storage-bookings";
 import { listStorageFacilities, listStorageUnitTypes } from "@/lib/api/storage";
 import { parseStorageBookingQuery, toStorageBookingSearchString } from "@/lib/storage/query";
@@ -21,7 +21,7 @@ export default async function StorageBookingsPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  await getCurrentUser();
+  await requireModule("storage");
   const query = parseStorageBookingQuery(await searchParams);
 
   const [bookingsResult, facilitiesResult, unitTypesResult] = await Promise.all([

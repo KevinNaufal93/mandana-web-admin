@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { readSessionTokens } from "@/lib/auth/session";
 import { decodeJwtClaims } from "@/lib/auth/jwt";
 import { apiMe, type CurrentUser } from "@/lib/api/auth-endpoints";
+import type { AccessModule } from "@/lib/rbac/modules";
 import { createLogger } from "@/lib/logger";
 
 const log = createLogger("auth");
@@ -41,11 +42,16 @@ export const verifySession = cache(async (): Promise<Session> => {
 /**
  * The real authorization boundary. Asks the API who we are; the API
  * verifies the signature, checks the Redis logout blacklist, and returns
- * the live role — none of which the cookie can tell us.
+ * the live role and RBAC-granted modules — none of which the cookie can
+ * tell us.
  *
- * Also enforces the admin-only rule: `editor` has zero privileges on
- * every admin/* endpoint, so an editor holding a session would see a
- * shell whose every panel 403s. Ending the session is the honest outcome.
+ * Also enforces the base access rule: an inactive account, or one with no
+ * modules granted at all, would see a shell with nothing to show. In
+ * practice this only fires for a deactivated account — 'dashboard' is
+ * always-on for every other active user (see AccessModule). Per-module
+ * gating beyond that is requireModule()/requireAdmin() below, not this
+ * function — ending the session here is reserved for "this account can
+ * see nothing," not "this account can't see this one page."
  */
 export const getCurrentUser = cache(async (): Promise<CurrentUser> => {
   const { accessToken } = await verifySession();
@@ -64,8 +70,38 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser> => {
     throw new Error("Gagal memuat data pengguna."); // → nearest error.tsx
   }
 
-  if (result.data.role !== "admin" || !result.data.isActive) {
-    redirect("/auth/end?reason=not_admin");
+  if (!result.data.isActive || result.data.modules.length === 0) {
+    redirect("/auth/end?reason=no_access");
   }
   return result.data;
 });
+
+/**
+ * Per-page RBAC gate. Every page under app/(app)/ (other than the
+ * dashboard itself, which every active user can reach) opens with this
+ * instead of a bare getCurrentUser() — see the plan's module catalog for
+ * which page uses which module. Redirects to the dashboard rather than
+ * ending the session: the account is legitimately active, it just can't
+ * see this one module, which can change the moment an admin edits the
+ * matrix (no re-login required — see RbacService.getGrantedModules).
+ *
+ * Hiding the sidebar link for an ungranted module (lib/ui/nav-items.ts) is
+ * a convenience, not the security boundary — this is.
+ */
+export async function requireModule(module: AccessModule): Promise<CurrentUser> {
+  const user = await getCurrentUser();
+  if (!user.modules.includes(module)) redirect("/");
+  return user;
+}
+
+/**
+ * For the handful of surfaces that must stay hard-role-gated rather than
+ * RBAC-grantable — User Management and the RBAC page itself. Mirrors the
+ * API's own belt-and-braces choice to keep @Roles(UserRole.ADMIN) on
+ * UsersAdminController and RbacController instead of @RequireModule().
+ */
+export async function requireAdmin(): Promise<CurrentUser> {
+  const user = await getCurrentUser();
+  if (user.role !== "admin") redirect("/");
+  return user;
+}

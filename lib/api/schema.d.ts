@@ -4,6 +4,57 @@
  */
 
 export interface paths {
+    "/api/v1/admin/rbac/modules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the product module catalog */
+        get: operations["RbacController_getModules_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/rbac/permissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the full role x module permission matrix */
+        get: operations["RbacController_getPermissions_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/rbac/permissions/{role}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace one role's granted modules. Rejects role 'admin' and any non-grantable module. */
+        put: operations["RbacController_updatePermissions_v1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/users": {
         parameters: {
             query?: never;
@@ -673,7 +724,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Pricing policy (rounding step, ± estimate band, fallback included-km) — fetch these instead of hardcoding them client-side */
+        /** Pricing policy (rounding step, upward estimate-band headroom, fallback included-km) — fetch these instead of hardcoding them client-side */
         get: operations["MovingController_getPricingConfig_v1"];
         put?: never;
         post?: never;
@@ -1736,6 +1787,27 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AccessModuleResponseDto: {
+            /** @enum {string} */
+            key: "dashboard" | "properties" | "event-support" | "storage" | "moving" | "content-media" | "users" | "notifications" | "rbac";
+            label: string;
+            description: string;
+            /** @description false = can never be granted to a non-admin role. */
+            grantable: boolean;
+            /** @description true = every active user has this module, admin or not. */
+            alwaysOn: boolean;
+        };
+        RolePermissionsResponseDto: {
+            /** @enum {string} */
+            role: "admin" | "editor";
+            modules: ("dashboard" | "properties" | "event-support" | "storage" | "moving" | "content-media" | "users" | "notifications" | "rbac")[];
+            /** @description true for 'admin' — its grant set is implicit-all and cannot be edited. */
+            locked: boolean;
+        };
+        UpdateRolePermissionsDto: {
+            /** @description Full replacement set of granted modules for this role. Non-grantable modules (e.g. 'users') and role 'admin' are rejected — see RbacService.setRoleModules. */
+            modules: ("dashboard" | "properties" | "event-support" | "storage" | "moving" | "content-media" | "users" | "notifications" | "rbac")[];
+        };
         CreateUserDto: {
             /** @example editor@mandana.com */
             email: string;
@@ -1784,6 +1856,25 @@ export interface components {
         };
         RefreshTokenDto: {
             refreshToken: string;
+        };
+        MeDto: {
+            id: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            email: string;
+            name: string;
+            /** @enum {string} */
+            role: "admin" | "editor";
+            isActive: boolean;
+            title: string | null;
+            phone: string | null;
+            whatsapp: string | null;
+            photoMediaAssetId: string | null;
+            photo: Record<string, never> | null;
+            /** @description The caller's currently granted modules (union of their role's grants and always-on modules; full catalog for admin). */
+            modules: ("dashboard" | "properties" | "event-support" | "storage" | "moving" | "content-media" | "users" | "notifications" | "rbac")[];
         };
         PropertyTypeRefDto: {
             id: string;
@@ -2277,7 +2368,7 @@ export interface components {
         MovingSettingsDto: {
             /** @description Rupiah rounding step applied to the total */
             roundToIdr: number;
-            /** @description The ± percentage band shown to the customer */
+            /** @description Upward headroom above the total, as a percentage. highEstimate = total * (1 + bandPct/100) rounded up to roundToIdr; lowEstimate is always the total. Not a ± spread. */
             bandPct: number;
             /** @description Fallback included-km when a truck class sets none */
             defaultIncludedKm: number;
@@ -2311,7 +2402,7 @@ export interface components {
              * @example pickup-bak
              */
             truckSlug: string;
-            /** @description Ordered legs of the trip — one entry per hop (pickup→stop1, stop1→stop2, ...). Each leg is priced independently against the truck's rate card and the leg subtotals are summed; a leg under includedKm still pays that leg's full flat baseFare (no proration). Send one entry for a single destination — reproduces today's math exactly. IMPORTANT: roundTrip does NOT auto-double distance once legs.length > 1 — include the actual return leg as its own explicit entry here if you want it priced (see moving-integration.md). */
+            /** @description Ordered legs of the trip — one entry per hop (pickup→stop1, stop1→stop2, ...). ONLY THE FIRST LEG gets baseFare + the includedKm allowance, priced like a single-destination trip; every leg after that has no baseFare and no allowance at all — its entire distance bills in 500m steps from the first metre. Send one entry for a single destination — reproduces today's math exactly. IMPORTANT: roundTrip does NOT auto-double distance once legs.length > 1 — include the actual return leg as its own explicit entry here if you want it priced (it prices like any other non-first leg — see moving-integration.md). */
             legs: components["schemas"]["QuoteMovingLegDto"][];
             /**
              * @description Doubles the distance fare (and toll, if applicable) — the truck drives the route twice. Base fare and other add-ons are charged once. IMPORTANT: the distance-doubling part only applies when legs has exactly one entry (a single destination) — on a multi-leg (legs.length > 1) request this does NOT auto-double any leg's distance fare; include the actual return leg as its own entry in legs[] instead. Toll/add-on doubling (doublesOnRoundTrip) is unaffected either way. See moving-integration.md's "Round trip + multiple legs" section.
@@ -2388,11 +2479,11 @@ export interface components {
             /** @description Rupiah */
             total: number;
             minFareApplied: boolean;
-            /** @description Rupiah */
+            /** @description Rupiah — band floor, equal to total (the itemized breakdown sums to exactly this) */
             lowEstimate: number;
-            /** @description Rupiah */
+            /** @description Rupiah — band ceiling: total * (1 + bandPct/100) rounded up to roundToIdr */
             highEstimate: number;
-            /** @description Per-leg breakdown, in request order. Unrounded — only the top-level total/lowEstimate/highEstimate are rounded. No per-leg minFareApplied by design (minFare floors the trip-wide sum once, not per leg). */
+            /** @description Per-leg breakdown, in request order. Unrounded — only the top-level total/highEstimate are rounded (lowEstimate just mirrors total). No per-leg minFareApplied by design (minFare floors the trip-wide sum once, not per leg). */
             legs: components["schemas"]["MovingQuoteLegDto"][];
             /** @example IDR */
             currency: string;
@@ -2659,7 +2750,7 @@ export interface components {
              */
             roundToIdr?: number;
             /**
-             * @description The ± percentage band shown to the customer around the total. 0 = exact price.
+             * @description Upward headroom above the total, as a percentage. The customer-facing band runs from the total (floor) to total * (1 + bandPct/100) rounded up. 0 = exact price.
              * @example 10
              */
             bandPct?: number;
@@ -2683,7 +2774,7 @@ export interface components {
              * @example pickup-bak
              */
             truckSlug: string;
-            /** @description Ordered legs of the trip — one entry per hop (pickup→stop1, stop1→stop2, ...). Each leg is priced independently against the truck's rate card and the leg subtotals are summed; a leg under includedKm still pays that leg's full flat baseFare (no proration). Send one entry for a single destination — reproduces today's math exactly. IMPORTANT: roundTrip does NOT auto-double distance once legs.length > 1 — include the actual return leg as its own explicit entry here if you want it priced (see moving-integration.md). */
+            /** @description Ordered legs of the trip — one entry per hop (pickup→stop1, stop1→stop2, ...). ONLY THE FIRST LEG gets baseFare + the includedKm allowance, priced like a single-destination trip; every leg after that has no baseFare and no allowance at all — its entire distance bills in 500m steps from the first metre. Send one entry for a single destination — reproduces today's math exactly. IMPORTANT: roundTrip does NOT auto-double distance once legs.length > 1 — include the actual return leg as its own explicit entry here if you want it priced (it prices like any other non-first leg — see moving-integration.md). */
             legs: components["schemas"]["QuoteMovingLegDto"][];
             /**
              * @description Doubles the distance fare (and toll, if applicable) — the truck drives the route twice. Base fare and other add-ons are charged once. IMPORTANT: the distance-doubling part only applies when legs has exactly one entry (a single destination) — on a multi-leg (legs.length > 1) request this does NOT auto-double any leg's distance fare; include the actual return leg as its own entry in legs[] instead. Toll/add-on doubling (doublesOnRoundTrip) is unaffected either way. See moving-integration.md's "Round trip + multiple legs" section.
@@ -4125,6 +4216,69 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    RbacController_getModules_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccessModuleResponseDto"][];
+                };
+            };
+        };
+    };
+    RbacController_getPermissions_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RolePermissionsResponseDto"][];
+                };
+            };
+        };
+    };
+    RbacController_updatePermissions_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                role: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateRolePermissionsDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RolePermissionsResponseDto"];
+                };
+            };
+        };
+    };
     UsersAdminController_findAll_v1: {
         parameters: {
             query?: never;
@@ -4439,7 +4593,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MeDto"];
+                };
             };
         };
     };

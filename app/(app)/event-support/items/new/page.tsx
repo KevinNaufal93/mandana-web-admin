@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { requireModule } from "@/lib/auth/dal";
 import { listEventCategories } from "@/lib/api/event-support";
 import { EventItemForm } from "@/components/event-support/event-item-form";
 
 export const metadata: Metadata = { title: "Item Baru — Mandana Admin" };
 
 export default async function NewEventItemPage() {
-  await getCurrentUser();
+  await requireModule("event-support");
   const categoriesResult = await listEventCategories();
   const categories = categoriesResult.ok ? categoriesResult.data : [];
 

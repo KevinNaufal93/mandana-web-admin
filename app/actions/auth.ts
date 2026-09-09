@@ -74,9 +74,12 @@ export async function login(
   }
   const tokens = loginResult.data;
 
-  // Role gate BEFORE any cookie is written. Credentials being valid is
-  // not enough: every admin/* endpoint is @Roles(ADMIN), so an `editor`
-  // would get a shell whose every panel 403s.
+  // Access gate BEFORE any cookie is written. Credentials being valid is
+  // not enough: an inactive account, or one granted no modules at all
+  // (RBAC — see lib/api/rbac.ts), would get a shell with nothing to show.
+  // 'dashboard' is always-on for every active user (see AccessModule), so
+  // in practice this only fires for a deactivated account or a data bug —
+  // still checked explicitly rather than assumed.
   const meResult = await apiMe(tokens.accessToken);
   if (!meResult.ok) {
     await apiLogout(tokens.accessToken); // best effort — free the refresh slot
@@ -85,7 +88,7 @@ export async function login(
     return { formError: "SERVER", email };
   }
 
-  if (meResult.data.role !== "admin" || !meResult.data.isActive) {
+  if (!meResult.data.isActive || meResult.data.modules.length === 0) {
     // POST /auth/logout nulls users.hashed_refresh_token and blacklists
     // the access token, so we leave no usable credential behind for an
     // account we just refused. Not throttled: the credentials were
@@ -93,7 +96,7 @@ export async function login(
     // enumeration signal.
     await apiLogout(tokens.accessToken);
     await floor(startedAt);
-    return { formError: "NOT_ADMIN", email };
+    return { formError: "NO_MODULE_ACCESS", email };
   }
 
   clearLoginThrottle(ip, identity);

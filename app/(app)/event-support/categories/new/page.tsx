@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { requireModule } from "@/lib/auth/dal";
 import { EventCategoryForm } from "@/components/event-support/event-category-form";
 
 export const metadata: Metadata = { title: "Kategori Baru — Mandana Admin" };
 
 export default async function NewEventCategoryPage() {
-  await getCurrentUser();
+  await requireModule("event-support");
 
   return (
     <div className="flex flex-col gap-6">

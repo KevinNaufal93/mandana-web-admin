@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { requireModule } from "@/lib/auth/dal";
 import { getEventSupportSettings } from "@/lib/api/event-support-settings";
 import { EventSupportSettingsForm } from "@/components/event-support/event-support-settings-form";
 import type { ApiError } from "@/lib/api/errors";
@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: "Pengaturan Event Support — Mandana
 // to error.tsx — there's no id-scoped detail route to distinguish "this
 // row failed" from "the page failed".
 export default async function EventSupportSettingsPage() {
-  await getCurrentUser();
+  await requireModule("event-support");
   const result = await getEventSupportSettings();
 
   if (!result.ok) {

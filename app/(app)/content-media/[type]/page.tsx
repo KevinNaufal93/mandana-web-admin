@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Plus } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { requireModule } from "@/lib/auth/dal";
 import { listContentBlocks } from "@/lib/api/content-blocks";
 import { findTypeBySlug } from "@/lib/content-blocks/types";
 import { ContentBlockList } from "@/components/content-media/content-block-list";
@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 }
 
 export default async function ContentBlockTypePage({ params }: { params: Promise<Params> }) {
-  await getCurrentUser();
+  await requireModule("content-media");
   const { type } = await params;
   const typeDef = findTypeBySlug(type);
   if (!typeDef) notFound();

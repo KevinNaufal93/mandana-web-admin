@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { requireModule } from "@/lib/auth/dal";
 import { getStorageAvailability } from "@/lib/api/storage-availability";
 import { listStorageUnitTypes } from "@/lib/api/storage";
 import { StorageAvailabilityOverview } from "@/components/storage/storage-availability-overview";
@@ -17,7 +17,7 @@ export const metadata: Metadata = { title: "Smart Storage — Mandana Admin" };
  * instead of an empty list.
  */
 export default async function StorageOverviewPage() {
-  await getCurrentUser();
+  await requireModule("storage");
 
   const [availabilityResult, unitTypesResult] = await Promise.all([getStorageAvailability(), listStorageUnitTypes()]);
 

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { requireModule } from "@/lib/auth/dal";
 import { listStorageInventory } from "@/lib/api/storage-inventory";
 import { listStorageFacilities, listStorageUnitTypes } from "@/lib/api/storage";
 import { parseStorageInventoryQuery } from "@/lib/storage/query";
@@ -17,7 +17,7 @@ export default async function StorageInventoryPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  await getCurrentUser();
+  await requireModule("storage");
   const query = parseStorageInventoryQuery(await searchParams);
 
   const [inventoryResult, facilitiesResult, unitTypesResult] = await Promise.all([

@@ -1,6 +1,7 @@
 import { Bell } from "lucide-react";
 import { listNotifications, getNotificationSummary } from "@/lib/api/notifications";
 import { NotificationBellDropdown } from "@/components/shell/notification-bell-dropdown";
+import { getCurrentUser } from "@/lib/auth/dal";
 
 /** Matches MAX_DROPDOWN_ITEMS in notification-bell-dropdown.tsx -- the
  *  dropdown's own live SSE updates cap the list at the same size, so the
@@ -34,12 +35,26 @@ function streamBaseUrl(): string | null {
  * app/(app)/layout.tsx, mirroring <UserMenu>: a slow fetch streams in
  * without blocking the rest of the topbar.
  *
+ * Gated on the `notifications` module, not `role === "admin"`:
+ * `notifications` is RBAC-grantable like any other module (see the module
+ * catalog), and the EventSource's stream ticket is authorized against the
+ * live grant too -- JwtNotificationsStreamStrategy on the API side re-checks
+ * it per connection, not just at ticket-mint time (see
+ * mandana-api/src/modules/auth/strategies/jwt-stream.strategy.ts). This is
+ * presentation only, same caveat as visibleNavItems(): the real boundary is
+ * that strategy plus requireModule() on the page, not this check.
+ * getCurrentUser() is cache()'d, so this costs no extra request beyond what
+ * <UserMenu> and the page already pay for.
+ *
  * Stays a Server Component for the fetch; all interactivity (the
  * EventSource, the dropdown itself) lives in <NotificationBellDropdown>, a
  * client component that receives this already-fetched state as plain,
  * serializable props.
  */
 export async function NotificationBell() {
+  const user = await getCurrentUser();
+  if (!user.modules.includes("notifications")) return null;
+
   const [listResult, summaryResult] = await Promise.all([
     listNotifications({ page: 1, limit: DROPDOWN_ITEM_LIMIT, filter: "all" }),
     getNotificationSummary(),

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { requireModule } from "@/lib/auth/dal";
 import { listEventCategories } from "@/lib/api/event-support";
 import { parseEventCategoryQuery } from "@/lib/event-support/query";
 import { EventCategoryFilters } from "@/components/event-support/event-category-filters";
@@ -16,7 +16,7 @@ export default async function EventCategoriesPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  await getCurrentUser();
+  await requireModule("event-support");
   const query = parseEventCategoryQuery(await searchParams);
   const result = await listEventCategories(query);
   const hasActiveFilters = query.isActive !== undefined;

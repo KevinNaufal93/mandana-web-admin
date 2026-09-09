@@ -4,7 +4,7 @@ import { sanitizeNextPath } from "@/lib/auth/next-path";
 const REASON_MESSAGES: Record<string, string> = {
   unauthenticated: "Silakan masuk untuk melanjutkan.",
   session_ended: "Sesi Anda telah berakhir. Silakan masuk kembali.",
-  not_admin: "Akun ini tidak memiliki akses ke panel admin.",
+  no_access: "Akun ini belum diberi akses ke modul mana pun. Hubungi admin.",
   signed_out: "Anda telah keluar.",
 };
 

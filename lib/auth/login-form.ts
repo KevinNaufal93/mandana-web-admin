@@ -25,7 +25,7 @@ export type LoginFieldError =
 /** Failures that belong to the form as a whole, not to one field. */
 export type LoginFormError =
   | "INVALID_CREDENTIALS"
-  | "NOT_ADMIN"
+  | "NO_MODULE_ACCESS"
   | "RATE_LIMITED"
   | "NETWORK"
   | "SERVER";
@@ -50,7 +50,7 @@ export const LOGIN_FORM_MESSAGES: Record<LoginFormError, string> = {
   // inactive user — mirrors the API, which returns "Invalid credentials"
   // for all three.
   INVALID_CREDENTIALS: "Email atau kata sandi salah.",
-  NOT_ADMIN: "Akun ini tidak memiliki akses ke panel admin.",
+  NO_MODULE_ACCESS: "Akun ini belum diberi akses ke modul mana pun. Hubungi admin.",
   RATE_LIMITED: "Terlalu banyak percobaan masuk. Coba lagi dalam beberapa menit.",
   NETWORK: "Tidak dapat terhubung ke server. Periksa koneksi lalu coba lagi.",
   SERVER: "Terjadi kesalahan pada server. Coba lagi nanti.",

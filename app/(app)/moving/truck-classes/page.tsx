@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { requireModule } from "@/lib/auth/dal";
 import { listMovingTruckClasses } from "@/lib/api/moving";
 import { parseMovingCatalogQuery } from "@/lib/moving/query";
 import { MovingCatalogFilters } from "@/components/moving/moving-catalog-filters";
@@ -16,7 +16,7 @@ export default async function MovingTruckClassesPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  await getCurrentUser();
+  await requireModule("moving");
   const query = parseMovingCatalogQuery(await searchParams);
   const result = await listMovingTruckClasses(query);
   const hasActiveFilters = query.isActive !== undefined;

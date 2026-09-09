@@ -19,6 +19,7 @@
  * No `server-only` here — proxy.ts imports this module too.
  */
 import { parseApiError, type ApiResult } from "@/lib/api/errors";
+import type { AccessModule } from "@/lib/rbac/modules";
 
 export interface AuthTokens {
   accessToken: string;
@@ -41,6 +42,11 @@ export interface CurrentUser {
    *  GET /auth/me now runs through the same UsersMapper. Renders in the
    *  topbar avatar (components/shell/user-menu-dropdown.tsx). */
   photo: { url: string; alt: string | null } | null;
+  /** The caller's currently granted modules (their role's RBAC grants,
+   *  unioned with always-on modules like 'dashboard'; the full catalog for
+   *  admin). Drives the sidebar filter and every requireModule() page
+   *  guard — see lib/auth/dal.ts. */
+  modules: AccessModule[];
 }
 
 /**

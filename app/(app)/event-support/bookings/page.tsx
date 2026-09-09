@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { requireModule } from "@/lib/auth/dal";
 import { listEventBookings } from "@/lib/api/event-support-bookings";
 import { parseEventBookingQuery, toBookingSearchString } from "@/lib/event-support/query";
 import { exportEventBookingsAction } from "@/app/actions/booking-exports";
@@ -19,7 +19,7 @@ export default async function EventBookingsPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  await getCurrentUser();
+  await requireModule("event-support");
   const query = parseEventBookingQuery(await searchParams);
   const result = await listEventBookings(query);
   const hasActiveFilters = Boolean(query.status || query.from || query.to || query.search);

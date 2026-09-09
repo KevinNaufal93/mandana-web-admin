@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { requireModule } from "@/lib/auth/dal";
 import { getAdminProperty, listPropertyTypes, listAmenities, type AdminPropertyDetail } from "@/lib/api/properties";
 import { PropertyDetailView } from "@/components/properties/property-detail-view";
 import type { ApiError } from "@/lib/api/errors";
@@ -28,10 +28,10 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   return { title: result.ok ? `${result.data.title} — Mandana Admin` : "Properti — Mandana Admin" };
 }
 
-// Every page under (app) opens with getCurrentUser() — the render-time
+// Every page under (app) opens with requireModule()/requireAdmin() — the render-time
 // security boundary; see app/(app)/page.tsx.
 export default async function PropertyDetailPage({ params }: { params: Promise<Params> }) {
-  await getCurrentUser();
+  await requireModule("properties");
   const { id } = await params;
 
   // The property is the page — a failure there 404s/throws. The edit

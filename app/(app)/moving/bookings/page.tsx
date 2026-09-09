@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { requireModule } from "@/lib/auth/dal";
 import { listMovingBookings } from "@/lib/api/moving-bookings";
 import { parseMovingBookingQuery, toMovingBookingSearchString } from "@/lib/moving/query";
 import { exportMovingBookingsAction } from "@/app/actions/booking-exports";
@@ -21,7 +21,7 @@ export default async function MovingBookingsPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  await getCurrentUser();
+  await requireModule("moving");
   const query = parseMovingBookingQuery(await searchParams);
   const result = await listMovingBookings(query);
   const hasActiveFilters = Boolean(query.status || query.search || query.from || query.to);

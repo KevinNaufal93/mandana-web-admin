@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { requireModule } from "@/lib/auth/dal";
 import { listEventItems } from "@/lib/api/event-support";
 import { BookingCreateForm } from "@/components/event-support/booking-create-form";
 
 export const metadata: Metadata = { title: "Pemesanan Baru — Mandana Admin" };
 
 export default async function NewEventBookingPage() {
-  await getCurrentUser();
+  await requireModule("event-support");
   // Only published items can be booked. No client fetching — the picker
   // gets a server-fetched catalog as props, per this repo's state model.
   const itemsResult = await listEventItems({ page: 1, limit: 100, status: "published" });

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { requireModule } from "@/lib/auth/dal";
 import { getMovingSettings } from "@/lib/api/moving-settings";
 import { MovingSettingsForm } from "@/components/moving/moving-settings-form";
 import type { ApiError } from "@/lib/api/errors";
@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: "Pengaturan Moving Support — Mandan
 // rather than throwing to error.tsx — there's no id-scoped detail route
 // to distinguish "this row failed" from "the page failed".
 export default async function MovingSettingsPage() {
-  await getCurrentUser();
+  await requireModule("moving");
   const result = await getMovingSettings();
 
   if (!result.ok) {

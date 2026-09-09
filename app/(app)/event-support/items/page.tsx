@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { requireModule } from "@/lib/auth/dal";
 import { listEventItems, listEventCategories } from "@/lib/api/event-support";
 import { parseEventItemQuery, toItemSearchString } from "@/lib/event-support/query";
 import { EventItemFilters } from "@/components/event-support/event-item-filters";
@@ -17,7 +17,7 @@ export default async function EventItemsPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  await getCurrentUser();
+  await requireModule("event-support");
   const query = parseEventItemQuery(await searchParams);
 
   // Fired in parallel: the filter dropdown's categories don't depend on

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { requireModule } from "@/lib/auth/dal";
 import { listNotifications } from "@/lib/api/notifications";
 import { parseNotificationsQuery, toNotificationsSearchString } from "@/lib/notifications/query";
 import { NotificationFilters } from "@/components/notifications/notification-filters";
@@ -14,7 +14,7 @@ export default async function NotificationsPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  await getCurrentUser();
+  await requireModule("notifications");
   const query = parseNotificationsQuery(await searchParams);
 
   const result = await listNotifications(query);

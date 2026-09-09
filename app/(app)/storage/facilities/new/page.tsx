@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { requireModule } from "@/lib/auth/dal";
 import { StorageFacilityForm } from "@/components/storage/storage-facility-form";
 
 export const metadata: Metadata = { title: "Fasilitas Baru — Mandana Admin" };
 
 export default async function NewStorageFacilityPage() {
-  await getCurrentUser();
+  await requireModule("storage");
 
   return (
     <div className="flex flex-col gap-6">

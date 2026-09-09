@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { requireModule } from "@/lib/auth/dal";
 import { MovingTruckClassForm } from "@/components/moving/moving-truck-class-form";
 
 export const metadata: Metadata = { title: "Tipe Truk Baru — Mandana Admin" };
 
 export default async function NewMovingTruckClassPage() {
-  await getCurrentUser();
+  await requireModule("moving");
 
   return (
     <div className="flex flex-col gap-6">

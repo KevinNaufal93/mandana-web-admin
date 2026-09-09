@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { requireModule } from "@/lib/auth/dal";
 import { getMovingTruckClass, type AdminMovingTruckClass } from "@/lib/api/moving";
 import { MovingTruckClassDetailView } from "@/components/moving/moving-truck-class-detail-view";
 import type { ApiError } from "@/lib/api/errors";
@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 }
 
 export default async function MovingTruckClassDetailPage({ params }: { params: Promise<Params> }) {
-  await getCurrentUser();
+  await requireModule("moving");
   const { id } = await params;
   const truckClass = await loadTruckClass(id);
 

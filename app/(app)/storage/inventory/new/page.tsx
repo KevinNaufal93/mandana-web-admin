@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { requireModule } from "@/lib/auth/dal";
 import { listStorageFacilities, listStorageUnitTypes } from "@/lib/api/storage";
 import { StorageInventoryForm } from "@/components/storage/storage-inventory-form";
 
 export const metadata: Metadata = { title: "Inventaris Baru — Mandana Admin" };
 
 export default async function NewStorageInventoryPage() {
-  await getCurrentUser();
+  await requireModule("storage");
   const [facilitiesResult, unitTypesResult] = await Promise.all([listStorageFacilities(), listStorageUnitTypes()]);
   const facilities = facilitiesResult.ok ? facilitiesResult.data : [];
   const unitTypes = unitTypesResult.ok ? unitTypesResult.data : [];

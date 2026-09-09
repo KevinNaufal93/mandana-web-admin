@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { requireAdmin } from "@/lib/auth/dal";
 import { listUsers } from "@/lib/api/users";
 import { UsersTable } from "@/components/users/users-table";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import type { ApiError } from "@/lib/api/errors";
 export const metadata: Metadata = { title: "User Management — Mandana Admin" };
 
 export default async function UsersPage() {
-  const me = await getCurrentUser();
+  const me = await requireAdmin();
   const result = await listUsers();
 
   return (

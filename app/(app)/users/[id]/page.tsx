@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { requireAdmin } from "@/lib/auth/dal";
 import { getUser, listUsers, type AdminUser } from "@/lib/api/users";
 import { UserDetailView } from "@/components/users/user-detail-view";
 import type { ApiError } from "@/lib/api/errors";
@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 }
 
 export default async function UserDetailPage({ params }: { params: Promise<Params> }) {
-  const me = await getCurrentUser();
+  const me = await requireAdmin();
   const { id } = await params;
   const user = await loadUser(id);
   const isLastActiveAdmin = await isSoleActiveAdmin(user);
