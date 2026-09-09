@@ -207,6 +207,16 @@ export function PropertyDetailView({
         </div>
       )}
 
+      {mode === "view" && (property.status === "sold" || property.status === "rented") && (
+        <div className="rounded-lg border border-border p-4">
+          <p className="text-sm text-primary">
+            Properti ini berstatus <strong>{property.status === "sold" ? "Terjual" : "Tersewa"}</strong> dan masih
+            tampil di situs publik (pencarian, listing, dan halaman detail) — tidak seperti draf atau arsip.
+            Properti ini tetap dapat diedit seperti biasa; ubah statusnya lewat tombol Edit di atas.
+          </p>
+        </div>
+      )}
+
       {quickError && (
         <p role="alert" className="text-sm text-destructive">
           {quickError}

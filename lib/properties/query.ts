@@ -6,7 +6,7 @@
  * Mirrors QueryAdminPropertiesDto in mandana-api/src/modules/properties.
  */
 
-export const PROPERTY_STATUSES = ["draft", "published", "archived"] as const;
+export const PROPERTY_STATUSES = ["draft", "published", "archived", "sold", "rented"] as const;
 export const LISTING_TYPES = ["sale", "rent", "new"] as const;
 
 export type PropertyStatus = (typeof PROPERTY_STATUSES)[number];

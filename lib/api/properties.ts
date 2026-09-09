@@ -36,7 +36,7 @@ export interface AdminPropertyRow {
   slug: string;
   title: string;
   listingType: ListingType;
-  status: "draft" | "published" | "archived";
+  status: PropertyStatus;
   price: string | number;
   currency: string;
   bedrooms: number | null;
@@ -96,7 +96,7 @@ export interface AdminPropertyDetail {
   handoverDate: string | null;
   /** Only meaningful when listingType is "new" — null otherwise. */
   constructionStatus: ConstructionStatus | null;
-  status: "draft" | "published" | "archived";
+  status: PropertyStatus;
   price: number | null;
   currency: string;
   bedrooms: number | null;

@@ -1486,6 +1486,24 @@ export interface paths {
         patch: operations["StorageBookingsAdminController_complete_v1"];
         trace?: never;
     };
+    "/api/v1/admin/storage/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the Smart Storage pricing policy */
+        get: operations["StorageSettingsAdminController_get_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update the Smart Storage pricing policy */
+        patch: operations["StorageSettingsAdminController_update_v1"];
+        trace?: never;
+    };
     "/api/v1/event-support/categories": {
         parameters: {
             query?: never;
@@ -1970,7 +1988,7 @@ export interface components {
             /** @description Radius, in metres, the coordinates above were fuzzed within. */
             approximateRadiusM: number;
             /** @enum {string} */
-            status: "draft" | "published" | "archived";
+            status: "draft" | "published" | "archived" | "sold" | "rented";
             isFeatured: boolean;
             images: components["schemas"]["PropertyImageDto"][];
             amenities: components["schemas"]["PropertyAmenityDto"][];
@@ -2017,7 +2035,7 @@ export interface components {
              * @default draft
              * @enum {string}
              */
-            status: "draft" | "published" | "archived";
+            status: "draft" | "published" | "archived" | "sold" | "rented";
             /** @example 5000000000 */
             price: number;
             /**
@@ -2095,7 +2113,7 @@ export interface components {
              * @default draft
              * @enum {string}
              */
-            status: "draft" | "published" | "archived";
+            status: "draft" | "published" | "archived" | "sold" | "rented";
             /** @example 5000000000 */
             price?: number;
             /**
@@ -3705,6 +3723,20 @@ export interface components {
              */
             adminNote?: string;
         };
+        StorageSettingsDto: {
+            /** @description Whole-percent insurance premium applied to every quote/booking subtotal — 20 means 20%. 0 disables the insurance line. */
+            insurancePct: number;
+        };
+        StorageSettingsResponseDto: {
+            data: components["schemas"]["StorageSettingsDto"];
+        };
+        UpdateStorageSettingsDto: {
+            /**
+             * @description Insurance premium as a whole percentage of the rent subtotal — 20 means 20%, not basis points. total = subtotal + round(subtotal * insurancePct / 100). 0 disables the insurance line entirely.
+             * @example 20
+             */
+            insurancePct?: number;
+        };
         EventImageDto: {
             url: string;
             srcset: string;
@@ -4677,7 +4709,7 @@ export interface operations {
             query?: {
                 page?: number;
                 limit?: number;
-                status?: "draft" | "published" | "archived";
+                status?: "draft" | "published" | "archived" | "sold" | "rented";
                 listingType?: "sale" | "rent" | "new";
                 /** @description Full-text search across title, description, address, area, city, province */
                 search?: string;
@@ -6819,6 +6851,48 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StorageBookingAdminResponseDto"];
+                };
+            };
+        };
+    };
+    StorageSettingsAdminController_get_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StorageSettingsResponseDto"];
+                };
+            };
+        };
+    };
+    StorageSettingsAdminController_update_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateStorageSettingsDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StorageSettingsResponseDto"];
                 };
             };
         };

@@ -18,6 +18,7 @@ const TABS = [
   { href: "/storage/inventory", label: "Inventaris", exact: false },
   { href: "/storage/units", label: "Unit", exact: false },
   { href: "/storage/bookings", label: "Pemesanan", exact: false },
+  { href: "/storage/settings", label: "Pengaturan", exact: false },
 ] as const;
 
 export function StorageTabs() {

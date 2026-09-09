@@ -11,13 +11,7 @@ import {
   type PropertyQuery,
 } from "@/lib/properties/query";
 import type { PropertyTypeOption } from "@/lib/api/properties";
-import { LISTING_LABEL } from "@/components/properties/property-status-badge";
-
-const STATUS_LABEL: Record<string, string> = {
-  draft: "Draf",
-  published: "Terbit",
-  archived: "Arsip",
-};
+import { LISTING_LABEL, STATUS_LABEL } from "@/components/properties/property-status-badge";
 
 const SEARCH_DEBOUNCE_MS = 350;
 

@@ -84,7 +84,8 @@ export function StatusAndListingControls({ fields, updateField, pending }: Field
   return (
     <div className="flex items-center gap-2">
       <Select value={fields.status} onValueChange={(v) => updateField("status", v as DraftFields["status"])}>
-        <SelectTrigger aria-label="Status" className="h-9 w-28" disabled={pending}>
+        {/* w-32, not w-28 like the listing-type trigger beside it — "Terjual"/"Tersewa" need the extra room. */}
+        <SelectTrigger aria-label="Status" className="h-9 w-32" disabled={pending}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

@@ -5,12 +5,19 @@ export const STATUS_LABEL: Record<PropertyStatus, string> = {
   draft: "Draf",
   published: "Terbit",
   archived: "Arsip",
+  sold: "Terjual",
+  rented: "Tersewa",
 };
 
 const STATUS_VARIANT: Record<PropertyStatus, "outline" | "default" | "secondary"> = {
   draft: "outline",
   published: "default",
   archived: "secondary",
+  // Same muted weight as archived — sold/rented are no longer actionable
+  // listings either, even though (unlike archived) they still show
+  // publicly. See PUBLIC_PROPERTY_STATUSES in the API.
+  sold: "secondary",
+  rented: "secondary",
 };
 
 export function PropertyStatusBadge({ status }: { status: PropertyStatus }) {

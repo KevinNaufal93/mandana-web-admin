@@ -35,6 +35,12 @@ export function StorageBookingPdfDocument({ booking }: { booking: AdminStorageBo
   if (booking.discountAmount > 0) {
     totalsRows.push({ label: "Diskon", value: `-${formatIDRFull(booking.discountAmount)}` });
   }
+  if (booking.insuranceAmount > 0) {
+    totalsRows.push({
+      label: `Asuransi (${booking.insurancePct}%)`,
+      value: `+${formatIDRFull(booking.insuranceAmount)}`,
+    });
+  }
   totalsRows.push({ label: "Total", value: formatIDRFull(booking.total), emphasis: true });
 
   return (

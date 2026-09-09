@@ -37,11 +37,16 @@ export interface AdminStorageBooking {
   unitLabel: string;
   /** Rupiah — the reference monthly rate at booking time (not necessarily what was billed — see unitRate). */
   monthlyRate: number;
-  /** Rupiah */
+  /** Rupiah — rent only, before insurance */
   subtotal: number;
-  /** Rupiah */
+  /** Deprecated — the duration-discount tiers were removed. Always 0 on a
+   *  booking created from now on; older bookings keep their real value. */
   discountAmount: number;
-  /** Rupiah */
+  /** Whole-percent insurance rate applied to subtotal, at booking time. */
+  insurancePct: number;
+  /** Rupiah — round(subtotal * insurancePct / 100). */
+  insuranceAmount: number;
+  /** Rupiah — subtotal + insuranceAmount */
   total: number;
   adminNote: string | null;
   confirmedAt: string | null;

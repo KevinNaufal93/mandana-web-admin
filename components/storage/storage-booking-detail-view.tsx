@@ -124,6 +124,12 @@ export function StorageBookingDetailView({
                   <span className="text-primary">-{formatIDRFull(booking.discountAmount)}</span>
                 </div>
               )}
+              {booking.insuranceAmount > 0 && (
+                <div className="flex w-56 justify-between">
+                  <span className="text-muted-foreground">Asuransi ({booking.insurancePct}%)</span>
+                  <span className="text-primary">+{formatIDRFull(booking.insuranceAmount)}</span>
+                </div>
+              )}
               <div className="flex w-56 justify-between font-semibold">
                 <span className="text-primary">Total</span>
                 <span className="text-primary">{formatIDRFull(booking.total)}</span>
