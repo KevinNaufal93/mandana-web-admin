@@ -13,7 +13,7 @@ export default function PropertiesError({ error, reset }: { error: Error & { dig
 
   return (
     <div className="flex flex-col items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-6">
-      <p className="text-sm text-destructive">Gagal memuat halaman Manajemen Properti.</p>
+      <p className="text-sm text-destructive">Gagal memuat halaman Mandana Property.</p>
       <Button variant="secondary" onClick={reset}>
         Coba lagi
       </Button>

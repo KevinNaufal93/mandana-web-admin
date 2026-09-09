@@ -22,6 +22,10 @@ export interface ContentBlockTypeDef {
   /** Passed to <ImagePicker purpose=...> — determines which responsive
    *  widths the API generates for this type's uploads. */
   mediaPurpose: MediaPurpose;
+  /** Optional one-line upload spec shown under the <ImagePicker> label —
+   *  recommended dimensions, format and max file size for this type's
+   *  artwork. Advisory only; nothing here is enforced client-side. */
+  imageGuidance?: string;
   /** Hero: a block with no image is rejected by the API (400) — see the
    *  integration doc §4. Service card / promo card: image is optional. */
   requiresImage: boolean;
@@ -72,6 +76,7 @@ export const CONTENT_BLOCK_TYPES: ContentBlockTypeDef[] = [
     label: "Hero Carousel",
     description: "Slide besar di bagian atas homepage.",
     mediaPurpose: "hero",
+    imageGuidance: "Disarankan 2560 × 1097 px (rasio 7:3). Format PNG atau WebP, maksimal 400 KB.",
     requiresImage: true,
     usesCtaText: true,
     subtitleLabel: "Subjudul",
@@ -87,6 +92,7 @@ export const CONTENT_BLOCK_TYPES: ContentBlockTypeDef[] = [
     label: "Service Strip",
     description: "Kartu layanan di bawah hero homepage.",
     mediaPurpose: "cover",
+    imageGuidance: "Disarankan 760 × 740 px (persegi). Format PNG atau WebP, maksimal 150 KB.",
     requiresImage: false,
     usesCtaText: false,
     subtitleLabel: "Deskripsi",

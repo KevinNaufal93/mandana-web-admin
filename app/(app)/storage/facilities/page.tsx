@@ -9,7 +9,7 @@ import { StorageFacilitiesTable } from "@/components/storage/storage-facilities-
 import { Button } from "@/components/ui/button";
 import type { ApiError } from "@/lib/api/errors";
 
-export const metadata: Metadata = { title: "Fasilitas Smart Storage — Mandana Admin" };
+export const metadata: Metadata = { title: "Fasilitas Mandana Space — Mandana Admin" };
 
 export default async function StorageFacilitiesPage({
   searchParams,

@@ -238,6 +238,7 @@ export function ContentBlockForm(props: ContentBlockFormProps) {
               value={image}
               onChange={setImage}
               purpose={typeDef.mediaPurpose}
+              hint={typeDef.imageGuidance}
               disabled={pending}
               allowClear={!typeDef.requiresImage}
               label={typeDef.requiresImage ? "Gambar (wajib)" : "Gambar (opsional)"}

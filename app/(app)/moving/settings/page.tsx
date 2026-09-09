@@ -4,7 +4,7 @@ import { getMovingSettings } from "@/lib/api/moving-settings";
 import { MovingSettingsForm } from "@/components/moving/moving-settings-form";
 import type { ApiError } from "@/lib/api/errors";
 
-export const metadata: Metadata = { title: "Pengaturan Moving Support — Mandana Admin" };
+export const metadata: Metadata = { title: "Pengaturan Mandana Move — Mandana Admin" };
 
 // No loadX()/notFound() helper needed here, unlike every [id]/page.tsx in
 // this app: GET /admin/moving/settings auto-seeds server-side and can

@@ -7,12 +7,12 @@ import { pdfFontFamily, registerPdfFonts } from "@/lib/bookings/pdf/fonts";
 
 /**
  * The three product names as they read on the marketing site's own
- * service cards (see the Mandana homepage's "Moving Support" / "Smart
- * Storage" / "Event Support" tiles) — kept as the literal module label so
- * the PDF uses the same product names a customer or admin already
- * recognizes, rather than this app's internal route segments.
+ * service cards (the Mandana homepage's "Mandana Move" / "Mandana Space" /
+ * "Mandana Living" tiles) — kept as the literal module label so the PDF
+ * uses the same product names a customer or admin already recognizes,
+ * rather than this app's internal route segments.
  */
-export type BookingPdfModule = "Event Support" | "Moving Support" | "Smart Storage";
+export type BookingPdfModule = "Mandana Living" | "Mandana Move" | "Mandana Space";
 
 const LOGO_PATH = path.join(process.cwd(), "public/images/logo/logo_text_white.png");
 /** Intrinsic 633×132, measured directly from the PNG's IHDR chunk — react-pdf

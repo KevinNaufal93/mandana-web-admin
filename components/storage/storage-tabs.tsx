@@ -24,7 +24,7 @@ export function StorageTabs() {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Bagian Smart Storage" className="flex items-center gap-1 overflow-x-auto border-b border-border">
+    <nav aria-label="Bagian Mandana Space" className="flex items-center gap-1 overflow-x-auto border-b border-border">
       {TABS.map(({ href, label, exact }) => {
         const active = exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
         return (

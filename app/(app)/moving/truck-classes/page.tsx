@@ -9,7 +9,7 @@ import { MovingTruckClassesTable } from "@/components/moving/moving-truck-classe
 import { Button } from "@/components/ui/button";
 import type { ApiError } from "@/lib/api/errors";
 
-export const metadata: Metadata = { title: "Tipe Truk Moving Support — Mandana Admin" };
+export const metadata: Metadata = { title: "Tipe Truk Mandana Move — Mandana Admin" };
 
 export default async function MovingTruckClassesPage({
   searchParams,

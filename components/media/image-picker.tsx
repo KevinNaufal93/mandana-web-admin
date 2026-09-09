@@ -49,6 +49,7 @@ export function ImagePicker({
   purpose = "cover",
   disabled,
   label = "Gambar",
+  hint,
   allowClear = true,
 }: {
   value: ImagePickerValue;
@@ -56,6 +57,9 @@ export function ImagePicker({
   purpose?: MediaPurpose;
   disabled?: boolean;
   label?: string;
+  /** Advisory upload spec (dimensions, format, max size) shown under the
+   *  label. Not enforced. */
+  hint?: string;
   /** Hides "Hapus gambar" when this type can't be saved without an image
    *  (e.g. a hero content block — see content-blocks-admin-integration.md
    *  §4). The "Ganti" upload button stays available either way, since
@@ -143,6 +147,8 @@ export function ImagePicker({
   return (
     <div>
       <Label>{label}</Label>
+
+      {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
 
       {error && (
         <p role="alert" className="mt-1.5 text-sm text-destructive">

@@ -11,7 +11,7 @@ import { Pagination } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
 import type { ApiError } from "@/lib/api/errors";
 
-export const metadata: Metadata = { title: "Unit Smart Storage — Mandana Admin" };
+export const metadata: Metadata = { title: "Unit Mandana Space — Mandana Admin" };
 
 export default async function StorageUnitsPage({
   searchParams,

@@ -10,7 +10,7 @@ import { StorageInventoryTable } from "@/components/storage/storage-inventory-ta
 import { Button } from "@/components/ui/button";
 import type { ApiError } from "@/lib/api/errors";
 
-export const metadata: Metadata = { title: "Inventaris Smart Storage — Mandana Admin" };
+export const metadata: Metadata = { title: "Inventaris Mandana Space — Mandana Admin" };
 
 export default async function StorageInventoryPage({
   searchParams,

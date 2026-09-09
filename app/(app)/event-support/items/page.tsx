@@ -10,7 +10,7 @@ import { Pagination } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
 import type { ApiError } from "@/lib/api/errors";
 
-export const metadata: Metadata = { title: "Item Event Support — Mandana Admin" };
+export const metadata: Metadata = { title: "Item Mandana Living — Mandana Admin" };
 
 export default async function EventItemsPage({
   searchParams,

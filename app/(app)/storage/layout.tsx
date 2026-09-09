@@ -11,7 +11,7 @@ export default function StorageLayout({ children }: { children: React.ReactNode 
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold text-primary">Smart Storage</h1>
+        <h1 className="text-2xl font-semibold text-primary">Mandana Space</h1>
         <p className="text-sm text-muted-foreground">
           Kelola fasilitas, tipe unit, inventaris, dan unit sewa penyimpanan, serta pemesanan pelanggan.
         </p>

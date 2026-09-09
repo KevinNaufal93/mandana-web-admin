@@ -10,7 +10,7 @@ import { Pagination } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
 import type { ApiError } from "@/lib/api/errors";
 
-export const metadata: Metadata = { title: "Manajemen Properti — Mandana Admin" };
+export const metadata: Metadata = { title: "Mandana Property — Mandana Admin" };
 
 // Every page under (app) opens with requireModule()/requireAdmin() — the render-time
 // security boundary; see app/(app)/page.tsx.
@@ -38,7 +38,7 @@ export default async function PropertiesPage({
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-primary">Manajemen Properti</h1>
+          <h1 className="text-2xl font-semibold text-primary">Mandana Property</h1>
           <p className="text-sm text-muted-foreground">Daftar seluruh listing properti Mandana.</p>
         </div>
         <Button variant="secondary" asChild>

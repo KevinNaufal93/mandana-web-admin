@@ -6,7 +6,7 @@ import { StorageAvailabilityOverview } from "@/components/storage/storage-availa
 import { StorageRetryPanel } from "@/components/storage/storage-retry-panel";
 import type { ApiError } from "@/lib/api/errors";
 
-export const metadata: Metadata = { title: "Smart Storage — Mandana Admin" };
+export const metadata: Metadata = { title: "Mandana Space — Mandana Admin" };
 
 /**
  * The module's landing page — an occupancy overview rather than a

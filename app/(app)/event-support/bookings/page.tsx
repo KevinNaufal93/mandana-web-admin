@@ -12,7 +12,7 @@ import { ExportBookingsButton } from "@/components/bookings/export-bookings-butt
 import { Button } from "@/components/ui/button";
 import type { ApiError } from "@/lib/api/errors";
 
-export const metadata: Metadata = { title: "Pemesanan Event Support — Mandana Admin" };
+export const metadata: Metadata = { title: "Pemesanan Mandana Living — Mandana Admin" };
 
 export default async function EventBookingsPage({
   searchParams,

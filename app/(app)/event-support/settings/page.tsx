@@ -4,7 +4,7 @@ import { getEventSupportSettings } from "@/lib/api/event-support-settings";
 import { EventSupportSettingsForm } from "@/components/event-support/event-support-settings-form";
 import type { ApiError } from "@/lib/api/errors";
 
-export const metadata: Metadata = { title: "Pengaturan Event Support — Mandana Admin" };
+export const metadata: Metadata = { title: "Pengaturan Mandana Living — Mandana Admin" };
 
 // No loadX()/notFound() helper needed here, unlike every [id]/page.tsx in
 // this app: GET /admin/event-support/settings auto-seeds server-side and

@@ -22,7 +22,7 @@ export function MovingTabs() {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Bagian Moving Support" className="flex items-center gap-1 overflow-x-auto border-b border-border">
+    <nav aria-label="Bagian Mandana Move" className="flex items-center gap-1 overflow-x-auto border-b border-border">
       {TABS.map(({ href, label }) => {
         const active = pathname === href || pathname.startsWith(`${href}/`);
         return (

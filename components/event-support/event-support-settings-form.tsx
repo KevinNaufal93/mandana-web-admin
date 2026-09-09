@@ -78,7 +78,7 @@ export function EventSupportSettingsForm({ settings }: { settings: AdminEventSup
   return (
     <div className="flex flex-col gap-6 rounded-lg border border-border p-4">
       <div>
-        <h2 className="text-sm font-semibold text-primary">Pengaturan Event Support</h2>
+        <h2 className="text-sm font-semibold text-primary">Pengaturan Mandana Living</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Berlaku untuk setiap kutipan (quote) dan pemesanan baru — mengubah nilai di sini tidak mengubah pemesanan
           yang sudah tercatat, karena setiap baris menyimpan angka harganya sendiri saat dibuat.

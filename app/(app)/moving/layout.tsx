@@ -11,7 +11,7 @@ export default function MovingLayout({ children }: { children: React.ReactNode }
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold text-primary">Moving Support</h1>
+        <h1 className="text-2xl font-semibold text-primary">Mandana Move</h1>
         <p className="text-sm text-muted-foreground">
           Kelola tipe truk, add-on, pengaturan harga, dan lead dari form kalkulasi Mandana Move.
         </p>

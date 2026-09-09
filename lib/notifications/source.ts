@@ -4,9 +4,9 @@ import type { NotificationSourceModule } from "@/lib/notifications/query";
  *  notification's module chip reads the same as the sidebar entry it
  *  ultimately links into. */
 export const SOURCE_MODULE_LABEL: Record<NotificationSourceModule, string> = {
-  moving: "Moving Support",
-  storage: "Smart Storage",
-  event_support: "Event Support",
+  moving: "Mandana Move",
+  storage: "Mandana Space",
+  event_support: "Mandana Living",
 };
 
 const SOURCE_MODULE_BOOKING_BASE: Record<NotificationSourceModule, string> = {

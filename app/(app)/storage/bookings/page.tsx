@@ -10,7 +10,7 @@ import { Pagination } from "@/components/ui/pagination";
 import { ExportBookingsButton } from "@/components/bookings/export-bookings-button";
 import type { ApiError } from "@/lib/api/errors";
 
-export const metadata: Metadata = { title: "Pemesanan Smart Storage — Mandana Admin" };
+export const metadata: Metadata = { title: "Pemesanan Mandana Space — Mandana Admin" };
 
 // No "+ Tambah" button anywhere on this page — unlike Event Support,
 // there is no admin-create endpoint for storage bookings (they only

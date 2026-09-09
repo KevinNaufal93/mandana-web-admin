@@ -9,7 +9,7 @@ import { Pagination } from "@/components/ui/pagination";
 import { ExportBookingsButton } from "@/components/bookings/export-bookings-button";
 import type { ApiError } from "@/lib/api/errors";
 
-export const metadata: Metadata = { title: "Pemesanan Moving Support — Mandana Admin" };
+export const metadata: Metadata = { title: "Pemesanan Mandana Move — Mandana Admin" };
 
 // No "+ Tambah" button anywhere on this page — same as storage/bookings —
 // there is no admin-create endpoint for bookings, they only originate from

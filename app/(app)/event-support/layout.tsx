@@ -11,7 +11,7 @@ export default function EventSupportLayout({ children }: { children: React.React
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold text-primary">Event Support</h1>
+        <h1 className="text-2xl font-semibold text-primary">Mandana Living</h1>
         <p className="text-sm text-muted-foreground">
           Kelola kategori dan item sewa venue/perlengkapan acara, serta catat pemesanan dari WhatsApp.
         </p>

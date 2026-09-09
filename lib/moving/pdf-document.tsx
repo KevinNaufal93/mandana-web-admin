@@ -53,7 +53,7 @@ export function MovingBookingPdfDocument({ booking }: { booking: AdminMovingBook
 
   return (
     <Document title={`Pemesanan ${booking.reference}`}>
-      <BookingPdfPage module="Moving Support">
+      <BookingPdfPage module="Mandana Move">
         <DocumentHeading
           reference={booking.reference}
           subtitle={`${booking.truckName} · ${formatDateID(booking.createdAt)}`}

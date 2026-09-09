@@ -39,7 +39,7 @@ export function StorageBookingPdfDocument({ booking }: { booking: AdminStorageBo
 
   return (
     <Document title={`Pemesanan ${booking.reference}`}>
-      <BookingPdfPage module="Smart Storage">
+      <BookingPdfPage module="Mandana Space">
         <DocumentHeading
           reference={booking.reference}
           subtitle={`${booking.facilityName} · ${booking.unitTypeName}`}

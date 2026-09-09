@@ -9,7 +9,7 @@ import { StorageUnitTypesTable } from "@/components/storage/storage-unit-types-t
 import { Button } from "@/components/ui/button";
 import type { ApiError } from "@/lib/api/errors";
 
-export const metadata: Metadata = { title: "Tipe Unit Smart Storage — Mandana Admin" };
+export const metadata: Metadata = { title: "Tipe Unit Mandana Space — Mandana Admin" };
 
 export default async function StorageUnitTypesPage({
   searchParams,

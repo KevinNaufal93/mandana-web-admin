@@ -20,7 +20,7 @@ export function EventSupportTabs() {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Bagian Event Support" className="flex items-center gap-1 overflow-x-auto border-b border-border">
+    <nav aria-label="Bagian Mandana Living" className="flex items-center gap-1 overflow-x-auto border-b border-border">
       {TABS.map(({ href, label }) => {
         // `${href}/` (not a bare startsWith) so "Item" never lights up
         // for some future "/event-support/items-something" sibling.

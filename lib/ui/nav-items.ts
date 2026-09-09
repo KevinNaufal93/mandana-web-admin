@@ -29,10 +29,10 @@ export interface NavItem {
  */
 export const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard, module: "dashboard" },
-  { href: "/properties", label: "Property Management", icon: Building2, module: "properties" },
-  { href: "/event-support", label: "Event Support", icon: PartyPopper, module: "event-support" },
-  { href: "/storage", label: "Smart Storage", icon: Warehouse, module: "storage" },
-  { href: "/moving", label: "Moving Support", icon: Truck, module: "moving" },
+  { href: "/properties", label: "Mandana Property", icon: Building2, module: "properties" },
+  { href: "/event-support", label: "Mandana Living", icon: PartyPopper, module: "event-support" },
+  { href: "/storage", label: "Mandana Space", icon: Warehouse, module: "storage" },
+  { href: "/moving", label: "Mandana Move", icon: Truck, module: "moving" },
   { href: "/content-media", label: "Content Media Management", icon: Images, module: "content-media" },
   { href: "/users", label: "User Management", icon: Users, module: "users" },
   // Top-level, not /users/rbac: isNavItemActive is a prefix match, so

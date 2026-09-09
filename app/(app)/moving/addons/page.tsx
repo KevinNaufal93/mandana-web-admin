@@ -9,7 +9,7 @@ import { MovingAddonsTable } from "@/components/moving/moving-addons-table";
 import { Button } from "@/components/ui/button";
 import type { ApiError } from "@/lib/api/errors";
 
-export const metadata: Metadata = { title: "Add-on Moving Support — Mandana Admin" };
+export const metadata: Metadata = { title: "Add-on Mandana Move — Mandana Admin" };
 
 export default async function MovingAddonsPage({
   searchParams,

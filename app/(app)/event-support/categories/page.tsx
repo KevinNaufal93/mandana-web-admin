@@ -9,7 +9,7 @@ import { EventCategoriesTable } from "@/components/event-support/event-categorie
 import { Button } from "@/components/ui/button";
 import type { ApiError } from "@/lib/api/errors";
 
-export const metadata: Metadata = { title: "Kategori Event Support — Mandana Admin" };
+export const metadata: Metadata = { title: "Kategori Mandana Living — Mandana Admin" };
 
 export default async function EventCategoriesPage({
   searchParams,

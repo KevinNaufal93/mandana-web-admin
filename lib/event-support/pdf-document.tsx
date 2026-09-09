@@ -40,7 +40,7 @@ export function EventBookingPdfDocument({ booking }: { booking: AdminEventBookin
 
   return (
     <Document title={`Pemesanan ${booking.reference}`}>
-      <BookingPdfPage module="Event Support">
+      <BookingPdfPage module="Mandana Living">
         <DocumentHeading
           reference={booking.reference}
           subtitle={formatDateRangeID(booking.startDate, booking.endDate)}

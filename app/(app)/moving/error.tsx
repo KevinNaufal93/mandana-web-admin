@@ -22,7 +22,7 @@ export default function MovingError({
 
   return (
     <div className="flex flex-col items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-6">
-      <p className="text-sm text-destructive">Gagal memuat halaman Moving Support.</p>
+      <p className="text-sm text-destructive">Gagal memuat halaman Mandana Move.</p>
       <Button variant="secondary" onClick={() => unstable_retry()}>
         Coba lagi
       </Button>
