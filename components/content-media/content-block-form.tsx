@@ -59,6 +59,10 @@ export function ContentBlockForm(props: ContentBlockFormProps) {
     mediaAssetId: null,
     preview: block?.image ? { url: block.image.url, alt: block.image.alt } : null,
   });
+  const [mobileImage, setMobileImage] = useState<ImagePickerValue>({
+    mediaAssetId: null,
+    preview: block?.mobileImage ? { url: block.mobileImage.url, alt: block.mobileImage.alt } : null,
+  });
 
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -97,6 +101,11 @@ export function ContentBlockForm(props: ContentBlockFormProps) {
       return;
     }
 
+    // Same tri-state semantics as the primary image above, minus any
+    // "required" gate — the mobile crop is always optional, even on hero.
+    const hadMobileImage = block?.mobileImage != null;
+    const mobileCleared = hadMobileImage && mobileImage.preview === null;
+
     const input: ContentBlockInput = {
       title: title.trim(),
       subtitle: subtitle.trim() || undefined,
@@ -109,6 +118,13 @@ export function ContentBlockForm(props: ContentBlockFormProps) {
       // would leave the previous scope untouched instead (doc §4b).
       ...(typeDef.supportsListingTypeScope ? { listingTypeScope: scope.length ? scope : null } : {}),
       ...(image.mediaAssetId ? { mediaAssetId: image.mediaAssetId } : cleared ? { mediaAssetId: null } : {}),
+      ...(typeDef.supportsMobileImage
+        ? mobileImage.mediaAssetId
+          ? { mobileMediaAssetId: mobileImage.mediaAssetId }
+          : mobileCleared
+            ? { mobileMediaAssetId: null }
+            : {}
+        : {}),
     };
 
     startTransition(async () => {
@@ -244,6 +260,21 @@ export function ContentBlockForm(props: ContentBlockFormProps) {
               label={typeDef.requiresImage ? "Gambar (wajib)" : "Gambar (opsional)"}
             />
           </div>
+
+          {typeDef.supportsMobileImage && (
+            <div className="rounded-lg border border-border p-4">
+              <ImagePicker
+                key={block?.updatedAt}
+                value={mobileImage}
+                onChange={setMobileImage}
+                purpose="hero_mobile"
+                hint={typeDef.mobileImageGuidance}
+                disabled={pending}
+                allowClear={true}
+                label="Gambar mobile (opsional)"
+              />
+            </div>
+          )}
 
           <div className="rounded-lg border border-border p-4">
             <label className="flex items-center gap-2 text-sm text-primary">

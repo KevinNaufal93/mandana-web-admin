@@ -62,6 +62,10 @@ export interface AdminContentBlock {
   /** null only for a service/promo card with no image attached yet — a
    *  hero always has one (the hero-requires-image rule, doc §4). */
   image: ContentBlockImage | null;
+  /** Hero only — null on every other type, and null on a hero with no
+   *  mobile crop uploaded yet (see hero-mobile-image-requirements.md). */
+  mobileMediaAssetId: string | null;
+  mobileImage: ContentBlockImage | null;
   sortOrder: number;
   isActive: boolean;
   /** See ContentBlockTypeDef.supportsImageOnly's doc comment — as of this
@@ -86,6 +90,10 @@ export interface ContentBlockInput {
    *  a hero — doc §4). Omit the key entirely to leave the current image
    *  untouched — see the plan's note on <ImagePicker> value semantics. */
   mediaAssetId?: string | null;
+  /** Hero only. Explicit `null` clears the mobile crop (rejected 400 on
+   *  any other type). Omit to leave the current mobile image untouched,
+   *  same convention as `mediaAssetId`. */
+  mobileMediaAssetId?: string | null;
   sortOrder?: number;
   isActive?: boolean;
   imageOnly?: boolean;

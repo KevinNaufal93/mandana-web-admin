@@ -67,6 +67,19 @@ export interface ContentBlockTypeDef {
    *  Setting a non-empty scope on any other type is a 400, so the form
    *  only renders the control when this is `true`. */
   supportsListingTypeScope: boolean;
+  /** Hero only — whether this type gets a second <ImagePicker> for a
+   *  mobile-optimized crop, swapped in by the public site below ~1024px
+   *  viewport width (see hero-mobile-image-requirements.md). Upload
+   *  purpose is always "hero_mobile" when true. Setting
+   *  mobileMediaAssetId on any other type is a 400, so the form only
+   *  renders the second picker when this is `true`. Always optional even
+   *  on hero — omitting it just means the primary image renders at every
+   *  width, exactly as it does today. */
+  supportsMobileImage: boolean;
+  /** Advisory hint shown under the mobile-image picker, mirroring
+   *  imageGuidance's role for the primary image. Only meaningful when
+   *  supportsMobileImage is true. */
+  mobileImageGuidance?: string;
 }
 
 export const CONTENT_BLOCK_TYPES: ContentBlockTypeDef[] = [
@@ -85,6 +98,8 @@ export const CONTENT_BLOCK_TYPES: ContentBlockTypeDef[] = [
     layout: "stack",
     supportsImageOnly: true,
     supportsListingTypeScope: false,
+    supportsMobileImage: true,
+    mobileImageGuidance: "Portrait atau mendekati persegi paling baik; ditampilkan di bawah lebar 1024px.",
   },
   {
     type: "service_card",
@@ -101,6 +116,7 @@ export const CONTENT_BLOCK_TYPES: ContentBlockTypeDef[] = [
     layout: "grid",
     supportsImageOnly: true,
     supportsListingTypeScope: false,
+    supportsMobileImage: false,
   },
   {
     type: "property_promo",
@@ -118,6 +134,7 @@ export const CONTENT_BLOCK_TYPES: ContentBlockTypeDef[] = [
     layout: "sidebar",
     supportsImageOnly: true,
     supportsListingTypeScope: true,
+    supportsMobileImage: false,
   },
 ];
 

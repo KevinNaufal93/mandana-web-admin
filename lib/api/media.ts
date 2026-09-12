@@ -31,7 +31,7 @@ export interface UploadedMedia {
   alt: string | null;
 }
 
-export type MediaPurpose = "hero" | "cover";
+export type MediaPurpose = "hero" | "hero_mobile" | "cover";
 
 /**
  * `formData` is built by the caller (a client component) with `file`
