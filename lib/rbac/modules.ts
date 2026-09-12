@@ -16,6 +16,7 @@ export const ACCESS_MODULES = [
   "users",
   "notifications",
   "rbac",
+  "articles",
 ] as const;
 
 export type AccessModule = (typeof ACCESS_MODULES)[number];

@@ -1,6 +1,7 @@
 import "server-only";
 import { verifySession } from "@/lib/auth/dal";
 import { parseApiError, type ApiResult } from "@/lib/api/errors";
+import { serverApi, unwrap } from "@/lib/api/server-client";
 
 /**
  * Raw fetch: a multipart body's `file` field isn't representable as real
@@ -56,6 +57,41 @@ export async function uploadMedia(formData: FormData): Promise<ApiResult<Uploade
   const body = await response.json().catch(() => null);
   if (!response.ok) return { ok: false, error: parseApiError(response.status, body) };
   return { ok: true, data: (body as { data: UploadedMedia }).data };
+}
+
+/**
+ * Forward-looking, unlike everything else in this file: GET
+ * /admin/media/:id currently returns the bare MediaAsset entity — no
+ * `image` field — verified against
+ * mandana-api/src/modules/media/media.service.ts's findOneOrFail(). Only
+ * findAllAdmin()'s list rows run buildImageDto() per row today. This type
+ * documents the one-line backend change that would make findOne() do the
+ * same (add `image: buildImageDto(asset)` alongside the bare fields) —
+ * `image` is typed optional/nullable specifically so callers are forced
+ * to handle "not there yet" rather than assume it. The only consumer
+ * right now is RichTextEditor's allowImages image-insert flow, which
+ * needs a real URL to persist inline (unlike ImagePicker, which only
+ * ever needs a local blob: preview — see its own header comment).
+ */
+export interface MediaAssetDetail {
+  id: string;
+  image?: {
+    url: string;
+    srcset: string;
+    srcsetAvif: string;
+    placeholder: string | null;
+    alt: string | null;
+    width: number;
+    height: number;
+  } | null;
+}
+
+/** Uses openapi-fetch (unlike upload/delete above) — a plain GET has none
+ *  of the multipart-typing problems those raw fetches work around. */
+export async function getMediaAsset(id: string): Promise<ApiResult<MediaAssetDetail>> {
+  const api = await serverApi();
+  const result = await api.GET("/admin/media/{id}", { params: { path: { id } } });
+  return unwrap<MediaAssetDetail>(result);
 }
 
 /** Deletes a media asset and all its storage variants. 204 on success. */

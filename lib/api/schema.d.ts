@@ -1801,13 +1801,87 @@ export interface paths {
         patch: operations["EventSupportSettingsAdminController_update_v1"];
         trace?: never;
     };
+    "/api/v1/admin/articles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all articles with filters (admin, all statuses) */
+        get: operations["ArticlesAdminController_findAll_v1"];
+        put?: never;
+        /** Create a new article (author defaults to the creating admin) */
+        post: operations["ArticlesAdminController_create_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/articles/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get an article by ID (admin) */
+        get: operations["ArticlesAdminController_findOne_v1"];
+        put?: never;
+        post?: never;
+        /** Delete an article */
+        delete: operations["ArticlesAdminController_remove_v1"];
+        options?: never;
+        head?: never;
+        /** Update an article */
+        patch: operations["ArticlesAdminController_update_v1"];
+        trace?: never;
+    };
+    "/api/v1/admin/article-categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all article categories, regardless of whether they have any published articles — the source for the create/edit form's category dropdown */
+        get: operations["ArticleCategoriesAdminController_findAll_v1"];
+        put?: never;
+        /** Create a new article category */
+        post: operations["ArticleCategoriesAdminController_create_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/article-categories/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get an article category by ID (admin) */
+        get: operations["ArticleCategoriesAdminController_findOne_v1"];
+        put?: never;
+        post?: never;
+        /** Delete an article category (rejected if any articles still use it) */
+        delete: operations["ArticleCategoriesAdminController_remove_v1"];
+        options?: never;
+        head?: never;
+        /** Update an article category */
+        patch: operations["ArticleCategoriesAdminController_update_v1"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         AccessModuleResponseDto: {
             /** @enum {string} */
-            key: "dashboard" | "properties" | "event-support" | "storage" | "moving" | "content-media" | "users" | "notifications" | "rbac";
+            key: "dashboard" | "properties" | "event-support" | "storage" | "moving" | "content-media" | "users" | "notifications" | "rbac" | "articles";
             label: string;
             description: string;
             /** @description false = can never be granted to a non-admin role. */
@@ -1818,13 +1892,13 @@ export interface components {
         RolePermissionsResponseDto: {
             /** @enum {string} */
             role: "admin" | "editor";
-            modules: ("dashboard" | "properties" | "event-support" | "storage" | "moving" | "content-media" | "users" | "notifications" | "rbac")[];
+            modules: ("dashboard" | "properties" | "event-support" | "storage" | "moving" | "content-media" | "users" | "notifications" | "rbac" | "articles")[];
             /** @description true for 'admin' — its grant set is implicit-all and cannot be edited. */
             locked: boolean;
         };
         UpdateRolePermissionsDto: {
             /** @description Full replacement set of granted modules for this role. Non-grantable modules (e.g. 'users') and role 'admin' are rejected — see RbacService.setRoleModules. */
-            modules: ("dashboard" | "properties" | "event-support" | "storage" | "moving" | "content-media" | "users" | "notifications" | "rbac")[];
+            modules: ("dashboard" | "properties" | "event-support" | "storage" | "moving" | "content-media" | "users" | "notifications" | "rbac" | "articles")[];
         };
         CreateUserDto: {
             /** @example editor@mandana.com */
@@ -1892,7 +1966,7 @@ export interface components {
             photoMediaAssetId: string | null;
             photo: Record<string, never> | null;
             /** @description The caller's currently granted modules (union of their role's grants and always-on modules; full catalog for admin). */
-            modules: ("dashboard" | "properties" | "event-support" | "storage" | "moving" | "content-media" | "users" | "notifications" | "rbac")[];
+            modules: ("dashboard" | "properties" | "event-support" | "storage" | "moving" | "content-media" | "users" | "notifications" | "rbac" | "articles")[];
         };
         PropertyTypeRefDto: {
             id: string;
@@ -4238,6 +4312,83 @@ export interface components {
              * @example Lokasi di luar Jabodetabek dikenakan biaya pengiriman tambahan.
              */
             outsideJabodetabekNote?: Record<string, never>;
+        };
+        CreateArticleDto: {
+            /**
+             * @description URL-safe slug, unique. Auto-generated from title when omitted.
+             * @example panduan-membeli-rumah-pertama
+             */
+            slug?: string;
+            /** @example Panduan Membeli Rumah Pertama */
+            title: string;
+            /**
+             * @description Plain text, admin-authored — NOT auto-truncated from bodyHtml. Used as the card summary and as the meta description fallback.
+             * @example Semua yang perlu Anda tahu sebelum membeli rumah pertama.
+             */
+            excerpt: string;
+            /** @description Sanitized HTML rich text (allow-listed tags/attributes only, incl. figure/figcaption/img — see docs/rich-text-descriptions.md). Images must be uploaded via POST /admin/media and referenced by URL; data: URIs are stripped. */
+            bodyHtml: string;
+            /**
+             * @default draft
+             * @enum {string}
+             */
+            status?: "draft" | "published" | "archived";
+            /** @description ArticleCategory UUID */
+            categoryId: string;
+            /** @description Author (User) UUID shown on the byline. Defaults to the creating admin. */
+            authorId?: string;
+            /** @description Cover media asset UUID */
+            coverMediaAssetId?: string;
+            /** @description SEO title override. Client falls back to `title` when null. */
+            metaTitle?: string;
+            /** @description SEO description override. Client falls back to `excerpt` when null. */
+            metaDescription?: string;
+        };
+        UpdateArticleDto: {
+            /**
+             * @description URL-safe slug, unique. Rejected with 409 if the article is currently published — unpublish first.
+             * @example panduan-membeli-rumah-pertama
+             */
+            slug?: string;
+            /** @example Panduan Membeli Rumah Pertama */
+            title?: string;
+            /**
+             * @description Plain text, admin-authored — NOT auto-truncated from bodyHtml.
+             * @example Semua yang perlu Anda tahu sebelum membeli rumah pertama.
+             */
+            excerpt?: string;
+            /** @description Sanitized HTML rich text — see CreateArticleDto. */
+            bodyHtml?: string;
+            /** @enum {string} */
+            status?: "draft" | "published" | "archived";
+            /** @description ArticleCategory UUID */
+            categoryId?: string;
+            /** @description Author (User) UUID shown on the byline. */
+            authorId?: string;
+            /** @description Cover media asset UUID */
+            coverMediaAssetId?: string;
+            /** @description SEO title override. */
+            metaTitle?: string;
+            /** @description SEO description override. */
+            metaDescription?: string;
+        };
+        CreateArticleCategoryDto: {
+            /** @example Panduan Beli */
+            name: string;
+            /**
+             * @description URL-safe slug, unique. Auto-generated from name when omitted.
+             * @example panduan-beli
+             */
+            slug?: string;
+        };
+        UpdateArticleCategoryDto: {
+            /** @example Panduan Beli */
+            name?: string;
+            /**
+             * @description URL-safe slug, unique. Auto-generated from name when omitted.
+             * @example panduan-beli
+             */
+            slug?: string;
         };
     };
     responses: never;
@@ -7485,6 +7636,213 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["EventSupportSettingsResponseDto"];
                 };
+            };
+        };
+    };
+    ArticlesAdminController_findAll_v1: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+                /** @enum {string} */
+                status?: "draft" | "published" | "archived";
+                /** @description Filter by ArticleCategory UUID */
+                categoryId?: string;
+                /** @description Full-text search across title and excerpt */
+                search?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ArticlesAdminController_create_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateArticleDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ArticlesAdminController_findOne_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ArticlesAdminController_remove_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ArticlesAdminController_update_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateArticleDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ArticleCategoriesAdminController_findAll_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ArticleCategoriesAdminController_create_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateArticleCategoryDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ArticleCategoriesAdminController_findOne_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ArticleCategoriesAdminController_remove_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ArticleCategoriesAdminController_update_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateArticleCategoryDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

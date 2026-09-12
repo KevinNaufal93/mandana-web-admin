@@ -1,6 +1,6 @@
 "use server";
 
-import { uploadMedia, deleteMedia, type UploadedMedia } from "@/lib/api/media";
+import { uploadMedia, deleteMedia, getMediaAsset, type UploadedMedia, type MediaAssetDetail } from "@/lib/api/media";
 import type { ApiError } from "@/lib/api/errors";
 import { createLogger } from "@/lib/logger";
 
@@ -21,6 +21,24 @@ export async function uploadMediaAction(formData: FormData): Promise<MediaUpload
   const result = await uploadMedia(formData);
   if (!result.ok) {
     log.warn("Upload media failed", { kind: result.error.kind });
+    return { ok: false, error: errorMessage(result.error) };
+  }
+  return { ok: true, data: result.data };
+}
+
+export type MediaAssetResult = { ok: true; data: MediaAssetDetail } | { ok: false; error: string };
+
+/** Resolves a just-uploaded asset's renderable URL — needed only by
+ *  RichTextEditor's inline image insert (see its allowImages doc
+ *  comment). Every other image flow in this app previews from a local
+ *  blob: URL instead and never calls this, because that preview only has
+ *  to survive until the owning form's own save; an inline body image's
+ *  URL is what actually gets persisted into bodyHtml, so a blob: URL
+ *  can't stand in for it. */
+export async function getMediaAssetAction(id: string): Promise<MediaAssetResult> {
+  const result = await getMediaAsset(id);
+  if (!result.ok) {
+    log.warn("Get media asset failed", { id, kind: result.error.kind });
     return { ok: false, error: errorMessage(result.error) };
   }
   return { ok: true, data: result.data };

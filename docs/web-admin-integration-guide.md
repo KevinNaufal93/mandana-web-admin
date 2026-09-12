@@ -236,6 +236,7 @@ with a user token — you generally can't, and shouldn't try to.
 | Moving add-ons | `/admin/moving/addons` | `/moving/*` | [moving-integration.md](moving-integration.md) |
 | Storage unit types/facilities | `/admin/storage/units`, `/admin/storage` | `/storage/*` | [storage-integration.md](storage-integration.md) |
 | Collections | `/admin/collections` | via `/homepage` + `/collections/:slug` | [homepage-integration.md](homepage-integration.md) |
+| Articles + article categories | `/admin/articles`, `/admin/article-categories` | `/articles`, `/article-categories` | [articles-admin-integration.md](articles-admin-integration.md) |
 | Media library (upload/browse/delete) | `/admin/media` | — (never public) | §2 above |
 | Properties (multi-image, own staging system) | `/admin/properties` | `/properties*` | out of scope here — see `lib/properties/image-staging.ts` |
 | Users (agent photo) | `/admin/users` | via property `agent.photo` only (no public `/users` route) | [users-admin-integration.md](users-admin-integration.md) |
