@@ -135,6 +135,28 @@ export function ContentBlockForm(props: ContentBlockFormProps) {
           return;
         }
         setBlock(result.data);
+        // Swap the pickers back to server truth instead of leaving them on
+        // their optimistic local `blob:` preview. Without this, the only
+        // thing that changes here is `block` — which just changes the
+        // <ImagePicker key> below and remounts it — but the `value` it
+        // remounts with is still this stale `image`/`mobileImage` state,
+        // blob URL and all. That blob is revoked the moment the old
+        // ImagePicker instance unmounts (its cleanup effect), orphaning
+        // the reference the remounted instance is now holding. Resetting
+        // mediaAssetId to null here matches the same "untouched" tri-state
+        // convention as the initial useState above.
+        setImage({
+          mediaAssetId: null,
+          preview: result.data.image ? { url: result.data.image.url, alt: result.data.image.alt } : null,
+        });
+        if (typeDef.supportsMobileImage) {
+          setMobileImage({
+            mediaAssetId: null,
+            preview: result.data.mobileImage
+              ? { url: result.data.mobileImage.url, alt: result.data.mobileImage.alt }
+              : null,
+          });
+        }
         setSaved(true);
         return;
       }
