@@ -32,14 +32,17 @@ function Field({
 
 /** The known platforms the public footer renders icons for — see
  *  site-footer-glass.tsx on the web side. An absent/blank value here
- *  means no icon, never a placeholder link. */
+ *  means no icon, never a placeholder link. LinkedIn is deliberately not
+ *  offered here: there is no LinkedIn icon asset and neither footer
+ *  variant has an entry for it, so filling it in would silently do
+ *  nothing. Adding it back needs an icon asset plus a footer entry on the
+ *  web side first — a small code change, not a config one. */
 const SOCIAL_PLATFORMS: { key: string; label: string; placeholder: string }[] = [
   { key: "instagram", label: "Instagram", placeholder: "https://instagram.com/mandana.property" },
   { key: "tiktok", label: "TikTok", placeholder: "https://tiktok.com/@mandana.property" },
   { key: "facebook", label: "Facebook", placeholder: "https://facebook.com/mandanaproperty" },
   { key: "youtube", label: "YouTube", placeholder: "https://youtube.com/@mandanaproperty" },
   { key: "x", label: "X (Twitter)", placeholder: "https://x.com/mandanaproperty" },
-  { key: "linkedin", label: "LinkedIn", placeholder: "https://linkedin.com/company/mandanaproperty" },
 ];
 
 export function SeoSettingsForm({ settings }: { settings: AdminSeoSettings }) {
