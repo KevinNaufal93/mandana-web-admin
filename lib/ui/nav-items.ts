@@ -9,6 +9,7 @@ import {
   Newspaper,
   Users,
   ShieldCheck,
+  Search,
 } from "lucide-react";
 import type { AccessModule } from "@/lib/rbac/modules";
 
@@ -36,6 +37,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/moving", label: "Mandana Move", icon: Truck, module: "moving" },
   { href: "/content-media", label: "Content Media Management", icon: Images, module: "content-media" },
   { href: "/articles", label: "Article Management", icon: Newspaper, module: "articles" },
+  { href: "/seo", label: "SEO", icon: Search, module: "seo" },
   { href: "/users", label: "User Management", icon: Users, module: "users" },
   // Top-level, not /users/rbac: isNavItemActive is a prefix match, so
   // nesting under /users would leave the User Management link active too.

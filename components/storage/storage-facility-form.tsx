@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { SeoFields } from "@/components/seo/seo-fields";
 import { ImagePicker, type ImagePickerValue } from "@/components/media/image-picker";
 import { createStorageFacilityAction, updateStorageFacilityAction } from "@/app/actions/storage";
 import type { AdminStorageFacility, StorageFacilityInput } from "@/lib/api/storage";
@@ -48,6 +49,10 @@ export function StorageFacilityForm(props: StorageFacilityFormProps) {
   const [province, setProvince] = useState(facility?.province ?? "");
   const [latitude, setLatitude] = useState(facility?.latitude != null ? String(facility.latitude) : "");
   const [longitude, setLongitude] = useState(facility?.longitude != null ? String(facility.longitude) : "");
+  const [openingHours, setOpeningHours] = useState(facility?.openingHours ?? "");
+  const [phone, setPhone] = useState(facility?.phone ?? "");
+  const [metaTitle, setMetaTitle] = useState(facility?.metaTitle ?? "");
+  const [metaDescription, setMetaDescription] = useState(facility?.metaDescription ?? "");
   const [isActive, setIsActive] = useState(facility?.isActive ?? true);
   const [sortOrder, setSortOrder] = useState(facility ? String(facility.sortOrder) : "0");
   const [image, setImage] = useState<ImagePickerValue>({
@@ -97,6 +102,10 @@ export function StorageFacilityForm(props: StorageFacilityFormProps) {
       province: province.trim() || undefined,
       latitude: lat,
       longitude: lng,
+      openingHours: openingHours.trim() || undefined,
+      phone: phone.trim() || undefined,
+      metaTitle: metaTitle.trim() || undefined,
+      metaDescription: metaDescription.trim() || undefined,
       mediaAssetId: image.mediaAssetId ?? undefined,
       isActive,
       sortOrder: sortOrderNumber,
@@ -195,10 +204,46 @@ export function StorageFacilityForm(props: StorageFacilityFormProps) {
                 />
               </Field>
             </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label="Jam operasional (opsional)" htmlFor="facility-hours">
+                <Input
+                  id="facility-hours"
+                  value={openingHours}
+                  onChange={(e) => setOpeningHours(e.target.value)}
+                  placeholder="Senin–Sabtu 08.00–17.00"
+                  disabled={pending}
+                />
+              </Field>
+              <Field label="Telepon (opsional)" htmlFor="facility-phone">
+                <Input
+                  id="facility-phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+62 21 5315 0000"
+                  disabled={pending}
+                />
+              </Field>
+            </div>
           </div>
 
           <div className="rounded-lg border border-border p-4">
             <ImagePicker value={image} onChange={setImage} purpose="cover" disabled={pending} />
+          </div>
+
+          <div className="flex flex-col gap-3 rounded-lg border border-border p-4">
+            <h2 className="text-sm font-semibold text-primary">SEO</h2>
+            <SeoFields
+              idPrefix="facility-seo"
+              title={metaTitle}
+              onTitleChange={setMetaTitle}
+              titlePlaceholder={name.trim() ? `Self Storage ${name.trim()}` : "Nama fasilitas"}
+              description={metaDescription}
+              onDescriptionChange={setMetaDescription}
+              descriptionPlaceholder="Dibuat otomatis dari deskripsi fasilitas."
+              previewUrl={`mandana.id/layanan/storage/lokasi/${slug.trim() || facility?.slug || "…"}`}
+              disabled={pending}
+            />
           </div>
         </div>
 

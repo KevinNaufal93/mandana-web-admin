@@ -12,6 +12,7 @@ import {
   FeaturedToggle,
   StatusAndListingControls,
   DescriptionField,
+  SeoFieldsSection,
   AmenitiesField,
   SpecFields,
   LocationFields,
@@ -246,6 +247,22 @@ export function PropertyDetailView({
               <DescriptionField fields={editingFields} updateField={draft.updateField} pending={draft.pending} />
             ) : (
               <RichTextView html={property.description} scrollable />
+            )}
+          </DetailCard>
+
+          <DetailCard title="SEO">
+            {editingFields ? (
+              <SeoFieldsSection
+                fields={editingFields}
+                updateField={draft.updateField}
+                pending={draft.pending}
+                previewUrl={`mandana.id/properties/${property.slug}`}
+              />
+            ) : (
+              <>
+                <DetailRow label="Judul (title)" value={property.metaTitle || "(otomatis)"} />
+                <DetailRow label="Deskripsi (meta description)" value={property.metaDescription || "(otomatis)"} />
+              </>
             )}
           </DetailCard>
 

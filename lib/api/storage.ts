@@ -71,6 +71,13 @@ export interface AdminStorageFacility {
   province: string | null;
   latitude: number | null;
   longitude: number | null;
+  /** Free text, e.g. "Senin–Sabtu 08.00–17.00" — Google Business Profile is
+   *  the authoritative source for hours; this just backs the public page. */
+  openingHours: string | null;
+  phone: string | null;
+  /** SEO title/description override for this facility's public page. */
+  metaTitle: string | null;
+  metaDescription: string | null;
   image: StorageImage | null;
   isActive: boolean;
   sortOrder: number;
@@ -168,6 +175,10 @@ export interface StorageFacilityInput {
   /** Exact coordinates — no location-privacy fuzzing applies to facilities. */
   latitude?: number;
   longitude?: number;
+  openingHours?: string;
+  phone?: string;
+  metaTitle?: string;
+  metaDescription?: string;
   mediaAssetId?: string;
   isActive?: boolean;
   sortOrder?: number;

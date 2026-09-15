@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { SeoFields } from "@/components/seo/seo-fields";
 import { STATUS_LABEL, LISTING_LABEL } from "@/components/properties/property-status-badge";
 import { PROPERTY_STATUSES, LISTING_TYPES } from "@/lib/properties/query";
 import { NONE, type DraftFields } from "@/lib/properties/draft-fields";
@@ -119,6 +120,32 @@ export function DescriptionField({ fields, updateField, pending }: FieldsProps) 
       defaultValue={fields.description}
       onChange={(v) => updateField("description", v)}
       placeholder="Tulis deskripsi properti…"
+      disabled={pending}
+    />
+  );
+}
+
+/** Body of the "SEO" DetailCard in edit mode — blank/blank means "use the
+ *  title and an automatic description generated from the listing" (see
+ *  app/properties/[slug]/page.tsx on the website). `previewUrl` is passed
+ *  in rather than derived here: the create form has no slug yet (it's
+ *  auto-generated server-side), so callers decide what to show. */
+export function SeoFieldsSection({
+  fields,
+  updateField,
+  pending,
+  previewUrl,
+}: FieldsProps & { previewUrl: string }) {
+  return (
+    <SeoFields
+      idPrefix="property-seo"
+      title={fields.metaTitle}
+      onTitleChange={(v) => updateField("metaTitle", v)}
+      titlePlaceholder={fields.title.trim() || "Judul properti"}
+      description={fields.metaDescription}
+      onDescriptionChange={(v) => updateField("metaDescription", v)}
+      descriptionPlaceholder="Dibuat otomatis dari deskripsi, area, dan harga properti."
+      previewUrl={previewUrl}
       disabled={pending}
     />
   );

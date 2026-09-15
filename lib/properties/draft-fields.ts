@@ -17,6 +17,10 @@ export const NONE = "none";
 export interface DraftFields {
   title: string;
   description: string;
+  /** Empty string means "use the automatic title/description" — same
+   *  empty-means-unset convention every other optional field here uses. */
+  metaTitle: string;
+  metaDescription: string;
   listingType: ListingType;
   status: PropertyStatus;
   /** Only meaningful (and only sent) while listingType is "new". */
@@ -48,6 +52,8 @@ export function emptyDraftFields(): DraftFields {
   return {
     title: "",
     description: "",
+    metaTitle: "",
+    metaDescription: "",
     listingType: "sale",
     status: "draft",
     handoverDate: "",
@@ -74,6 +80,8 @@ export function fieldsFromProperty(property: AdminPropertyDetail): DraftFields {
   return {
     title: property.title,
     description: property.description ?? "",
+    metaTitle: property.metaTitle ?? "",
+    metaDescription: property.metaDescription ?? "",
     listingType: property.listingType,
     status: property.status,
     handoverDate: property.handoverDate ?? "",
@@ -117,6 +125,8 @@ export function isFieldsDirty(fields: DraftFields, baseline: DraftFields): boole
   if (
     fields.title !== baseline.title ||
     fields.description !== baseline.description ||
+    fields.metaTitle !== baseline.metaTitle ||
+    fields.metaDescription !== baseline.metaDescription ||
     fields.listingType !== baseline.listingType ||
     fields.status !== baseline.status ||
     fields.handoverDate !== baseline.handoverDate ||
@@ -162,6 +172,8 @@ export function buildUpdatePatch(fields: DraftFields): AdminPropertyUpdateInput 
   return {
     title: fields.title.trim(),
     description: fields.description || null,
+    metaTitle: fields.metaTitle.trim() || null,
+    metaDescription: fields.metaDescription.trim() || null,
     listingType: fields.listingType,
     ...newOnlyFields(fields),
     status: fields.status,
@@ -188,6 +200,8 @@ export function buildCreateInput(fields: DraftFields): CreatePropertyInput {
     title: fields.title.trim(),
     price: Number(fields.price),
     description: fields.description || undefined,
+    metaTitle: fields.metaTitle.trim() || undefined,
+    metaDescription: fields.metaDescription.trim() || undefined,
     listingType: fields.listingType,
     ...(fields.listingType === "new" && {
       handoverDate: fields.handoverDate.trim() || undefined,

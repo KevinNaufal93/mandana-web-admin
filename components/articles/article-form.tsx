@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { SeoFields } from "@/components/seo/seo-fields";
 import { ImagePicker, type ImagePickerValue } from "@/components/media/image-picker";
 import { createArticleAction, updateArticleAction } from "@/app/actions/articles";
 import { ARTICLE_STATUSES, type ArticleStatus } from "@/lib/articles/query";
@@ -279,28 +280,22 @@ export function ArticleForm(props: ArticleFormProps) {
 
           <div className="flex flex-col gap-3 rounded-lg border border-border p-4">
             <h2 className="text-sm font-semibold text-primary">SEO</h2>
-            <Field label="Meta title (opsional)" htmlFor="article-meta-title" hint="Kosongkan untuk memakai Judul.">
-              <Input
-                id="article-meta-title"
-                value={metaTitle}
-                onChange={(e) => setMetaTitle(e.target.value.slice(0, META_TITLE_MAX))}
-                maxLength={META_TITLE_MAX}
-                disabled={pending}
-              />
-            </Field>
-            <Field
-              label="Meta description (opsional)"
-              htmlFor="article-meta-description"
-              hint="Kosongkan untuk memakai Ringkasan."
-            >
-              <Textarea
-                id="article-meta-description"
-                value={metaDescription}
-                onChange={(e) => setMetaDescription(e.target.value.slice(0, META_DESCRIPTION_MAX))}
-                maxLength={META_DESCRIPTION_MAX}
-                disabled={pending}
-              />
-            </Field>
+            <SeoFields
+              idPrefix="article-seo"
+              title={metaTitle}
+              // .slice() carries over from the old hard-capped input: the API
+              // rejects a title/description over these lengths, but SeoFields
+              // itself only shows a soft amber warning at 60/155 — this is
+              // the hard ceiling that stops a long paste from ever reaching
+              // a value the server would 400 on.
+              onTitleChange={(v) => setMetaTitle(v.slice(0, META_TITLE_MAX))}
+              titlePlaceholder={title.trim() || "Judul artikel"}
+              description={metaDescription}
+              onDescriptionChange={(v) => setMetaDescription(v.slice(0, META_DESCRIPTION_MAX))}
+              descriptionPlaceholder={excerpt.trim() || "Ringkasan artikel"}
+              previewUrl={`mandana.id/artikel/${slug.trim() || "…"}`}
+              disabled={pending}
+            />
           </div>
         </div>
       </div>

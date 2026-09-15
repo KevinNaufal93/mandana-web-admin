@@ -101,7 +101,14 @@ export function StorageFacilityDetailView({ facility: initialFacility }: { facil
               {facility.latitude != null && facility.longitude != null && (
                 <DetailRow label="Koordinat" value={`${facility.latitude}, ${facility.longitude}`} />
               )}
+              <DetailRow label="Jam operasional" value={facility.openingHours ?? "—"} />
+              <DetailRow label="Telepon" value={facility.phone ?? "—"} />
               <DetailRow label="Urutan" value={facility.sortOrder} />
+            </DetailCard>
+
+            <DetailCard title="SEO">
+              <DetailRow label="Judul (title)" value={facility.metaTitle || "(otomatis)"} />
+              <DetailRow label="Deskripsi (meta description)" value={facility.metaDescription || "(otomatis)"} />
             </DetailCard>
 
             <div className="rounded-lg border border-destructive/30 p-4">

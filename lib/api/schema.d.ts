@@ -1801,6 +1801,57 @@ export interface paths {
         patch: operations["EventSupportSettingsAdminController_update_v1"];
         trace?: never;
     };
+    "/api/v1/articles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List published articles with pagination */
+        get: operations["ArticlesController_findAll_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/articles/{slug}/related": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get articles related to the given one (same category first, newest, falling back to other published articles). Never 404s — an unknown slug just returns an empty array. */
+        get: operations["ArticlesController_findRelated_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/articles/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a single published article by slug */
+        get: operations["ArticlesController_findOne_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/articles": {
         parameters: {
             query?: never;
@@ -1838,6 +1889,23 @@ export interface paths {
         patch: operations["ArticlesAdminController_update_v1"];
         trace?: never;
     };
+    "/api/v1/article-categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List article categories that have at least one published article */
+        get: operations["ArticleCategoriesController_findAll_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/article-categories": {
         parameters: {
             query?: never;
@@ -1845,7 +1913,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List all article categories, regardless of whether they have any published articles — the source for the create/edit form's category dropdown */
+        /** List all article categories, regardless of whether they have any published articles — the source for the article create/edit form's category dropdown */
         get: operations["ArticleCategoriesAdminController_findAll_v1"];
         put?: never;
         /** Create a new article category */
@@ -1875,13 +1943,133 @@ export interface paths {
         patch: operations["ArticleCategoriesAdminController_update_v1"];
         trace?: never;
     };
+    "/api/v1/seo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Sitewide SEO settings + per-page title/description/share-image overrides */
+        get: operations["SeoController_getSeo_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/seo/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the sitewide SEO/business settings */
+        get: operations["SeoAdminController_getSettings_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update the sitewide SEO/business settings */
+        patch: operations["SeoAdminController_updateSettings_v1"];
+        trace?: never;
+    };
+    "/api/v1/admin/seo/pages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List SEO title/description/share-image for every fixed page */
+        get: operations["SeoAdminController_getPages_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/seo/pages/{pageKey}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update one page's SEO title/description/share-image. Rejects noIndex:true for "home". */
+        patch: operations["SeoAdminController_updatePage_v1"];
+        trace?: never;
+    };
+    "/api/v1/legal/{pageKey}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One legal page (privacy policy or terms) by key */
+        get: operations["LegalController_getPage_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/legal/pages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List both legal pages */
+        get: operations["LegalAdminController_getPages_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/legal/pages/{pageKey}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update one legal page's title/body */
+        patch: operations["LegalAdminController_updatePage_v1"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         AccessModuleResponseDto: {
             /** @enum {string} */
-            key: "dashboard" | "properties" | "event-support" | "storage" | "moving" | "content-media" | "users" | "notifications" | "rbac" | "articles";
+            key: "dashboard" | "properties" | "event-support" | "storage" | "moving" | "content-media" | "users" | "notifications" | "rbac" | "articles" | "seo";
             label: string;
             description: string;
             /** @description false = can never be granted to a non-admin role. */
@@ -1892,13 +2080,13 @@ export interface components {
         RolePermissionsResponseDto: {
             /** @enum {string} */
             role: "admin" | "editor";
-            modules: ("dashboard" | "properties" | "event-support" | "storage" | "moving" | "content-media" | "users" | "notifications" | "rbac" | "articles")[];
+            modules: ("dashboard" | "properties" | "event-support" | "storage" | "moving" | "content-media" | "users" | "notifications" | "rbac" | "articles" | "seo")[];
             /** @description true for 'admin' — its grant set is implicit-all and cannot be edited. */
             locked: boolean;
         };
         UpdateRolePermissionsDto: {
             /** @description Full replacement set of granted modules for this role. Non-grantable modules (e.g. 'users') and role 'admin' are rejected — see RbacService.setRoleModules. */
-            modules: ("dashboard" | "properties" | "event-support" | "storage" | "moving" | "content-media" | "users" | "notifications" | "rbac" | "articles")[];
+            modules: ("dashboard" | "properties" | "event-support" | "storage" | "moving" | "content-media" | "users" | "notifications" | "rbac" | "articles" | "seo")[];
         };
         CreateUserDto: {
             /** @example editor@mandana.com */
@@ -1966,7 +2154,7 @@ export interface components {
             photoMediaAssetId: string | null;
             photo: Record<string, never> | null;
             /** @description The caller's currently granted modules (union of their role's grants and always-on modules; full catalog for admin). */
-            modules: ("dashboard" | "properties" | "event-support" | "storage" | "moving" | "content-media" | "users" | "notifications" | "rbac" | "articles")[];
+            modules: ("dashboard" | "properties" | "event-support" | "storage" | "moving" | "content-media" | "users" | "notifications" | "rbac" | "articles" | "seo")[];
         };
         PropertyTypeRefDto: {
             id: string;
@@ -2053,6 +2241,10 @@ export interface components {
             description?: string | null;
             /** @description Plain-text derivative of `description` (HTML stripped) — SEO meta, share previews. */
             descriptionText?: string | null;
+            /** @description SEO title override — null means "use `title`". */
+            metaTitle?: string | null;
+            /** @description SEO description override — null means "generate one". */
+            metaDescription?: string | null;
             /** @description Fuzzed within `approximateRadiusM` metres of the real location. */
             latitude?: number | null;
             /** @description Fuzzed within `approximateRadiusM` metres of the real location. */
@@ -2133,6 +2325,10 @@ export interface components {
             longitude?: number;
             /** @default false */
             isFeatured: boolean;
+            /** @description SEO title override. Client falls back to `title` when null — same convention as Article.metaTitle. */
+            metaTitle?: string;
+            /** @description SEO description override. Client falls back to a generated sentence (or `descriptionText`) when null. */
+            metaDescription?: string;
             /** @description PropertyType UUID */
             propertyTypeId?: string;
             /** @description Agent (User) UUID shown on the detail page. Defaults to the creating admin. */
@@ -2211,6 +2407,10 @@ export interface components {
             longitude?: number;
             /** @default false */
             isFeatured: boolean;
+            /** @description SEO title override. Client falls back to `title` when null — same convention as Article.metaTitle. */
+            metaTitle?: string;
+            /** @description SEO description override. Client falls back to a generated sentence (or `descriptionText`) when null. */
+            metaDescription?: string;
             /** @description PropertyType UUID */
             propertyTypeId?: string;
             /** @description Agent (User) UUID shown on the detail page. Defaults to the creating admin. */
@@ -2245,6 +2445,8 @@ export interface components {
             link?: string;
             /** @description MediaAsset UUID (upload first via POST /admin/media). Required when type=hero, or when imageOnly=true — either case renders nothing without an image. Optional otherwise. */
             mediaAssetId?: string;
+            /** @description Hero only: MediaAsset UUID for a separately composed crop for viewports below ~1024px (upload with purpose=hero_mobile), not an auto-crop of mediaAssetId. Optional even when type=hero — when unset the primary image renders at every width, exactly as it does today. 400 if set on any type other than hero. */
+            mobileMediaAssetId?: string;
             /** @default 0 */
             sortOrder: number;
             /** @default true */
@@ -2284,6 +2486,7 @@ export interface components {
              */
             imageOnly: boolean;
             mediaAssetId?: string | null;
+            mobileMediaAssetId?: string | null;
             listingTypeScope?: ("sale" | "rent" | "new")[] | null;
         };
         CreateInquiryDto: {
@@ -3166,6 +3369,10 @@ export interface components {
             province?: string | null;
             latitude?: number | null;
             longitude?: number | null;
+            openingHours?: string | null;
+            phone?: string | null;
+            metaTitle?: string | null;
+            metaDescription?: string | null;
             image?: components["schemas"]["StorageImageDto"] | null;
             isActive: boolean;
             sortOrder: number;
@@ -3284,13 +3491,17 @@ export interface components {
              * @example bulan
              */
             unitLabel: string;
-            /** @description Rupiah */
+            /** @description Rupiah — rent only, before insurance */
             subtotal: number;
-            /** @description Always 0 for a weekly quote — the duration-discount tiers are month-only. */
+            /** @description Deprecated — the duration-discount tiers were removed. Always 0. */
             discountPct: number;
-            /** @description Rupiah */
+            /** @description Deprecated — always 0. See discountPct. */
             discountAmount: number;
-            /** @description Rupiah */
+            /** @description Whole-percent insurance rate applied to subtotal, from the storage_settings singleton. */
+            insurancePct: number;
+            /** @description Rupiah — round(subtotal * insurancePct / 100). */
+            insuranceAmount: number;
+            /** @description Rupiah — subtotal + insuranceAmount */
             total: number;
             /** @example IDR */
             currency: string;
@@ -3453,6 +3664,14 @@ export interface components {
             latitude?: number;
             /** @example 106.6528 */
             longitude?: number;
+            /** @example Senin–Sabtu 08.00–17.00 */
+            openingHours?: string;
+            /** @example +62 21 5315 0000 */
+            phone?: string;
+            /** @description SEO title override. Falls back to an auto-generated title when omitted. */
+            metaTitle?: string;
+            /** @description SEO meta description override. Falls back to an auto-generated description when omitted. */
+            metaDescription?: string;
             /** @description Upload an image first via POST /admin/media/upload, then pass its id */
             mediaAssetId?: string;
             /** @default true */
@@ -3488,6 +3707,14 @@ export interface components {
             latitude?: number;
             /** @example 106.6528 */
             longitude?: number;
+            /** @example Senin–Sabtu 08.00–17.00 */
+            openingHours?: string;
+            /** @example +62 21 5315 0000 */
+            phone?: string;
+            /** @description SEO title override. Falls back to an auto-generated title when omitted. */
+            metaTitle?: string;
+            /** @description SEO meta description override. Falls back to an auto-generated description when omitted. */
+            metaDescription?: string;
             /** @description Upload an image first via POST /admin/media/upload, then pass its id */
             mediaAssetId?: string;
             /** @default true */
@@ -3722,11 +3949,15 @@ export interface components {
             unitLabel: string;
             /** @description Rupiah — the reference monthly rate */
             monthlyRate: number;
-            /** @description Rupiah */
+            /** @description Rupiah — rent only, before insurance */
             subtotal: number;
-            /** @description Rupiah */
+            /** @description Deprecated — the duration-discount tiers were removed. Always 0. */
             discountAmount: number;
-            /** @description Rupiah */
+            /** @description Whole-percent insurance rate applied to subtotal, at booking time. */
+            insurancePct: number;
+            /** @description Rupiah — round(subtotal * insurancePct / 100). */
+            insuranceAmount: number;
+            /** @description Rupiah — subtotal + insuranceAmount */
             total: number;
             /** @example IDR */
             currency: string;
@@ -3769,11 +4000,15 @@ export interface components {
             unitLabel: string;
             /** @description Rupiah — the reference monthly rate */
             monthlyRate: number;
-            /** @description Rupiah */
+            /** @description Rupiah — rent only, before insurance */
             subtotal: number;
-            /** @description Rupiah */
+            /** @description Deprecated — the duration-discount tiers were removed. Always 0. */
             discountAmount: number;
-            /** @description Rupiah */
+            /** @description Whole-percent insurance rate applied to subtotal, at booking time. */
+            insurancePct: number;
+            /** @description Rupiah — round(subtotal * insurancePct / 100). */
+            insuranceAmount: number;
+            /** @description Rupiah — subtotal + insuranceAmount */
             total: number;
             adminNote?: string | null;
             confirmedAt?: string | null;
@@ -4313,6 +4548,50 @@ export interface components {
              */
             outsideJabodetabekNote?: Record<string, never>;
         };
+        ArticleMediaImageDto: {
+            url: string;
+            srcset: string;
+            /** @description Empty when this asset has no AVIF variants — only hero-purpose uploads generate AVIF. */
+            srcsetAvif: string;
+            /** @description ~20px WebP data: URI for an instant blurred paint; null until backfilled for pre-existing assets. */
+            placeholder?: string | null;
+            alt?: string | null;
+            width: number;
+            height: number;
+        };
+        ArticleCategoryRefDto: {
+            id: string;
+            slug: string;
+            name: string;
+        };
+        ArticleAuthorDto: {
+            id: string;
+            name: string;
+            /** @description e.g. "Content Editor". Null renders no role line. */
+            role?: string | null;
+            avatar?: components["schemas"]["ArticleMediaImageDto"] | null;
+        };
+        ArticleDetailDto: {
+            id: string;
+            slug: string;
+            title: string;
+            excerpt: string;
+            coverImage?: components["schemas"]["ArticleMediaImageDto"] | null;
+            category: components["schemas"]["ArticleCategoryRefDto"];
+            author: components["schemas"]["ArticleAuthorDto"];
+            /** @description ISO 8601. */
+            publishedAt: string;
+            readingMinutes: number;
+            /** @description Finished, render-ready HTML. */
+            bodyHtml: string;
+            /** @description Null until the article is edited post-publish. */
+            updatedAt?: string | null;
+            metaTitle?: string | null;
+            metaDescription?: string | null;
+        };
+        ArticleDetailResponseDto: {
+            data: components["schemas"]["ArticleDetailDto"];
+        };
         CreateArticleDto: {
             /**
              * @description URL-safe slug, unique. Auto-generated from title when omitted.
@@ -4326,13 +4605,16 @@ export interface components {
              * @example Semua yang perlu Anda tahu sebelum membeli rumah pertama.
              */
             excerpt: string;
-            /** @description Sanitized HTML rich text (allow-listed tags/attributes only, incl. figure/figcaption/img — see docs/rich-text-descriptions.md). Images must be uploaded via POST /admin/media and referenced by URL; data: URIs are stripped. */
+            /**
+             * @description Sanitized HTML rich text (allow-listed tags/attributes only — see docs/rich-text-descriptions.md). Images must be uploaded via POST /admin/media and referenced by URL; data: URIs are stripped.
+             * @example <p>Rumah <strong>modern</strong> di BSD dengan akses tol.</p><ul><li>3 kamar tidur</li></ul>
+             */
             bodyHtml: string;
             /**
              * @default draft
              * @enum {string}
              */
-            status?: "draft" | "published" | "archived";
+            status: "draft" | "published" | "archived";
             /** @description ArticleCategory UUID */
             categoryId: string;
             /** @description Author (User) UUID shown on the byline. Defaults to the creating admin. */
@@ -4346,30 +4628,36 @@ export interface components {
         };
         UpdateArticleDto: {
             /**
-             * @description URL-safe slug, unique. Rejected with 409 if the article is currently published — unpublish first.
+             * @description URL-safe slug, unique. Auto-generated from title when omitted.
              * @example panduan-membeli-rumah-pertama
              */
             slug?: string;
             /** @example Panduan Membeli Rumah Pertama */
             title?: string;
             /**
-             * @description Plain text, admin-authored — NOT auto-truncated from bodyHtml.
+             * @description Plain text, admin-authored — NOT auto-truncated from bodyHtml. Used as the card summary and as the meta description fallback.
              * @example Semua yang perlu Anda tahu sebelum membeli rumah pertama.
              */
             excerpt?: string;
-            /** @description Sanitized HTML rich text — see CreateArticleDto. */
+            /**
+             * @description Sanitized HTML rich text (allow-listed tags/attributes only — see docs/rich-text-descriptions.md). Images must be uploaded via POST /admin/media and referenced by URL; data: URIs are stripped.
+             * @example <p>Rumah <strong>modern</strong> di BSD dengan akses tol.</p><ul><li>3 kamar tidur</li></ul>
+             */
             bodyHtml?: string;
-            /** @enum {string} */
-            status?: "draft" | "published" | "archived";
+            /**
+             * @default draft
+             * @enum {string}
+             */
+            status: "draft" | "published" | "archived";
             /** @description ArticleCategory UUID */
             categoryId?: string;
-            /** @description Author (User) UUID shown on the byline. */
+            /** @description Author (User) UUID shown on the byline. Defaults to the creating admin. */
             authorId?: string;
             /** @description Cover media asset UUID */
             coverMediaAssetId?: string;
-            /** @description SEO title override. */
+            /** @description SEO title override. Client falls back to `title` when null. */
             metaTitle?: string;
-            /** @description SEO description override. */
+            /** @description SEO description override. Client falls back to `excerpt` when null. */
             metaDescription?: string;
         };
         CreateArticleCategoryDto: {
@@ -4389,6 +4677,116 @@ export interface components {
              * @example panduan-beli
              */
             slug?: string;
+        };
+        SeoImageDto: {
+            url: string;
+            srcset: string;
+            srcsetAvif: string;
+            placeholder: string | null;
+            alt: string | null;
+            width: number;
+            height: number;
+        };
+        SeoSettingsDto: {
+            organizationName: string;
+            contactPhone: string | null;
+            contactEmail: string | null;
+            streetAddress: string | null;
+            addressLocality: string | null;
+            addressRegion: string | null;
+            postalCode: string | null;
+            socialLinks: Record<string, never>;
+            googleSiteVerification: string | null;
+            bingSiteVerification: string | null;
+            defaultOgImage?: components["schemas"]["SeoImageDto"] | null;
+        };
+        PageSeoDto: {
+            /** @enum {string} */
+            pageKey: "home" | "properties" | "about" | "moving" | "storage" | "storage_booking" | "event" | "articles";
+            metaTitle: string | null;
+            metaDescription: string | null;
+            heading: string | null;
+            noIndex: boolean;
+            ogImage?: components["schemas"]["SeoImageDto"] | null;
+        };
+        SeoPayloadDto: {
+            settings: components["schemas"]["SeoSettingsDto"];
+            pages: components["schemas"]["PageSeoDto"][];
+        };
+        SeoPayloadResponseDto: {
+            data: components["schemas"]["SeoPayloadDto"];
+        };
+        SeoSettingsResponseDto: {
+            data: components["schemas"]["SeoSettingsDto"];
+        };
+        UpdateSeoSettingsDto: {
+            /** @example Mandana Property */
+            organizationName?: string;
+            /** @example +6281234567890 */
+            contactPhone?: string;
+            /** @example hello@mandana.id */
+            contactEmail?: string;
+            /** @example Jl. Boulevard Raya No. 1, BSD City */
+            streetAddress?: string;
+            /** @example Tangerang Selatan */
+            addressLocality?: string;
+            /** @example Banten */
+            addressRegion?: string;
+            /** @example 15345 */
+            postalCode?: string;
+            /**
+             * @description Known keys the web client renders as footer icons: instagram, tiktok, facebook, youtube, x, linkedin. An absent key renders no icon — never a placeholder link. Unknown keys are stored but ignored.
+             * @example {
+             *       "instagram": "https://instagram.com/mandana.property"
+             *     }
+             */
+            socialLinks?: Record<string, never>;
+            /** @description Google Search Console verification code */
+            googleSiteVerification?: string;
+            /** @description Bing Webmaster Tools verification code */
+            bingSiteVerification?: string;
+            /** @description Media asset UUID — the default Open Graph share image for pages that set none of their own. */
+            defaultOgMediaAssetId?: string;
+        };
+        PageSeoListResponseDto: {
+            data: components["schemas"]["PageSeoDto"][];
+        };
+        UpdatePageSeoDto: {
+            /** @description null/omitted falls back to the web app's own hardcoded default. */
+            metaTitle?: string;
+            /** @description null/omitted falls back to the web app's own hardcoded default. */
+            metaDescription?: string;
+            /** @description Only meaningful on the `home` page — the hidden <h1> rendered behind the image-only hero. */
+            heading?: string;
+            /** @description Hide this page from search engines. Rejected (400) for `home`. */
+            noIndex?: boolean;
+            /** @description Media asset UUID — this page's own share image. */
+            ogMediaAssetId?: string;
+        };
+        PageSeoResponseDto: {
+            data: components["schemas"]["PageSeoDto"];
+        };
+        LegalPageDto: {
+            pageKey: string;
+            title: string;
+            bodyHtml: string;
+            bodyText: string;
+            updatedAt: string;
+        };
+        LegalPageResponseDto: {
+            data: components["schemas"]["LegalPageDto"];
+        };
+        LegalPageListResponseDto: {
+            data: components["schemas"]["LegalPageDto"][];
+        };
+        UpdateLegalPageDto: {
+            /** @example Kebijakan Privasi */
+            title?: string;
+            /**
+             * @description Sanitized HTML rich text (allow-listed tags/attributes only — see docs/rich-text-descriptions.md). Images must be uploaded via POST /admin/media and referenced by URL; data: URIs are stripped.
+             * @example <p>Rumah <strong>modern</strong> di BSD dengan akses tol.</p><ul><li>3 kamar tidur</li></ul>
+             */
+            bodyHtml?: string;
         };
     };
     responses: never;
@@ -4595,7 +4993,7 @@ export interface operations {
             query?: {
                 page?: number;
                 limit?: number;
-                purpose?: "hero" | "cover" | "icon";
+                purpose?: "hero" | "hero_mobile" | "cover" | "icon";
                 /** @description Only assets not referenced by any owning entity — the "safe to delete" view for the admin picker. */
                 unused?: boolean;
                 /** @description Include a usage count per asset (one extra batched query for the page, not N+1). */
@@ -4672,7 +5070,7 @@ export interface operations {
                      * @description Determines the generated width ladder and formats. SVG is only accepted when purpose=icon.
                      * @enum {string}
                      */
-                    purpose: "hero" | "cover" | "icon";
+                    purpose: "hero" | "hero_mobile" | "cover" | "icon";
                     /** @description Alt text for accessibility */
                     alt?: string;
                 };
@@ -7639,12 +8037,76 @@ export interface operations {
             };
         };
     };
+    ArticlesController_findAll_v1: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+                /** @description Filter to one category by slug */
+                categorySlug?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ArticlesController_findRelated_v1: {
+        parameters: {
+            query?: {
+                /** @description Default 3, max 12 */
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ArticlesController_findOne_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleDetailResponseDto"];
+                };
+            };
+        };
+    };
     ArticlesAdminController_findAll_v1: {
         parameters: {
             query?: {
                 page?: number;
                 limit?: number;
-                /** @enum {string} */
                 status?: "draft" | "published" | "archived";
                 /** @description Filter by ArticleCategory UUID */
                 categoryId?: string;
@@ -7738,6 +8200,23 @@ export interface operations {
                 "application/json": components["schemas"]["UpdateArticleDto"];
             };
         };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ArticleCategoriesController_findAll_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -7843,6 +8322,176 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    SeoController_getSeo_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SeoPayloadResponseDto"];
+                };
+            };
+        };
+    };
+    SeoAdminController_getSettings_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SeoSettingsResponseDto"];
+                };
+            };
+        };
+    };
+    SeoAdminController_updateSettings_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateSeoSettingsDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SeoSettingsResponseDto"];
+                };
+            };
+        };
+    };
+    SeoAdminController_getPages_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageSeoListResponseDto"];
+                };
+            };
+        };
+    };
+    SeoAdminController_updatePage_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pageKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePageSeoDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageSeoResponseDto"];
+                };
+            };
+        };
+    };
+    LegalController_getPage_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pageKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LegalPageResponseDto"];
+                };
+            };
+        };
+    };
+    LegalAdminController_getPages_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LegalPageListResponseDto"];
+                };
+            };
+        };
+    };
+    LegalAdminController_updatePage_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pageKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateLegalPageDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LegalPageResponseDto"];
+                };
             };
         };
     };

@@ -91,6 +91,10 @@ export interface AdminPropertyDetail {
   title: string;
   description: string | null;
   descriptionText: string | null;
+  /** SEO title override. Website falls back to an automatic title (name +
+   *  area + price) when null — same convention as Article.metaTitle. */
+  metaTitle: string | null;
+  metaDescription: string | null;
   listingType: ListingType;
   /** Only meaningful when listingType is "new" — null otherwise. */
   handoverDate: string | null;
@@ -215,6 +219,8 @@ export interface AdminPropertyUpdateInput {
   propertyTypeId?: string | null;
   agentId?: string;
   amenityIds?: string[];
+  metaTitle?: string | null;
+  metaDescription?: string | null;
   /** Omit to leave images untouched; [] deletes every existing image. */
   images?: PropertyImageInputEntry[];
 }
@@ -272,6 +278,8 @@ export interface CreatePropertyInput {
   propertyTypeId?: string;
   agentId?: string;
   amenityIds?: string[];
+  metaTitle?: string;
+  metaDescription?: string;
 }
 
 /**

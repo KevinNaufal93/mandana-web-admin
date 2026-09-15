@@ -12,6 +12,7 @@ import {
   StatusAndListingControls,
   FeaturedToggle,
   DescriptionField,
+  SeoFieldsSection,
   AmenitiesField,
   SpecFields,
   LocationFields,
@@ -106,6 +107,15 @@ export function PropertyCreateForm({
         <div className="flex flex-col gap-6 lg:col-span-2">
           <DetailCard title="Deskripsi">
             <DescriptionField fields={fields} updateField={draft.updateField} pending={draft.pending} />
+          </DetailCard>
+
+          <DetailCard title="SEO">
+            <SeoFieldsSection
+              fields={fields}
+              updateField={draft.updateField}
+              pending={draft.pending}
+              previewUrl="mandana.id/properties/…"
+            />
           </DetailCard>
 
           <DetailCard title="Fasilitas">
