@@ -120,7 +120,10 @@ export function ImagePicker({
       sessionUploads.current.add(result.data.id);
       if (fileInputRef.current) fileInputRef.current.value = "";
       setAlt("");
-      onChange({ mediaAssetId: result.data.id, preview: { url: localUrl, alt: result.data.alt } });
+      onChange({
+        mediaAssetId: result.data.id,
+        preview: { url: localUrl, alt: result.data.alt },
+      });
     });
   }
 
@@ -197,17 +200,28 @@ export function ImagePicker({
         {!disabled && (
           <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-end">
             <div className="flex-1">
-              <Input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" disabled={disabledAll} />
+              <Input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                disabled={disabledAll}
+              />
             </div>
             <div className="flex-1">
               <Input
                 value={alt}
                 onChange={(e) => setAlt(e.target.value)}
-                placeholder="Teks alternatif (opsional)"
+                placeholder="Teks alternatif"
                 disabled={disabledAll}
               />
             </div>
-            <Button type="button" variant="secondary" onClick={handleUpload} disabled={disabledAll} className="shrink-0">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleUpload}
+              disabled={disabledAll}
+              className="shrink-0"
+            >
               <Upload className="size-4" />
               {pending ? "Mengunggah…" : value.preview ? "Ganti" : "Unggah"}
             </Button>

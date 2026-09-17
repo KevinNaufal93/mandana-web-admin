@@ -179,7 +179,19 @@ export function EventItemForm(props: EventItemFormProps) {
           </div>
 
           <div className="rounded-lg border border-border p-4">
-            <ImagePicker value={image} onChange={setImage} purpose="cover" disabled={pending} />
+            {/* Two different crops on mandana-web, both object-cover (both
+                actually crop, unlike storage-unit-type's letterboxed
+                dialog): event-catalog-step.tsx shows it aspect-square, and
+                event-item-detail.tsx shows the same image aspect-video.
+                Recommending the wider of the two and centering the subject
+                is what survives both crops reasonably. */}
+            <ImagePicker
+              value={image}
+              onChange={setImage}
+              purpose="cover"
+              hint="Disarankan 800 × 450 px (rasio 16:9), subjek di tengah foto — juga tampil persegi di halaman katalog, jadi tepi kiri/kanan bisa terpotong di sana. Format JPG, PNG, atau WebP, maksimal 20 MB."
+              disabled={pending}
+            />
           </div>
         </div>
 

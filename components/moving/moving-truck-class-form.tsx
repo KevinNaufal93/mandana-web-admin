@@ -300,7 +300,17 @@ export function MovingTruckClassForm(props: MovingTruckClassFormProps) {
           </div>
 
           <div className="rounded-lg border border-border p-4">
-            <ImagePicker value={image} onChange={setImage} purpose="cover" disabled={pending} />
+            {/* Only rendered in mandana-web's truck-picker.tsx, as a tiny
+                h-10 w-14 (56×40px, ratio 7:5) icon-style thumbnail with
+                object-cover — not a hero-style card like most other
+                cover-purpose images in this admin. Sized accordingly. */}
+            <ImagePicker
+              value={image}
+              onChange={setImage}
+              purpose="cover"
+              hint="Disarankan 400 × 286 px (rasio 7:5) — tampil sangat kecil (ikon di daftar pilihan truk), posisikan truk di tengah karena tepinya bisa terpotong. Format JPG, PNG, atau WebP, maksimal 20 MB."
+              disabled={pending}
+            />
           </div>
         </div>
 

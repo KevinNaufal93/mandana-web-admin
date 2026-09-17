@@ -273,7 +273,20 @@ export function StorageUnitTypeForm(props: StorageUnitTypeFormProps) {
           </div>
 
           <div className="rounded-lg border border-border p-4">
-            <ImagePicker value={image} onChange={setImage} purpose="cover" disabled={pending} />
+            {/* mandana-web's unit-detail-dialog.tsx renders this at
+                aspect-video with object-contain (not cover) — deliberately
+                switched from cover after a reported crop bug, per its own
+                comment: "unit photos aren't shot to a fixed 16:9 ratio."
+                So unlike ImagePicker's other cover-purpose callers, nothing
+                here ever crops — an off-ratio photo just gets letterboxed
+                (shown smaller, whole), never cut off. */}
+            <ImagePicker
+              value={image}
+              onChange={setImage}
+              purpose="cover"
+              hint="Disarankan 800 × 450 px (rasio 16:9) agar mengisi penuh — rasio lain tetap ditampilkan utuh (tidak terpotong). Format JPG, PNG, atau WebP, maksimal 20 MB."
+              disabled={pending}
+            />
           </div>
         </div>
 

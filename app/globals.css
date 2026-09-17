@@ -141,6 +141,26 @@ body {
     color: var(--muted-foreground);
     font-style: normal;
   }
+  /* Inline body images (allowImages — see rich-text-editor.tsx): capped so
+     one large upload can't blow past the editor's own max-height above,
+     and given the same corner radius as the rest of this app's images.
+     Full-size responsive rendering happens on the public site's own
+     .prose-artikel img rule (mandana-web/app/globals.css) — this is only
+     the editing view. */
+  .rich-text-editor .ql-editor img {
+    /* width/height auto (not the values RichTextEditor sets as HTML
+       attributes for the browser's own aspect-ratio hinting — see
+       insertImageAsOwnLine's ImageDims comment) is what lets max-height
+       actually scale the image down proportionally. Without it the
+       attribute-derived width stays fixed while max-height alone
+       squashes the height, stretching/squishing the image. */
+    max-width: 100%;
+    max-height: 200px;
+    width: auto;
+    height: auto;
+    border-radius: var(--radius);
+    cursor: pointer;
+  }
 }
 
 /* Reduced motion: gentler, not zero (Apple §14). Forcing near-0

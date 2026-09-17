@@ -222,11 +222,11 @@ export function ArticleForm(props: ArticleFormProps) {
                 onChange={setBodyHtml}
                 placeholder="Tulis isi artikel…"
                 disabled={pending}
-                // Inline body images stay off here: the allow-listed <img>
-                // support exists (see RichTextEditor's allowImages doc
-                // comment) but GET /admin/media/:id can't yet resolve a
-                // real URL to insert. Flip this on once that one-line
-                // backend change ships.
+                // Inline body images between paragraphs — see
+                // RichTextEditor's allowImages doc comment. Articles are the
+                // only caller: the sanitizer's figure/figcaption + img
+                // allow-list was added specifically for this content type.
+                allowImages
               />
             </div>
           </div>
@@ -237,7 +237,7 @@ export function ArticleForm(props: ArticleFormProps) {
               onChange={setCover}
               purpose="hero"
               label="Gambar sampul"
-              hint="Rasio 16:9 disarankan (mis. 1920×1080). JPG, PNG, atau WebP."
+              hint="Disarankan 1920 × 1080 px (rasio 16:9). Format JPG, PNG, atau WebP, maksimal 20 MB."
               disabled={pending}
             />
           </div>
@@ -299,6 +299,20 @@ export function ArticleForm(props: ArticleFormProps) {
           </div>
         </div>
       </div>
+
+      {/* Only when editing an already-published article, reusing the same
+          slugLocked condition — a brand-new/draft article isn't live
+          anywhere yet, so the caching-delay note wouldn't apply to it.
+          `/artikel/[slug]` is ISR (revalidate = 300, mandana-web) rather
+          than revalidated on save, so an edit to an already-cached page
+          doesn't reach the public site immediately — see
+          mandana-web/docs/artikel-revalidation-backlog.md for why, and the
+          on-demand-revalidation fix that would remove this wait. */}
+      {slugLocked && (
+        <p className="text-xs text-muted-foreground">
+          Perubahan pada artikel yang sudah terbit bisa butuh waktu hingga 5 menit untuk tampil di website publik.
+        </p>
+      )}
 
       <div className="flex items-center gap-2">
         <Button variant="secondary" onClick={handleSubmit} disabled={pending}>

@@ -60,18 +60,16 @@ export async function uploadMedia(formData: FormData): Promise<ApiResult<Uploade
 }
 
 /**
- * Forward-looking, unlike everything else in this file: GET
- * /admin/media/:id currently returns the bare MediaAsset entity — no
- * `image` field — verified against
- * mandana-api/src/modules/media/media.service.ts's findOneOrFail(). Only
- * findAllAdmin()'s list rows run buildImageDto() per row today. This type
- * documents the one-line backend change that would make findOne() do the
- * same (add `image: buildImageDto(asset)` alongside the bare fields) —
- * `image` is typed optional/nullable specifically so callers are forced
- * to handle "not there yet" rather than assume it. The only consumer
- * right now is RichTextEditor's allowImages image-insert flow, which
- * needs a real URL to persist inline (unlike ImagePicker, which only
- * ever needs a local blob: preview — see its own header comment).
+ * GET /admin/media/:id resolves through MediaService.findOneAdmin() (not
+ * the bare findOneOrFail() other internal lookups use), which adds this
+ * `image` DTO the same way findAllAdmin()'s list rows already did — see
+ * mandana-api/src/modules/media/media.service.ts. `image` stays
+ * optional/nullable anyway so callers don't assume it's always present
+ * (a lookup that somehow predates that field, a future endpoint reusing
+ * this type). The only consumer right now is RichTextEditor's
+ * allowImages image-insert flow, which needs a real URL to persist inline
+ * (unlike ImagePicker, which only ever needs a local blob: preview — see
+ * its own header comment).
  */
 export interface MediaAssetDetail {
   id: string;

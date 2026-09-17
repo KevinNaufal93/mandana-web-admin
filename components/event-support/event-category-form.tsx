@@ -134,7 +134,17 @@ export function EventCategoryForm(props: EventCategoryFormProps) {
           </div>
 
           <div className="rounded-lg border border-border p-4">
-            <ImagePicker value={image} onChange={setImage} purpose="cover" disabled={pending} />
+            {/* Verified against mandana-web: category is only ever used as
+                a text filter label (event-catalog-step.tsx's category
+                Select) — no component reads a category's image, so there's
+                no real render box to size a recommendation against. */}
+            <ImagePicker
+              value={image}
+              onChange={setImage}
+              purpose="cover"
+              hint="Belum ditampilkan di halaman publik saat ini — unggahan di sini hanya tersimpan untuk penggunaan mendatang. Format JPG, PNG, atau WebP, maksimal 20 MB."
+              disabled={pending}
+            />
           </div>
         </div>
 

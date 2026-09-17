@@ -99,7 +99,17 @@ export const CONTENT_BLOCK_TYPES: ContentBlockTypeDef[] = [
     supportsImageOnly: true,
     supportsListingTypeScope: false,
     supportsMobileImage: true,
-    mobileImageGuidance: "Portrait atau mendekati persegi paling baik; ditampilkan di bawah lebar 1024px.",
+    // No single fixed ratio here on purpose — see
+    // docs/hero-mobile-image-requirements.md §1: a hero photo's best mobile
+    // crop depends on where its own subject sits, verified there against a
+    // real photo (one object-position anchor did NOT survive being applied
+    // to a second, differently-composed one). What IS fixed regardless of
+    // composition: the upload ladder (PURPOSE_SPECS[HERO_MOBILE].widths =
+    // [480, 768, 1080], image-processor.service.ts) tops out at 1080px, and
+    // format/max size are the same for every photo.
+    mobileImageGuidance:
+      "Portrait atau mendekati persegi, sesuaikan komposisi foto — rasio tetap fleksibel per foto. " +
+      "Lebar sumber minimal 1080px, ditampilkan di bawah lebar 1024px. Format JPG, PNG, atau WebP, maksimal 400 KB.",
   },
   {
     type: "service_card",
@@ -126,6 +136,16 @@ export const CONTENT_BLOCK_TYPES: ContentBlockTypeDef[] = [
     // Promo images come back with srcsetAvif: "" (doc §5/§3) — same
     // cover-purpose treatment as service-card icons, not hero.
     mediaPurpose: "cover",
+    // No fixed ratio to recommend, unlike every other type here — the
+    // public PromoCard component deliberately sizes its box to whatever
+    // ratio is uploaded (`aspectRatioOf()` in
+    // mandana-web/components/property/detail/promo-card.tsx), specifically
+    // because "the first real one shipped square, 1024×1024, which a
+    // hardcoded aspect-video cropped top/bottom." Width is still worth
+    // stating: the card never renders wider than 380px.
+    imageGuidance:
+      "Bentuk bebas — kartu menyesuaikan proporsi gambar yang diunggah (persegi, potret, atau lanskap semua bisa). " +
+      "Lebar 400–800px sudah cukup (kartu tampil maksimal 380px). Format JPG, PNG, atau WebP, maksimal 150 KB.",
     requiresImage: false,
     usesCtaText: true,
     subtitleLabel: "Isi kartu",

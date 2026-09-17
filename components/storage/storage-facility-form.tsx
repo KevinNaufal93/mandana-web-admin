@@ -228,7 +228,13 @@ export function StorageFacilityForm(props: StorageFacilityFormProps) {
           </div>
 
           <div className="rounded-lg border border-border p-4">
-            <ImagePicker value={image} onChange={setImage} purpose="cover" disabled={pending} />
+            <ImagePicker
+              value={image}
+              onChange={setImage}
+              purpose="cover"
+              hint="Disarankan 800 × 450 px (rasio 16:9). Format JPG, PNG, atau WebP, maksimal 20 MB."
+              disabled={pending}
+            />
           </div>
 
           <div className="flex flex-col gap-3 rounded-lg border border-border p-4">

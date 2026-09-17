@@ -258,7 +258,20 @@ export function MovingAddonForm(props: MovingAddonFormProps) {
           </div>
 
           <div className="rounded-lg border border-border p-4">
-            <ImagePicker value={image} onChange={setImage} purpose="cover" disabled={pending} />
+            {/* Verified against mandana-web: no component reads addon.image
+                anywhere (moving-extras.tsx, the actual add-on selection UI,
+                is text/checkbox/QuantityStepper rows only) — this upload
+                isn't rendered on the public site today, so there's no real
+                render box to size a recommendation against. Format/max
+                size are still real (same upload endpoint/limit as every
+                other purpose="cover" field), just not a dimension. */}
+            <ImagePicker
+              value={image}
+              onChange={setImage}
+              purpose="cover"
+              hint="Belum ditampilkan di halaman publik saat ini — unggahan di sini hanya tersimpan untuk penggunaan mendatang. Format JPG, PNG, atau WebP, maksimal 20 MB."
+              disabled={pending}
+            />
           </div>
         </div>
 
