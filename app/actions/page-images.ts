@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { updatePageImage, type AdminPageImage } from "@/lib/api/page-images";
+import { findPageImagePageBySlotKey } from "@/lib/page-images/shared";
 import type { ApiError } from "@/lib/api/errors";
 import { createLogger } from "@/lib/logger";
 
@@ -21,6 +22,11 @@ export async function updatePageImageAction(slotKey: string, mediaAssetId: strin
     log.warn("Update page image failed", { slotKey, kind: result.error.kind });
     return { ok: false, error: errorMessage(result.error) };
   }
-  revalidatePath("/content-media/tentang-kami");
+  // Which tab to revalidate depends on which page owns this slot key —
+  // no-op (rather than guessing a path) if a slot key isn't in the
+  // registry, which shouldn't happen since updatePageImage() only
+  // succeeds against a key the API already recognizes.
+  const page = findPageImagePageBySlotKey(slotKey);
+  if (page) revalidatePath(`/content-media/${page.slug}`);
   return { ok: true, data: result.data };
 }

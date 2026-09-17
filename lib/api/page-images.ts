@@ -35,7 +35,7 @@ export interface AdminPageImage {
   image: PageImage | null;
 }
 
-/** All 3 slots, in the API's PAGE_IMAGE_SLOTS declared order. cache()d so
+/** All 5 slots, in the API's PAGE_IMAGE_SLOTS declared order. cache()d so
  *  a page and any sibling component reading this share one request. */
 export const listPageImages = cache(async (): Promise<ApiResult<AdminPageImage[]>> => {
   const api = await serverApi();
