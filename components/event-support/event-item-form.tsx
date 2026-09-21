@@ -189,7 +189,7 @@ export function EventItemForm(props: EventItemFormProps) {
               value={image}
               onChange={setImage}
               purpose="cover"
-              hint="Disarankan 800 × 450 px (rasio 16:9), subjek di tengah foto — juga tampil persegi di halaman katalog, jadi tepi kiri/kanan bisa terpotong di sana. Format JPG, PNG, atau WebP, maksimal 20 MB."
+              hint="Disarankan 800 × 450 px (rasio 16:9), subjek di tengah foto — juga tampil persegi di halaman katalog, jadi tepi kiri/kanan bisa terpotong di sana. Format JPG, PNG, atau WebP, maksimal 4 MB."
               disabled={pending}
             />
           </div>

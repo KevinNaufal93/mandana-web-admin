@@ -111,7 +111,7 @@ export function PageSeoForm({ pageKey, page }: { pageKey: SeoPageKey; page: Admi
           }}
           purpose="cover"
           label="Gambar berbagi (opsional)"
-          hint="Disarankan 1200 × 630 px. Kosongkan untuk memakai gambar bawaan situs."
+          hint="Disarankan 1200 × 630 px. Format JPG, PNG, atau WebP, maksimal 4 MB. Kosongkan untuk memakai gambar bawaan situs."
           disabled={pending}
         />
       </div>

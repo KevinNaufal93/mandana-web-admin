@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { updatePropertyAction } from "@/app/actions/properties";
-import { uploadMediaAction } from "@/app/actions/media";
+import { uploadMediaSafe } from "@/lib/media/prepare-upload";
 import {
   initImageDraft,
   addFile as addImageFile,
@@ -149,7 +149,7 @@ export function usePropertyDraft(onSaved: (fresh: AdminPropertyDetail) => void) 
       const uploadResults = await Promise.all(
         toUpload.map(async (slot) => {
           if (slot.kind !== "new") return null; // narrows for TS; filter above already guarantees this
-          const result = await uploadMediaAction(buildMediaUploadFormData(slot.file, slot.alt.trim()));
+          const result = await uploadMediaSafe(buildMediaUploadFormData(slot.file, slot.alt.trim()));
           return { key: slot.key, result };
         }),
       );

@@ -7,7 +7,8 @@ import { ArrowDown, ArrowUp, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { uploadMediaAction, getMediaAssetAction } from "@/app/actions/media";
+import { getMediaAssetAction } from "@/app/actions/media";
+import { uploadMediaSafe } from "@/lib/media/prepare-upload";
 import type { MediaPurpose } from "@/lib/api/media";
 
 export interface RichTextEditorProps {
@@ -215,7 +216,7 @@ export function RichTextEditor({
 
     setImageError(null);
     startImageTransition(async () => {
-      const uploaded = await uploadMediaAction(formData);
+      const uploaded = await uploadMediaSafe(formData);
       if (!uploaded.ok) {
         setImageError(uploaded.error);
         return;
@@ -417,7 +418,7 @@ export function RichTextEditor({
               scales the whole image at width:100% regardless of shape —
               16:9 is just a sensible default for a typical in-article photo. */}
           <p className="mt-1.5 text-xs text-muted-foreground">
-            Disarankan 800 × 450 px (rasio 16:9). Format JPG, PNG, atau WebP, maksimal 20 MB.
+            Disarankan 800 × 450 px (rasio 16:9). Format JPG, PNG, atau WebP, maksimal 4 MB.
           </p>
           {imagePending && <p className="mt-1.5 text-xs text-muted-foreground">Mengunggah gambar…</p>}
           {imageError && (

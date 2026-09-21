@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { setUserPhotoAction } from "@/app/actions/users";
 import { cropImageToFile } from "@/lib/media/crop-image";
+import { shrinkImageForUpload } from "@/lib/media/prepare-upload";
 import { initials } from "@/lib/format";
 import type { AdminUser } from "@/lib/api/users";
 
@@ -80,7 +81,7 @@ export function UserPhotoCard({ user, onSaved }: { user: AdminUser; onSaved: (fr
       return;
     }
     if (file.size > 20 * 1024 * 1024) {
-      setError("Ukuran gambar maksimal 20MB.");
+      setError("Ukuran gambar maksimal 4MB.");
       return;
     }
 
@@ -92,11 +93,24 @@ export function UserPhotoCard({ user, onSaved }: { user: AdminUser; onSaved: (fr
   }
 
   function submitPhoto(file: File) {
-    const formData = new FormData();
-    formData.set("file", file);
-
+    // Same shrink-then-never-reject handling as uploadMediaSafe() — see
+    // lib/media/prepare-upload.ts for why an oversized body can't just be
+    // sent as-is.
     startTransition(async () => {
-      const result = await setUserPhotoAction(user.id, formData);
+      const formData = new FormData();
+      try {
+        formData.set("file", await shrinkImageForUpload(file));
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Gagal mengunggah foto.");
+        return;
+      }
+      let result: Awaited<ReturnType<typeof setUserPhotoAction>>;
+      try {
+        result = await setUserPhotoAction(user.id, formData);
+      } catch {
+        setError("Gagal mengunggah foto — koneksi terputus atau file terlalu besar. Coba lagi.");
+        return;
+      }
       if (!result.ok) {
         setError(result.error);
         return;
@@ -173,7 +187,7 @@ export function UserPhotoCard({ user, onSaved }: { user: AdminUser; onSaved: (fr
             </p>
           )}
           <p className="text-xs text-muted-foreground">
-            Ditampilkan pada kartu agen di halaman detail properti. JPEG, PNG, atau WebP, maksimal 20MB.
+            Ditampilkan pada kartu agen di halaman detail properti. JPEG, PNG, atau WebP, maksimal 4MB.
           </p>
           {error && (
             <p role="alert" className="text-sm text-destructive">

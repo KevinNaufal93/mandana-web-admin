@@ -308,7 +308,7 @@ export function MovingTruckClassForm(props: MovingTruckClassFormProps) {
               value={image}
               onChange={setImage}
               purpose="cover"
-              hint="Disarankan 400 × 286 px (rasio 7:5) — tampil sangat kecil (ikon di daftar pilihan truk), posisikan truk di tengah karena tepinya bisa terpotong. Format JPG, PNG, atau WebP, maksimal 20 MB."
+              hint="Disarankan 400 × 286 px (rasio 7:5) — tampil sangat kecil (ikon di daftar pilihan truk), posisikan truk di tengah karena tepinya bisa terpotong. Format JPG, PNG, atau WebP, maksimal 4 MB."
               disabled={pending}
             />
           </div>

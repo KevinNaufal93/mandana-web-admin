@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { createPropertyAction, updatePropertyAction } from "@/app/actions/properties";
-import { uploadMediaAction } from "@/app/actions/media";
+import { uploadMediaSafe } from "@/lib/media/prepare-upload";
 import {
   emptyImageDraft,
   addFile as addImageFile,
@@ -98,7 +98,7 @@ export function useCreatePropertyDraft(onCreated: (id: string) => void) {
       const uploadResults = await Promise.all(
         toUpload.map(async (slot) => {
           if (slot.kind !== "new") return null;
-          const result = await uploadMediaAction(buildMediaUploadFormData(slot.file, slot.alt.trim()));
+          const result = await uploadMediaSafe(buildMediaUploadFormData(slot.file, slot.alt.trim()));
           return { key: slot.key, result };
         }),
       );

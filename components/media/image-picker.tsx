@@ -6,7 +6,8 @@ import { ImageOff, Upload, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { uploadMediaAction, deleteMediaAction } from "@/app/actions/media";
+import { deleteMediaAction } from "@/app/actions/media";
+import { uploadMediaSafe } from "@/lib/media/prepare-upload";
 import type { MediaPurpose } from "@/lib/api/media";
 
 export interface ImagePickerValue {
@@ -105,7 +106,7 @@ export function ImagePicker({
     const previousId = value.mediaAssetId;
     setError(null);
     startTransition(async () => {
-      const result = await uploadMediaAction(formData);
+      const result = await uploadMediaSafe(formData);
       if (!result.ok) {
         URL.revokeObjectURL(localUrl);
         setError(result.error);

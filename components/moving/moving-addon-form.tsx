@@ -269,7 +269,7 @@ export function MovingAddonForm(props: MovingAddonFormProps) {
               value={image}
               onChange={setImage}
               purpose="cover"
-              hint="Belum ditampilkan di halaman publik saat ini — unggahan di sini hanya tersimpan untuk penggunaan mendatang. Format JPG, PNG, atau WebP, maksimal 20 MB."
+              hint="Belum ditampilkan di halaman publik saat ini — unggahan di sini hanya tersimpan untuk penggunaan mendatang. Format JPG, PNG, atau WebP, maksimal 4 MB."
               disabled={pending}
             />
           </div>

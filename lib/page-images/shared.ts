@@ -16,9 +16,10 @@ export interface PageImageSlotMeta {
   label: string;
   /** Passed to <ImagePicker purpose=...>. */
   mediaPurpose: MediaPurpose;
-  /** Shown as the picker's advisory hint — recommended dimensions, format
-   *  and max file size, derived from the actual measured render box on
-   *  the public page. Never enforced client-side. */
+  /** Shown as the picker's advisory hint — recommended dimensions and
+   *  format, derived from the actual measured render box on the public
+   *  page, plus the app-wide "maksimal 4 MB" (see MAX_UPLOAD_BYTES in
+   *  lib/media/prepare-upload.ts). Never enforced client-side. */
   imageGuidance: string;
 }
 
@@ -45,20 +46,20 @@ export const PAGE_IMAGE_PAGES: PageImagePageMeta[] = [
         label: "Gambar hero",
         mediaPurpose: "hero",
         imageGuidance:
-          "Disarankan 1920 × 1280 px (rasio 3:2). Format WebP, maksimal 400 KB. Subjek utama sebaiknya di bagian atas foto — area bawah terpotong di layar lebar.",
+          "Disarankan 1920 × 1280 px (rasio 3:2). Format WebP, maksimal 4 MB. Subjek utama sebaiknya di bagian atas foto — area bawah terpotong di layar lebar.",
       },
       {
         key: "about_story",
         label: 'Gambar "Satu Platform untuk Setiap Kebutuhan Properti"',
         mediaPurpose: "hero",
-        imageGuidance: "Disarankan 1600 × 1067 px (rasio 3:2). Format WebP, maksimal 250 KB.",
+        imageGuidance: "Disarankan 1600 × 1067 px (rasio 3:2). Format WebP, maksimal 4 MB.",
       },
       {
         key: "about_help_cta",
         label: 'Gambar "Apa yang bisa kami bantu?"',
         mediaPurpose: "hero",
         imageGuidance:
-          "Disarankan 1920 × 1280 px (rasio 3:2). Format WebP, maksimal 300 KB. Sisi kiri foto tertutup panel kaca — hindari foto yang sangat terang di sisi itu.",
+          "Disarankan 1920 × 1280 px (rasio 3:2). Format WebP, maksimal 4 MB. Sisi kiri foto tertutup panel kaca — hindari foto yang sangat terang di sisi itu.",
       },
     ],
   },
@@ -72,14 +73,14 @@ export const PAGE_IMAGE_PAGES: PageImagePageMeta[] = [
         label: 'Gambar "Ingin tahu berapa nilai properti Anda?"',
         mediaPurpose: "hero",
         imageGuidance:
-          "Disarankan 1920 × 1280 px (rasio 3:2). Format WebP, maksimal 400 KB. Foto ditampilkan sebagai pita lebar penuh — subjek utama sebaiknya sedikit di kiri dan di paruh atas foto. Di layar ponsel bingkainya nyaris persegi, jadi hindari subjek yang terlalu dekat ke tepi foto.",
+          "Disarankan 1920 × 1280 px (rasio 3:2). Format WebP, maksimal 4 MB. Foto ditampilkan sebagai pita lebar penuh — subjek utama sebaiknya sedikit di kiri dan di paruh atas foto. Di layar ponsel bingkainya nyaris persegi, jadi hindari subjek yang terlalu dekat ke tepi foto.",
       },
       {
         key: "home_help_cta",
         label: 'Gambar "Apa yang bisa kami bantu?"',
         mediaPurpose: "hero",
         imageGuidance:
-          "Disarankan 1920 × 1280 px (rasio 3:2). Format WebP, maksimal 300 KB. Sisi kiri foto tertutup panel kaca — hindari foto yang sangat terang di sisi itu.",
+          "Disarankan 1920 × 1280 px (rasio 3:2). Format WebP, maksimal 4 MB. Sisi kiri foto tertutup panel kaca — hindari foto yang sangat terang di sisi itu.",
       },
     ],
   },

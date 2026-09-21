@@ -284,7 +284,7 @@ export function StorageUnitTypeForm(props: StorageUnitTypeFormProps) {
               value={image}
               onChange={setImage}
               purpose="cover"
-              hint="Disarankan 800 × 450 px (rasio 16:9) agar mengisi penuh — rasio lain tetap ditampilkan utuh (tidak terpotong). Format JPG, PNG, atau WebP, maksimal 20 MB."
+              hint="Disarankan 800 × 450 px (rasio 16:9) agar mengisi penuh — rasio lain tetap ditampilkan utuh (tidak terpotong). Format JPG, PNG, atau WebP, maksimal 4 MB."
               disabled={pending}
             />
           </div>

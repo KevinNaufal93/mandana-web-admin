@@ -255,7 +255,7 @@ export function SeoSettingsForm({ settings }: { settings: AdminSeoSettings }) {
             }}
             purpose="cover"
             label="Gambar"
-            hint="Disarankan 1200 × 630 px."
+            hint="Disarankan 1200 × 630 px. Format JPG, PNG, atau WebP, maksimal 4 MB."
             disabled={pending}
           />
         </div>

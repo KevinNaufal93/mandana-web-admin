@@ -89,7 +89,7 @@ export const CONTENT_BLOCK_TYPES: ContentBlockTypeDef[] = [
     label: "Hero Carousel",
     description: "Slide besar di bagian atas homepage.",
     mediaPurpose: "hero",
-    imageGuidance: "Disarankan 2560 × 1097 px (rasio 7:3). Format PNG atau WebP, maksimal 400 KB.",
+    imageGuidance: "Disarankan 2560 × 1097 px (rasio 7:3). Format PNG atau WebP, maksimal 4 MB.",
     requiresImage: true,
     usesCtaText: true,
     subtitleLabel: "Subjudul",
@@ -109,7 +109,7 @@ export const CONTENT_BLOCK_TYPES: ContentBlockTypeDef[] = [
     // format/max size are the same for every photo.
     mobileImageGuidance:
       "Portrait atau mendekati persegi, sesuaikan komposisi foto — rasio tetap fleksibel per foto. " +
-      "Lebar sumber minimal 1080px, ditampilkan di bawah lebar 1024px. Format JPG, PNG, atau WebP, maksimal 400 KB.",
+      "Lebar sumber minimal 1080px, ditampilkan di bawah lebar 1024px. Format JPG, PNG, atau WebP, maksimal 4 MB.",
   },
   {
     type: "service_card",
@@ -117,7 +117,7 @@ export const CONTENT_BLOCK_TYPES: ContentBlockTypeDef[] = [
     label: "Service Strip",
     description: "Kartu layanan di bawah hero homepage.",
     mediaPurpose: "cover",
-    imageGuidance: "Disarankan 760 × 740 px (persegi). Format PNG atau WebP, maksimal 150 KB.",
+    imageGuidance: "Disarankan 760 × 740 px (persegi). Format PNG atau WebP, maksimal 4 MB.",
     requiresImage: false,
     usesCtaText: false,
     subtitleLabel: "Deskripsi",
@@ -145,7 +145,7 @@ export const CONTENT_BLOCK_TYPES: ContentBlockTypeDef[] = [
     // stating: the card never renders wider than 380px.
     imageGuidance:
       "Bentuk bebas — kartu menyesuaikan proporsi gambar yang diunggah (persegi, potret, atau lanskap semua bisa). " +
-      "Lebar 400–800px sudah cukup (kartu tampil maksimal 380px). Format JPG, PNG, atau WebP, maksimal 150 KB.",
+      "Lebar 400–800px sudah cukup (kartu tampil maksimal 380px). Format JPG, PNG, atau WebP, maksimal 4 MB.",
     requiresImage: false,
     usesCtaText: true,
     subtitleLabel: "Isi kartu",
