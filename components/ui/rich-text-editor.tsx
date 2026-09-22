@@ -404,21 +404,22 @@ export function RichTextEditor({
             className="hidden"
             onChange={handleFileSelected}
           />
-          {/* Same advisory-hint convention/wording as ImagePicker's own
-              "Gambar sampul" hint and content-block-form's imageGuidance
-              ("Disarankan W × H px (rasio R). Format F, maksimal S.") —
-              always visible, never enforced client-side. 800×450 isn't
-              arbitrary: it's this purpose's own upload ladder
+          {/* Advisory-hint convention: lib/page-images/shared.ts's doc
+              comment on PageImageSlotMeta.imageGuidance defines the three
+              wordings (tampil utuh / rasio tetap / pita lebar penuh) every
+              hint in the admin should pick from — this is category 1
+              (tampil utuh): .prose-artikel img scales the WHOLE image at
+              width:100% regardless of its shape, nothing here ever crops
+              it, so recommending "(rasio 16:9)" used to invent a
+              constraint that doesn't exist. 800px isn't arbitrary though:
+              it's this purpose's own upload ladder
               (ImageProcessorService's PURPOSE_SPECS[COVER].widths =
               [400, 800]) — the backend never generates or serves a variant
               wider than 800px for this purpose no matter how large the
-              source is, so that's the real ceiling worth uploading at,
-              not just a made-up recommendation. Unlike the cover image,
-              nothing crops body images to this ratio — .prose-artikel img
-              scales the whole image at width:100% regardless of shape —
-              16:9 is just a sensible default for a typical in-article photo. */}
+              source is, so that's the real ceiling worth uploading at. */}
           <p className="mt-1.5 text-xs text-muted-foreground">
-            Disarankan 800 × 450 px (rasio 16:9). Format JPG, PNG, atau WebP, maksimal 4 MB.
+            Disarankan lebar 800 px — gambar tampil utuh, tidak dipotong, jadi rasionya bebas. Lebih besar dari 800
+            px tidak menambah ketajaman. Format JPG, PNG, atau WebP, maksimal 4 MB.
           </p>
           {imagePending && <p className="mt-1.5 text-xs text-muted-foreground">Mengunggah gambar…</p>}
           {imageError && (

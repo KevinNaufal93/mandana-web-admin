@@ -33,6 +33,10 @@ export interface PageImage {
 export interface AdminPageImage {
   slotKey: string;
   image: PageImage | null;
+  /** Null on every slot except the two with supportsMobileImage: true
+   *  (lib/page-images/shared.ts) — and null there too until an admin
+   *  uploads one. */
+  mobileImage: PageImage | null;
 }
 
 /** All 5 slots, in the API's PAGE_IMAGE_SLOTS declared order. cache()d so
@@ -44,12 +48,21 @@ export const listPageImages = cache(async (): Promise<ApiResult<AdminPageImage[]
   return unwrap<AdminPageImage[]>(result);
 });
 
+export interface UpdatePageImageBody {
+  mediaAssetId?: string | null;
+  mobileMediaAssetId?: string | null;
+}
+
+/** A partial body object, not two positional params: page-images-form.tsx
+ *  saves both pickers of a slot in one PATCH, and omitting a key here (as
+ *  opposed to sending it `null`) is what leaves that picker's stored image
+ *  untouched — same tri-state convention content-blocks' update uses. */
 export async function updatePageImage(
   slotKey: string,
-  mediaAssetId: string | null,
+  body: UpdatePageImageBody,
 ): Promise<ApiResult<AdminPageImage>> {
   const api = await serverApi();
   const patch = api.PATCH as unknown as RawFetch;
-  const result = await patch(`/admin/page-images/${slotKey}`, { body: { mediaAssetId } });
+  const result = await patch(`/admin/page-images/${slotKey}`, { body });
   return unwrap<AdminPageImage>(result);
 }

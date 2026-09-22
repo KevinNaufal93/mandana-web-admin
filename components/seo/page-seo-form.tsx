@@ -109,9 +109,12 @@ export function PageSeoForm({ pageKey, page }: { pageKey: SeoPageKey; page: Admi
             setOgImage(next);
             setSuccess(false);
           }}
-          purpose="cover"
+          // See seo-settings-form.tsx's default-OG picker for why "hero"
+          // rather than "cover" — same declared-vs-served size bug, same
+          // fix, same "existing uploads need re-upload to benefit" caveat.
+          purpose="hero"
           label="Gambar berbagi (opsional)"
-          hint="Disarankan 1200 × 630 px. Format JPG, PNG, atau WebP, maksimal 4 MB. Kosongkan untuk memakai gambar bawaan situs."
+          hint="Disarankan 1200 × 630 px (rasio 1,91:1). Gambar diunggah utuh, tidak dipotong di sini — tetapi WhatsApp dan Facebook memotong pratinjaunya sendiri ke rasio 1,91:1, jadi jaga subjek dan tulisan di bagian tengah. Kosongkan untuk memakai gambar bawaan situs. Format JPG, PNG, atau WebP, maksimal 4 MB."
           disabled={pending}
         />
       </div>

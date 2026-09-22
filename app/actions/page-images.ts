@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { updatePageImage, type AdminPageImage } from "@/lib/api/page-images";
+import { updatePageImage, type AdminPageImage, type UpdatePageImageBody } from "@/lib/api/page-images";
 import { findPageImagePageBySlotKey } from "@/lib/page-images/shared";
 import type { ApiError } from "@/lib/api/errors";
 import { createLogger } from "@/lib/logger";
@@ -16,8 +16,8 @@ function errorMessage(error: ApiError): string {
 
 export type PageImageResult = { ok: true; data: AdminPageImage } | { ok: false; error: string };
 
-export async function updatePageImageAction(slotKey: string, mediaAssetId: string | null): Promise<PageImageResult> {
-  const result = await updatePageImage(slotKey, mediaAssetId);
+export async function updatePageImageAction(slotKey: string, body: UpdatePageImageBody): Promise<PageImageResult> {
+  const result = await updatePageImage(slotKey, body);
   if (!result.ok) {
     log.warn("Update page image failed", { slotKey, kind: result.error.kind });
     return { ok: false, error: errorMessage(result.error) };

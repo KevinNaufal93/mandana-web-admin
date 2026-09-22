@@ -237,7 +237,7 @@ export function ArticleForm(props: ArticleFormProps) {
               onChange={setCover}
               purpose="hero"
               label="Gambar sampul"
-              hint="Disarankan 1920 × 1080 px (rasio 16:9). Format JPG, PNG, atau WebP, maksimal 4 MB."
+              hint="Disarankan 1920 × 1080 px (rasio 16:9). Bingkainya tetap 16:9 — gambar dengan rasio lain dipotong di bagian tengah agar pas. Format JPG, PNG, atau WebP, maksimal 4 MB."
               disabled={pending}
             />
           </div>

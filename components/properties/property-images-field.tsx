@@ -104,6 +104,16 @@ export function PropertyImagesEditor({
           }}
         />
       </label>
+      {/* Advisory-hint convention: lib/page-images/shared.ts's doc comment
+          on PageImageSlotMeta.imageGuidance. Category 2 (rasio tetap) for
+          the card/grid thumbnails (aspect-[4/3] + object-cover, see
+          property-card.tsx and property-gallery.tsx's mobile tier); the
+          full-screen gallery dialog is category 1 (object-contain) and
+          shows whatever was uploaded whole regardless of ratio. */}
+      <p className="text-xs text-muted-foreground">
+        Disarankan 1600 × 1200 px (rasio 4:3). Di kartu dan galeri foto dipotong menyesuaikan bingkai — jaga subjek
+        di bagian tengah; saat dibuka besar foto tampil utuh. Format JPG, PNG, atau WebP, maksimal 4 MB.
+      </p>
       <p className="text-xs text-muted-foreground">
         Gambar baru diunggah, dan penghapusan diterapkan, saat kamu menekan Simpan perubahan.
       </p>

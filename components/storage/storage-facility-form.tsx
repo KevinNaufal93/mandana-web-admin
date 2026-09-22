@@ -232,7 +232,7 @@ export function StorageFacilityForm(props: StorageFacilityFormProps) {
               value={image}
               onChange={setImage}
               purpose="cover"
-              hint="Disarankan 800 × 450 px (rasio 16:9). Format JPG, PNG, atau WebP, maksimal 4 MB."
+              hint="Disarankan 800 × 450 px (rasio 16:9). Bingkainya tetap 16:9 — gambar dengan rasio lain dipotong di bagian tengah agar pas. Format JPG, PNG, atau WebP, maksimal 4 MB."
               disabled={pending}
             />
           </div>

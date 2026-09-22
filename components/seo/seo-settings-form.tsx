@@ -253,9 +253,19 @@ export function SeoSettingsForm({ settings }: { settings: AdminSeoSettings }) {
               setOgImage(next);
               clearSuccess();
             }}
-            purpose="cover"
+            // "hero", not "cover": cover's upload ladder tops out at
+            // 800px wide (ImageProcessorService PURPOSE_SPECS[COVER]),
+            // so a 1200×630 upload was served at 800×420 while this
+            // page's generateMetadata (mandana-web lib/seo.ts) declares
+            // og:image:width/height from the ORIGINAL upload's
+            // dimensions — the declared size didn't match the served
+            // file. hero's ladder keeps 768 and appends the source width,
+            // so a 1200px-wide source is served at its real 1200px.
+            // Existing OG images keep their old cover-purpose variants
+            // until re-uploaded — this only changes new uploads.
+            purpose="hero"
             label="Gambar"
-            hint="Disarankan 1200 × 630 px. Format JPG, PNG, atau WebP, maksimal 4 MB."
+            hint="Disarankan 1200 × 630 px (rasio 1,91:1). Gambar diunggah utuh, tidak dipotong di sini — tetapi WhatsApp dan Facebook memotong pratinjaunya sendiri ke rasio 1,91:1, jadi jaga subjek dan tulisan di bagian tengah. Format JPG, PNG, atau WebP, maksimal 4 MB."
             disabled={pending}
           />
         </div>

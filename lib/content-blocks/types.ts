@@ -24,7 +24,11 @@ export interface ContentBlockTypeDef {
   mediaPurpose: MediaPurpose;
   /** Optional one-line upload spec shown under the <ImagePicker> label —
    *  recommended dimensions, format and max file size for this type's
-   *  artwork. Advisory only; nothing here is enforced client-side. */
+   *  artwork. Advisory only; nothing here is enforced client-side. Which
+   *  of the three wordings to use (tampil utuh / rasio tetap / pita lebar
+   *  penuh) is defined once, in lib/page-images/shared.ts's own doc
+   *  comment on `PageImageSlotMeta.imageGuidance` — follow it rather than
+   *  inventing a new phrasing here. */
   imageGuidance?: string;
   /** Hero: a block with no image is rejected by the API (400) — see the
    *  integration doc §4. Service card / promo card: image is optional. */
@@ -72,9 +76,11 @@ export interface ContentBlockTypeDef {
    *  viewport width (see hero-mobile-image-requirements.md). Upload
    *  purpose is always "hero_mobile" when true. Setting
    *  mobileMediaAssetId on any other type is a 400, so the form only
-   *  renders the second picker when this is `true`. Always optional even
-   *  on hero — omitting it just means the primary image renders at every
-   *  width, exactly as it does today. */
+   *  renders the second picker when this is `true`. Still optional on hero,
+   *  but no longer without effect: the public hero shows only the slides
+   *  that have one below 1024px, so a slide without it is desktop-only. The
+   *  primary image renders at every width only while NO slide in the
+   *  carousel has a mobile image. */
   supportsMobileImage: boolean;
   /** Advisory hint shown under the mobile-image picker, mirroring
    *  imageGuidance's role for the primary image. Only meaningful when
@@ -89,7 +95,17 @@ export const CONTENT_BLOCK_TYPES: ContentBlockTypeDef[] = [
     label: "Hero Carousel",
     description: "Slide besar di bagian atas homepage.",
     mediaPurpose: "hero",
-    imageGuidance: "Disarankan 2560 × 1097 px (rasio 7:3). Format PNG atau WebP, maksimal 4 MB.",
+    // The public hero band is locked to this ratio at lg+ (hero.tsx's
+    // DESKTOP_ASPECT — keep the two in sync). At 2.8:1 the header (96px) +
+    // band + search card (178px, overlapping the band by 32px) exactly fill a
+    // 1512×784 viewport (1920×1080 at 125% Windows scaling), so the card
+    // always sits at the bottom of the first screen. An upload in another
+    // ratio is never cropped; it is shown whole inside the band, with the
+    // hero's dark green beside it or above and below it.
+    imageGuidance:
+      "Disarankan 2520 × 900 px (rasio 2,8:1). Gambar selalu tampil utuh, tidak dipotong. " +
+      "Gambar dengan rasio lain tetap tampil penuh, tetapi akan muncul ruang hijau di sisinya atau di atas-bawahnya. " +
+      "Format JPG, PNG, atau WebP, maksimal 4 MB.",
     requiresImage: true,
     usesCtaText: true,
     subtitleLabel: "Subjudul",
@@ -109,7 +125,9 @@ export const CONTENT_BLOCK_TYPES: ContentBlockTypeDef[] = [
     // format/max size are the same for every photo.
     mobileImageGuidance:
       "Portrait atau mendekati persegi, sesuaikan komposisi foto — rasio tetap fleksibel per foto. " +
-      "Lebar sumber minimal 1080px, ditampilkan di bawah lebar 1024px. Format JPG, PNG, atau WebP, maksimal 4 MB.",
+      "Lebar sumber minimal 1080px, ditampilkan di bawah lebar 1024px. " +
+      "Slide tanpa gambar mobile tidak ikut tampil di layar kecil, kecuali jika tidak ada satu pun slide yang punya gambar mobile. " +
+      "Format JPG, PNG, atau WebP, maksimal 4 MB.",
   },
   {
     type: "service_card",
@@ -117,7 +135,11 @@ export const CONTENT_BLOCK_TYPES: ContentBlockTypeDef[] = [
     label: "Service Strip",
     description: "Kartu layanan di bawah hero homepage.",
     mediaPurpose: "cover",
-    imageGuidance: "Disarankan 760 × 740 px (persegi). Format PNG atau WebP, maksimal 4 MB.",
+    // Category 2 (rasio tetap) — box is aspect-[253/246] ≈ 1.03:1, so
+    // 760×740 is already an exact match.
+    imageGuidance:
+      "Disarankan 760 × 740 px (hampir persegi). Bingkainya tetap di rasio itu — gambar dengan rasio lain " +
+      "dipotong di bagian tengah agar pas. Format PNG (untuk latar transparan) atau WebP, maksimal 4 MB.",
     requiresImage: false,
     usesCtaText: false,
     subtitleLabel: "Deskripsi",
@@ -143,9 +165,13 @@ export const CONTENT_BLOCK_TYPES: ContentBlockTypeDef[] = [
     // because "the first real one shipped square, 1024×1024, which a
     // hardcoded aspect-video cropped top/bottom." Width is still worth
     // stating: the card never renders wider than 380px.
+    // Category 1 (tampil utuh) — the only slot where this is the box's
+    // own design, not a fixed shape imitating it: see aspectRatioOf() in
+    // the component this feeds.
     imageGuidance:
-      "Bentuk bebas — kartu menyesuaikan proporsi gambar yang diunggah (persegi, potret, atau lanskap semua bisa). " +
-      "Lebar 400–800px sudah cukup (kartu tampil maksimal 380px). Format JPG, PNG, atau WebP, maksimal 4 MB.",
+      "Gambar selalu tampil utuh, tidak dipotong — kartu menyesuaikan proporsi gambar yang diunggah (persegi, " +
+      "potret, atau lanskap semua bisa). Lebar 400–800px sudah cukup (kartu tampil maksimal 380px). Format JPG, " +
+      "PNG, atau WebP, maksimal 4 MB.",
     requiresImage: false,
     usesCtaText: true,
     subtitleLabel: "Isi kartu",
