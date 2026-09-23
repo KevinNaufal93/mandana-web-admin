@@ -60,6 +60,16 @@ export interface PageImageSlotMeta {
   /** Hint shown under the mobile picker, mirroring `imageGuidance`'s role
    *  for the primary image. Only meaningful when supportsMobileImage. */
   mobileImageGuidance?: string;
+  /** Whether this slot's web component renders an admin-configurable
+   *  heading/subtitle over the photo, with an `imageOnly` checkbox to
+   *  suppress them — currently `about_hero` only, the one slot whose
+   *  component has always shown a hardcoded H1 + paragraph, with no way
+   *  to reword them or hide them for a banner-style upload that already
+   *  has its own text baked into the artwork (the exact problem
+   *  content-blocks' hero slides solved with `imageOnly`). Mirrors
+   *  `ContentBlockTypeDef.supportsImageOnly`. The API 400s
+   *  heading/subtitle/imageOnly on any slot without this. */
+  supportsHeading?: boolean;
 }
 
 export interface PageImagePageMeta {
@@ -116,6 +126,7 @@ export const PAGE_IMAGE_PAGES: PageImagePageMeta[] = [
           "subjek utama di sana. Format JPG, PNG, atau WebP, maksimal 4 MB.",
         supportsMobileImage: true,
         mobileImageGuidance: MOBILE_IMAGE_GUIDANCE,
+        supportsHeading: true,
       },
       {
         key: "about_story",

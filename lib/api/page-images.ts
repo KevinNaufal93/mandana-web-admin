@@ -37,6 +37,12 @@ export interface AdminPageImage {
    *  (lib/page-images/shared.ts) — and null there too until an admin
    *  uploads one. */
   mobileImage: PageImage | null;
+  /** Only ever set on the slot(s) with supportsHeading: true (currently
+   *  about_hero) — null means "use the web component's own hardcoded
+   *  copy". */
+  heading: string | null;
+  subtitle: string | null;
+  imageOnly: boolean;
 }
 
 /** All 5 slots, in the API's PAGE_IMAGE_SLOTS declared order. cache()d so
@@ -51,6 +57,9 @@ export const listPageImages = cache(async (): Promise<ApiResult<AdminPageImage[]
 export interface UpdatePageImageBody {
   mediaAssetId?: string | null;
   mobileMediaAssetId?: string | null;
+  heading?: string | null;
+  subtitle?: string | null;
+  imageOnly?: boolean;
 }
 
 /** A partial body object, not two positional params: page-images-form.tsx
