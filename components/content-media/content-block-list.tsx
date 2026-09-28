@@ -1,6 +1,7 @@
 import { ContentBlockPreview } from "@/components/content-media/content-block-preview";
 import { ContentBlockRowActions } from "@/components/content-media/content-block-row-actions";
 import { ListingTypeBadge } from "@/components/properties/property-status-badge";
+import { resolveCta } from "@/lib/content-blocks/cta";
 import type { AdminContentBlock } from "@/lib/api/content-blocks";
 import type { ContentBlockTypeDef } from "@/lib/content-blocks/types";
 
@@ -27,6 +28,30 @@ function ScopeCaption({ scope }: { scope: AdminContentBlock["listingTypeScope"] 
         <ListingTypeBadge key={listingType} listingType={listingType} />
       ))}
     </div>
+  );
+}
+
+/** Admin-only chrome, same reasoning as ScopeCaption above: summarizes
+ *  what resolveCta() (lib/content-blocks/cta.ts) resolves this row's
+ *  ctaText/link/imageOnly to, since <ContentBlockPreview> only shows the
+ *  button case and never labels the other two. "Text mode" for a stack
+ *  (hero) row also requires a title or subtitle, mirroring mandana-web
+ *  hero.tsx's hasOverlay() — a promo/service "sidebar"/"grid" row has no
+ *  such gate, just !imageOnly. */
+function CtaCaption({ block, typeDef }: { block: AdminContentBlock; typeDef: ContentBlockTypeDef }) {
+  const isHeroLayout = typeDef.layout === "stack";
+  const buttonAllowed = !block.imageOnly && (!isHeroLayout || Boolean(block.title || block.subtitle));
+  const cta = resolveCta({ ctaText: block.ctaText, ctaLink: block.link, buttonAllowed });
+  const noun = isHeroLayout ? "slide" : "kartu";
+
+  if (cta.kind === "none") {
+    return <p className="text-xs text-muted-foreground">Tidak bisa diklik</p>;
+  }
+  const label = cta.kind === "button" ? `Tombol "${cta.text}" → ${cta.href}` : `Seluruh ${noun} → ${cta.href}`;
+  return (
+    <p className="truncate text-xs text-muted-foreground" title={cta.href}>
+      {label}
+    </p>
   );
 }
 
@@ -59,11 +84,13 @@ export function ContentBlockList({ typeDef, rows }: { typeDef: ContentBlockTypeD
               title: block.title,
               subtitle: block.subtitle,
               ctaText: block.ctaText,
+              link: block.link,
               isActive: block.isActive,
               imageOnly: block.imageOnly,
               image: block.image ? { url: block.image.url, alt: block.image.alt } : null,
             }}
           />
+          {typeDef.usesCtaText && <CtaCaption block={block} typeDef={typeDef} />}
           {typeDef.supportsListingTypeScope && <ScopeCaption scope={block.listingTypeScope} />}
           <ContentBlockRowActions
             block={block}

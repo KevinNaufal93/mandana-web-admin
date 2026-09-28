@@ -68,11 +68,12 @@ export interface AdminContentBlock {
   mobileImage: ContentBlockImage | null;
   sortOrder: number;
   isActive: boolean;
-  /** See ContentBlockTypeDef.supportsImageOnly's doc comment — as of this
-   *  admin module's build the deployed API documents this as unused/
-   *  always-`false` for `type: "hero"` (docs/content-blocks-admin-
-   *  integration.md §2); the admin form still lets it be set on a hero so
-   *  the toggle is ready once the backend/public site honor it there. */
+  /** Honored on every type, including hero (docs/content-blocks-admin-
+   *  integration.md §2): the public site skips the title/subtitle text
+   *  overlay when true. Does NOT affect whether the CTA is shown — see
+   *  lib/content-blocks/cta.ts's resolveCta() for how `ctaText`, `link`
+   *  and this flag combine into a button, a whole-image link, or nothing
+   *  clickable. */
   imageOnly: boolean;
   /** `property_promo` only — `null` on hero/service_card rows (doc §4b). */
   listingTypeScope: ListingTypeScope;
@@ -83,9 +84,14 @@ export interface AdminContentBlock {
 export interface ContentBlockInput {
   type?: ContentBlockType;
   title?: string;
-  subtitle?: string;
-  ctaText?: string;
-  link?: string;
+  /** `null` explicitly clears subtitle/ctaText/link on an existing block —
+   *  the API collapses `""` to the same NULL, but the form always sends
+   *  `null` for a blank field (never `""`/`undefined`) so a PATCH actually
+   *  reaches the field instead of silently leaving the old value in place.
+   *  Omit the key entirely to leave the current value untouched. */
+  subtitle?: string | null;
+  ctaText?: string | null;
+  link?: string | null;
   /** Explicit `null` clears a service/promo card's image (rejected 400 on
    *  a hero — doc §4). Omit the key entirely to leave the current image
    *  untouched — see the plan's note on <ImagePicker> value semantics. */

@@ -49,21 +49,14 @@ export interface ContentBlockTypeDef {
   layout: "stack" | "grid" | "sidebar";
   /** Whether this type can be flagged `imageOnly` — the public site then
    *  renders just the image (its artwork already has the title/description
-   *  baked in) and skips the text overlay.
+   *  baked in) and skips the title/subtitle text overlay. Honored on all
+   *  three types today (hero included) by both the API and the public
+   *  site — see docs/content-blocks-admin-integration.md §2.
    *
-   *  Hero: as of this admin module's build, the deployed API's
-   *  `imageOnly` field is documented as unused/always-`false` for hero
-   *  rows, and the public hero component always renders the dark-gradient
-   *  title/subtitle overlay — see docs/content-blocks-admin-integration.md
-   *  §2. Flagging it `true` here so admins CAN set image-only slides is
-   *  the admin-panel half of the change; it has no visible effect on the
-   *  public homepage until the backend persists/honors this field for
-   *  `type: "hero"` and the public hero component is updated to skip its
-   *  text overlay when set. Track that as a follow-up outside this repo.
-   *
-   *  Service card and promo card: the public site already honors this
-   *  today (ServiceDto and the promo `PromoCard` component both skip
-   *  their text overlay when `imageOnly` is set). */
+   *  `imageOnly` does NOT suppress the CTA: hero and promo cards resolve
+   *  `ctaText`/`link`/`imageOnly` into a button, a whole-image link, or
+   *  nothing clickable via lib/content-blocks/cta.ts's resolveCta() —
+   *  mirrored by the public site's own copy of that same resolver. */
   supportsImageOnly: boolean;
   /** Only `property_promo` supports this — an optional array of listing
    *  types (`ListingType[]`) restricting the card to Dijual/Disewa/

@@ -3,6 +3,7 @@ import { ImageOff } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { resolveCta } from "@/lib/content-blocks/cta";
 import type { ContentBlockTypeDef } from "@/lib/content-blocks/types";
 
 /**
@@ -15,6 +16,10 @@ export interface ContentBlockPreviewData {
   title: string;
   subtitle: string | null;
   ctaText: string | null;
+  /** Needed (alongside ctaText and imageOnly) to know whether the public
+   *  site would show a button, a whole-image link, or nothing clickable —
+   *  see lib/content-blocks/cta.ts's resolveCta(). */
+  link: string | null;
   isActive: boolean;
   /** See ContentBlockTypeDef.supportsImageOnly's doc comment. When true,
    *  the card renders image-only, matching what the public site actually
@@ -109,6 +114,11 @@ function PreviewImage({
 }
 
 function HeroPreview({ data, className }: { data: ContentBlockPreviewData; className?: string }) {
+  // Mirrors mandana-web hero.tsx's resolveCta() call: image-only never
+  // shows a button (the whole image becomes clickable instead, handled by
+  // hero.tsx itself — this admin-only preview isn't wired up as a live
+  // link). See lib/content-blocks/cta.ts.
+  const cta = resolveCta({ ctaText: data.ctaText, ctaLink: data.link, buttonAllowed: !data.imageOnly });
   return (
     <div
       className={cn(
@@ -133,9 +143,9 @@ function HeroPreview({ data, className }: { data: ContentBlockPreviewData; class
       {/* Image-only: the artwork already has the title/subtitle baked in,
           so skip the dark-gradient text overlay entirely and show a plain
           full-bleed image — mirrors ServiceCardPreview's imageOnly branch.
-          NOTE: this reflects the intended public behavior once the
-          backend/public hero component honor this flag for hero rows —
-          see ContentBlockTypeDef.supportsImageOnly's doc comment. */}
+          The image itself becomes the CTA link on the public site when
+          `link` is set (resolveCta's "whole" case) — not shown here since
+          this preview isn't an interactive link, only a visual mirror. */}
       {!data.imageOnly && (
         <>
           {/* Left-to-right dark-to-transparent treatment matching the public
@@ -147,9 +157,12 @@ function HeroPreview({ data, className }: { data: ContentBlockPreviewData; class
               {data.title || "Judul slide"}
             </h3>
             {data.subtitle && <p className="max-w-sm text-xs text-card/85 sm:text-sm">{data.subtitle}</p>}
-            {data.ctaText && (
+            {/* Only when resolveCta would actually render a button — a
+                ctaText with no link, or a link with no ctaText, shows no
+                pill here just as no button shows on the public site. */}
+            {cta.kind === "button" && (
               <span className="mt-2 inline-flex w-fit items-center rounded-full bg-accent px-4 py-1.5 text-xs font-semibold text-accent-foreground">
-                {data.ctaText}
+                {cta.text}
               </span>
             )}
           </div>
@@ -197,7 +210,12 @@ function ServiceCardPreview({ data, className }: { data: ContentBlockPreviewData
  * stretch to fill whatever width the surrounding form grid gives it).
  */
 function PromoCardPreview({ data, className }: { data: ContentBlockPreviewData; className?: string }) {
-  const hasCta = Boolean(data.ctaText);
+  // Mirrors mandana-web promo-card.tsx's resolveCta() call — a button
+  // shows only with both ctaText and link, and only outside imageOnly;
+  // otherwise (a link with no ctaText, or an imageOnly card) the public
+  // component makes the whole card a link instead, which this static
+  // preview doesn't render as an interactive link.
+  const cta = resolveCta({ ctaText: data.ctaText, ctaLink: data.link, buttonAllowed: !data.imageOnly });
 
   if (data.imageOnly) {
     return (
@@ -232,9 +250,9 @@ function PromoCardPreview({ data, className }: { data: ContentBlockPreviewData; 
       )}
       <h3 className="font-serif text-base font-bold text-primary">{data.title || "Judul kartu promo"}</h3>
       {data.subtitle && <p className="text-sm text-primary">{data.subtitle}</p>}
-      {hasCta && (
+      {cta.kind === "button" && (
         <Button variant="accent" className="w-fit" disabled>
-          {data.ctaText}
+          {cta.text}
         </Button>
       )}
     </div>

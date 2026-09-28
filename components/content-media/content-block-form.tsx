@@ -12,6 +12,7 @@ import { ContentBlockPreview } from "@/components/content-media/content-block-pr
 import { createContentBlockAction, updateContentBlockAction, deleteContentBlockAction } from "@/app/actions/content-blocks";
 import type { AdminContentBlock, ContentBlockInput } from "@/lib/api/content-blocks";
 import type { ContentBlockTypeDef } from "@/lib/content-blocks/types";
+import { resolveCta } from "@/lib/content-blocks/cta";
 import { LISTING_TYPES, type ListingType } from "@/lib/properties/query";
 import { LISTING_LABEL } from "@/components/properties/property-status-badge";
 import { useConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -108,9 +109,13 @@ export function ContentBlockForm(props: ContentBlockFormProps) {
 
     const input: ContentBlockInput = {
       title: title.trim(),
-      subtitle: subtitle.trim() || undefined,
-      ...(typeDef.usesCtaText ? { ctaText: ctaText.trim() || undefined } : {}),
-      link: link.trim() || undefined,
+      // null (never undefined) for a blank field: the API only patches a
+      // key when it's present at all, so sending undefined would omit the
+      // key and leave the OLD value in place instead of clearing it — see
+      // ContentBlockInput's doc comment.
+      subtitle: subtitle.trim() || null,
+      ...(typeDef.usesCtaText ? { ctaText: ctaText.trim() || null } : {}),
+      link: link.trim() || null,
       isActive,
       ...(typeDef.supportsImageOnly ? { imageOnly } : {}),
       // Always send the key (never omit) so clearing the scope back to
@@ -200,12 +205,42 @@ export function ContentBlockForm(props: ContentBlockFormProps) {
     });
   }
 
-  // Soft hint, not a validation block: the public promo card only renders
-  // its CTA button when both ctaText AND link are present (mandana-web's
-  // promo-card.tsx) — filling in one without the other silently drops the
-  // button rather than erroring, so surface that here instead of letting
-  // it be a surprise on the live site.
-  const missingCtaLink = typeDef.type === "property_promo" && ctaText.trim() !== "" && link.trim() === "";
+  // Soft hint, not a validation block: mirrors resolveCta()'s three-way
+  // rule (doc: lib/content-blocks/cta.ts) so admins see, live, exactly
+  // what mandana-web will render — a button, a whole-image link, or
+  // nothing clickable — instead of finding out on the live site.
+  //
+  // "Text mode" (buttonAllowed) mirrors each public component's own rule:
+  // hero's hasOverlay() (!imageOnly && (title || subtitle)) for the
+  // "stack" layout, and plain !imageOnly for promo's "sidebar" layout —
+  // service cards ("grid") never reach this, they have no ctaText field.
+  const isHeroLayout = typeDef.layout === "stack";
+  const ctaNoun = isHeroLayout ? "slide" : "kartu";
+  const buttonAllowed = !imageOnly && (!isHeroLayout || Boolean(title.trim() || subtitle.trim()));
+  const cta = typeDef.usesCtaText ? resolveCta({ ctaText, ctaLink: link, buttonAllowed }) : null;
+  const ctaHint = (() => {
+    if (!cta) return null;
+    switch (cta.kind) {
+      case "none":
+        return buttonAllowed && ctaText.trim() !== ""
+          ? `Tidak ada yang bisa diklik pada ${ctaNoun} ini — ${typeDef.linkLabel} kosong. Teks tombol tidak akan tampil tanpa tautan.`
+          : `Tidak ada yang bisa diklik pada ${ctaNoun} ini — ${typeDef.linkLabel} kosong.`;
+      case "button":
+        return `Tombol “${cta.text}” tampil dan membuka ${cta.href}. Bagian ${ctaNoun} lainnya tidak bisa diklik.`;
+      case "whole":
+        return imageOnly
+          ? `Seluruh gambar bisa diklik dan membuka ${cta.href}.`
+          : `Tanpa teks tombol, seluruh ${ctaNoun} bisa diklik dan membuka ${cta.href}. Isi Teks tombol CTA untuk menampilkan tombol.`;
+    }
+  })();
+
+  // Shared phrasing for the image-only banner and checkbox hint below —
+  // built from the registry so it stays accurate for all three types
+  // (hero and promo both hide a CTA text/button too; service cards have
+  // none to hide).
+  const imageOnlyHiddenFields = typeDef.usesCtaText
+    ? `judul, ${typeDef.subtitleLabel.toLowerCase()}, dan teks tombol CTA`
+    : `judul dan ${typeDef.subtitleLabel.toLowerCase()}`;
 
   return (
     <div className="flex flex-col gap-6">
@@ -221,7 +256,8 @@ export function ContentBlockForm(props: ContentBlockFormProps) {
           <div className="flex flex-col gap-3 rounded-lg border border-border p-4">
             {imageOnly && (
               <p className="text-xs text-muted-foreground">
-                Mode gambar saja aktif — judul dan deskripsi tidak tampil di halaman utama, hanya dipakai sebagai
+                Mode gambar saja aktif — {imageOnlyHiddenFields} tidak tampil di situs; jika{" "}
+                {typeDef.linkLabel.toLowerCase()} diisi, seluruh gambar bisa diklik. Judul tetap dipakai sebagai
                 label internal dan teks alternatif gambar.
               </p>
             )}
@@ -244,8 +280,15 @@ export function ContentBlockForm(props: ContentBlockFormProps) {
                   value={ctaText}
                   onChange={(e) => setCtaText(e.target.value)}
                   placeholder="Lihat Properti"
-                  disabled={pending}
+                  disabled={pending || imageOnly}
+                  aria-describedby={imageOnly ? "block-cta-text-note" : undefined}
                 />
+                {imageOnly && (
+                  <p id="block-cta-text-note" className="mt-1.5 text-xs text-muted-foreground">
+                    Tidak dipakai dalam mode gambar saja — tombol tidak ditampilkan. Teksnya tetap tersimpan dan
+                    dipakai lagi jika mode gambar saja dimatikan.
+                  </p>
+                )}
               </Field>
             )}
             <Field label={typeDef.linkLabel} htmlFor="block-link">
@@ -255,11 +298,12 @@ export function ContentBlockForm(props: ContentBlockFormProps) {
                 onChange={(e) => setLink(e.target.value)}
                 placeholder={typeDef.linkPlaceholder}
                 disabled={pending}
+                aria-describedby={ctaHint ? "block-link-hint" : undefined}
               />
             </Field>
-            {missingCtaLink && (
-              <p className="text-xs text-muted-foreground">
-                Tombol CTA tidak akan tampil tanpa {typeDef.linkLabel.toLowerCase()} — isi tautannya di atas.
+            {ctaHint && (
+              <p id="block-link-hint" className="text-xs text-muted-foreground">
+                {ctaHint}
               </p>
             )}
           </div>
@@ -347,8 +391,9 @@ export function ContentBlockForm(props: ContentBlockFormProps) {
                 Tampilkan sebagai gambar saja
               </label>
               <p className="mt-1.5 text-xs text-muted-foreground">
-                Judul dan deskripsi tidak akan tampil di halaman utama — gunakan gambar yang sudah memuat teksnya
-                sendiri.
+                {imageOnlyHiddenFields.charAt(0).toUpperCase() + imageOnlyHiddenFields.slice(1)} tidak akan tampil di
+                situs — gunakan gambar yang sudah memuat teksnya sendiri. Jika {typeDef.linkLabel.toLowerCase()}{" "}
+                diisi, seluruh gambar tetap bisa diklik.
               </p>
             </div>
           )}
@@ -395,6 +440,7 @@ export function ContentBlockForm(props: ContentBlockFormProps) {
               title,
               subtitle: subtitle || null,
               ctaText: typeDef.usesCtaText ? ctaText || null : null,
+              link: link || null,
               isActive,
               imageOnly: typeDef.supportsImageOnly && imageOnly,
               image: image.preview,
