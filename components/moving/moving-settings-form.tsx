@@ -4,6 +4,8 @@ import { useState, useTransition } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { WhatsappNumberField } from "@/components/settings/whatsapp-number-field";
+import { whatsappNumberError } from "@/lib/whatsapp-number";
 import { updateMovingSettingsAction } from "@/app/actions/moving-settings";
 import type { AdminMovingSettings } from "@/lib/api/moving-settings";
 
@@ -42,6 +44,7 @@ export function MovingSettingsForm({ settings }: { settings: AdminMovingSettings
   const [roundToIdr, setRoundToIdr] = useState(String(settings.roundToIdr));
   const [bandPct, setBandPct] = useState(String(settings.bandPct));
   const [defaultIncludedKm, setDefaultIncludedKm] = useState(String(settings.defaultIncludedKm));
+  const [whatsappNumber, setWhatsappNumber] = useState(settings.whatsappNumber ?? "");
 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -66,12 +69,18 @@ export function MovingSettingsForm({ settings }: { settings: AdminMovingSettings
       setError("Included km default harus berupa bilangan bulat 0 atau lebih.");
       return;
     }
+    const waError = whatsappNumberError(whatsappNumber);
+    if (waError) {
+      setError(waError);
+      return;
+    }
 
     startTransition(async () => {
       const result = await updateMovingSettingsAction({
         roundToIdr: round,
         bandPct: band,
         defaultIncludedKm: included,
+        whatsappNumber: whatsappNumber.trim(),
       });
       if (!result.ok) {
         setError(result.error);
@@ -155,6 +164,21 @@ export function MovingSettingsForm({ settings }: { settings: AdminMovingSettings
             disabled={pending}
           />
         </Field>
+      </div>
+
+      <div className="flex flex-col gap-4">
+        <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Kontak</h3>
+        <WhatsappNumberField
+          id="settings-whatsapp-number"
+          label="Nomor WhatsApp Mandana Move (opsional)"
+          hint="Tujuan semua tombol WhatsApp di halaman Mandana Move. Contoh: +6281234567890. Kosongkan untuk memakai WhatsApp Umum (SEO → Pengaturan Umum)."
+          value={whatsappNumber}
+          onChange={(v) => {
+            setWhatsappNumber(v);
+            setSuccess(false);
+          }}
+          disabled={pending}
+        />
       </div>
 
       <div>

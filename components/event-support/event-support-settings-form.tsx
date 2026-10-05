@@ -4,6 +4,8 @@ import { useState, useTransition } from "react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { WhatsappNumberField } from "@/components/settings/whatsapp-number-field";
+import { whatsappNumberError } from "@/lib/whatsapp-number";
 import { updateEventSupportSettingsAction } from "@/app/actions/event-support-settings";
 import type { AdminEventSupportSettings } from "@/lib/api/event-support-settings";
 
@@ -49,6 +51,7 @@ export function EventSupportSettingsForm({ settings }: { settings: AdminEventSup
     settings.priceIncludesJabodetabekDelivery,
   );
   const [outsideJabodetabekNote, setOutsideJabodetabekNote] = useState(settings.outsideJabodetabekNote ?? "");
+  const [whatsappNumber, setWhatsappNumber] = useState(settings.whatsappNumber ?? "");
 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -62,10 +65,17 @@ export function EventSupportSettingsForm({ settings }: { settings: AdminEventSup
     setError(null);
     setSuccess(false);
 
+    const waError = whatsappNumberError(whatsappNumber);
+    if (waError) {
+      setError(waError);
+      return;
+    }
+
     startTransition(async () => {
       const result = await updateEventSupportSettingsAction({
         priceIncludesJabodetabekDelivery,
         outsideJabodetabekNote: outsideJabodetabekNote.trim() || null,
+        whatsappNumber: whatsappNumber.trim(),
       });
       if (!result.ok) {
         setError(result.error);
@@ -127,6 +137,21 @@ export function EventSupportSettingsForm({ settings }: { settings: AdminEventSup
             disabled={pending}
           />
         </Field>
+      </div>
+
+      <div className="flex flex-col gap-4">
+        <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Kontak</h3>
+        <WhatsappNumberField
+          id="settings-whatsapp-number"
+          label="Nomor WhatsApp Mandana Living (opsional)"
+          hint="Tujuan semua tombol WhatsApp di halaman Mandana Living. Contoh: +6281234567890. Kosongkan untuk memakai WhatsApp Umum (SEO → Pengaturan Umum)."
+          value={whatsappNumber}
+          onChange={(v) => {
+            setWhatsappNumber(v);
+            setSuccess(false);
+          }}
+          disabled={pending}
+        />
       </div>
 
       <div>

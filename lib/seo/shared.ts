@@ -34,6 +34,9 @@ export interface AdminSeoImage {
 export interface AdminSeoSettings {
   organizationName: string;
   contactPhone: string | null;
+  /** The General WhatsApp number: Beranda, Tentang Kami, Artikel, and the
+   *  fallback for any business line whose own number is empty. */
+  whatsappNumber: string | null;
   contactEmail: string | null;
   streetAddress: string | null;
   addressLocality: string | null;

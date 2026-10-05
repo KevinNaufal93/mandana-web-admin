@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ImagePicker, type ImagePickerValue } from "@/components/media/image-picker";
+import { WhatsappNumberField } from "@/components/settings/whatsapp-number-field";
+import { whatsappNumberError } from "@/lib/whatsapp-number";
 import { updateSeoSettingsAction } from "@/app/actions/seo";
 import type { AdminSeoSettings } from "@/lib/seo/shared";
 
@@ -48,6 +50,7 @@ const SOCIAL_PLATFORMS: { key: string; label: string; placeholder: string }[] = 
 export function SeoSettingsForm({ settings }: { settings: AdminSeoSettings }) {
   const [organizationName, setOrganizationName] = useState(settings.organizationName);
   const [contactPhone, setContactPhone] = useState(settings.contactPhone ?? "");
+  const [whatsappNumber, setWhatsappNumber] = useState(settings.whatsappNumber ?? "");
   const [contactEmail, setContactEmail] = useState(settings.contactEmail ?? "");
   const [streetAddress, setStreetAddress] = useState(settings.streetAddress ?? "");
   const [addressLocality, setAddressLocality] = useState(settings.addressLocality ?? "");
@@ -79,11 +82,17 @@ export function SeoSettingsForm({ settings }: { settings: AdminSeoSettings }) {
       setError("Nama organisasi minimal 2 karakter.");
       return;
     }
+    const waError = whatsappNumberError(whatsappNumber);
+    if (waError) {
+      setError(waError);
+      return;
+    }
 
     startTransition(async () => {
       const result = await updateSeoSettingsAction({
         organizationName: organizationName.trim(),
         contactPhone: contactPhone.trim(),
+        whatsappNumber: whatsappNumber.trim(),
         contactEmail: contactEmail.trim(),
         streetAddress: streetAddress.trim(),
         addressLocality: addressLocality.trim(),
@@ -160,6 +169,17 @@ export function SeoSettingsForm({ settings }: { settings: AdminSeoSettings }) {
               />
             </Field>
           </div>
+          <WhatsappNumberField
+            id="seo-whatsapp"
+            label="WhatsApp Umum"
+            hint="Tujuan tombol WhatsApp di Beranda, Tentang Kami, dan Artikel. Juga menjadi cadangan jika nomor WhatsApp Mandana Move, Space, atau Living dikosongkan."
+            value={whatsappNumber}
+            onChange={(v) => {
+              setWhatsappNumber(v);
+              clearSuccess();
+            }}
+            disabled={pending}
+          />
           <Field label="Alamat" htmlFor="seo-address">
             <Input
               id="seo-address"

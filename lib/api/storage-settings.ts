@@ -21,6 +21,9 @@ export interface AdminStorageSettings {
    *  basis points. Never share a formatter between the two. 0 disables the
    *  insurance line entirely. */
   insurancePct: number;
+  /** WhatsApp number for Mandana Space, as typed by an admin. null = not set
+   *  (the public site then uses the General number). */
+  whatsappNumber: string | null;
 }
 
 /** cache() so generateMetadata() (if ever added) and the page share one request. */
@@ -32,6 +35,8 @@ export const getStorageSettings = cache(async (): Promise<ApiResult<AdminStorage
 
 export interface StorageSettingsInput {
   insurancePct?: number;
+  /** Empty string clears the number. */
+  whatsappNumber?: string;
 }
 
 export async function updateStorageSettings(patch: StorageSettingsInput): Promise<ApiResult<AdminStorageSettings>> {

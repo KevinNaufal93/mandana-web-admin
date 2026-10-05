@@ -23,6 +23,8 @@ export const getSeoSettings = cache(async (): Promise<ApiResult<AdminSeoSettings
 export interface SeoSettingsInput {
   organizationName?: string;
   contactPhone?: string;
+  /** Empty string clears the number. */
+  whatsappNumber?: string;
   contactEmail?: string;
   streetAddress?: string;
   addressLocality?: string;

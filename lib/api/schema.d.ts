@@ -404,6 +404,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/property-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the property settings (KPR rate and tenor) */
+        get: operations["PropertySettingsAdminController_get_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update the property settings (KPR rate and tenor) */
+        patch: operations["PropertySettingsAdminController_update_v1"];
+        trace?: never;
+    };
     "/api/v1/admin/content-blocks": {
         parameters: {
             query?: never;
@@ -2063,6 +2081,74 @@ export interface paths {
         patch: operations["LegalAdminController_updatePage_v1"];
         trace?: never;
     };
+    "/api/v1/page-images": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Admin-managed images for fixed pages (currently: Tentang Kami) */
+        get: operations["PageImagesController_getPageImages_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/page-images": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List every fixed page-image slot */
+        get: operations["PageImagesAdminController_getSlots_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/page-images/{slotKey}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update one slot's image */
+        patch: operations["PageImagesAdminController_updateSlot_v1"];
+        trace?: never;
+    };
+    "/api/v1/site-config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** WhatsApp number per line of business + KPR simulator rate and tenor, for the public website */
+        get: operations["SiteConfigController_getSiteConfig_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2206,10 +2292,11 @@ export interface components {
             title?: string | null;
             /** @description The card's body copy (renamed from the admin's `subtitle`). */
             body?: string | null;
+            /** @description The CTA button's label. Shown as a button only when `ctaLink` is also set AND `imageOnly` is false — see `ctaLink`. */
             ctaText?: string | null;
-            /** @description The card's CTA target (renamed from the admin's `link`). */
+            /** @description The card's CTA target (renamed from the admin's `link`). Resolution: no `ctaLink` → nothing is clickable; `ctaLink` set and (`ctaText` blank or `imageOnly` true) → the whole card is clickable; `ctaLink` and `ctaText` both set and `imageOnly` false → a button carries the link and the card itself is not clickable. */
             ctaLink?: string | null;
-            /** @description When true, the artwork already carries the copy — render the image alone, no title/body/button overlay. */
+            /** @description When true, the artwork already carries the title/body copy — render the image alone, no title/body/button overlay. Does NOT suppress `ctaLink`: when set, the whole image becomes clickable — see ctaLink's description. */
             imageOnly: boolean;
             sortOrder: number;
             image?: components["schemas"]["PropertyMediaImageDto"] | null;
@@ -2426,6 +2513,33 @@ export interface components {
             /** @description Marks this as the cover image; clears existing cover */
             isCover?: boolean;
         };
+        PropertySettingsDto: {
+            /**
+             * @description KPR fixed interest rate, percent per year.
+             * @example 1.75
+             */
+            kprAnnualRatePct: number;
+            /**
+             * @description KPR tenor in whole years.
+             * @example 25
+             */
+            kprTenorYears: number;
+        };
+        PropertySettingsResponseDto: {
+            data: components["schemas"]["PropertySettingsDto"];
+        };
+        UpdatePropertySettingsDto: {
+            /**
+             * @description KPR fixed interest rate, in percent per year. 1.75 means 1.75%. At most 2 decimal places.
+             * @example 1.75
+             */
+            kprAnnualRatePct?: number;
+            /**
+             * @description KPR tenor in whole years.
+             * @example 25
+             */
+            kprTenorYears?: number;
+        };
         CreateContentBlockDto: {
             /** @enum {string} */
             type: "hero" | "service_card" | "property_promo";
@@ -2434,12 +2548,12 @@ export interface components {
             /** @description Hero: the slide's secondary line. Service card: its description. Promo card: its body copy. Same field, same visual role in all three. */
             subtitle?: string;
             /**
-             * @description Hero or promo card: the CTA button's label. Ignored for service_card.
+             * @description Hero or promo card: the CTA button's label. Ignored for service_card. Only shown as a button when `link` is also set AND the block is not `imageOnly` — see `link`.
              * @example Lihat Properti
              */
             ctaText?: string;
             /**
-             * @description Hero: the CTA target. Service card: its href. Promo card: its CTA target. Same field.
+             * @description Hero: the CTA target. Service card: its href. Promo card: its CTA target. Same field. Resolution on the public site: no `link` → nothing is clickable; `link` set and (`ctaText` empty or `imageOnly` true) → the whole image/card is clickable; `link` and `ctaText` both set and `imageOnly` false → a button carries the link and the image itself is not clickable.
              * @example /properties?listingType=sale
              */
             link?: string;
@@ -2452,7 +2566,7 @@ export interface components {
             /** @default true */
             isActive: boolean;
             /**
-             * @description Hero, service card, or promo card: when true, the public site renders just the image (the artwork already has the title/description baked in) and skips the text overlay. Requires mediaAssetId.
+             * @description Hero, service card, or promo card: when true, the public site renders just the image (the artwork already has the title/description baked in) and skips the title/subtitle text overlay. Requires mediaAssetId. Does NOT suppress the CTA link — see `link`'s description for how imageOnly affects whether the image or a button ends up clickable.
              * @default false
              */
             imageOnly: boolean;
@@ -2464,30 +2578,21 @@ export interface components {
             type?: "hero" | "service_card" | "property_promo";
             /** @description Required regardless of type. */
             title?: string;
-            /** @description Hero: the slide's secondary line. Service card: its description. Promo card: its body copy. Same field, same visual role in all three. */
-            subtitle?: string;
-            /**
-             * @description Hero or promo card: the CTA button's label. Ignored for service_card.
-             * @example Lihat Properti
-             */
-            ctaText?: string;
-            /**
-             * @description Hero: the CTA target. Service card: its href. Promo card: its CTA target. Same field.
-             * @example /properties?listingType=sale
-             */
-            link?: string;
             /** @default 0 */
             sortOrder: number;
             /** @default true */
             isActive: boolean;
             /**
-             * @description Hero, service card, or promo card: when true, the public site renders just the image (the artwork already has the title/description baked in) and skips the text overlay. Requires mediaAssetId.
+             * @description Hero, service card, or promo card: when true, the public site renders just the image (the artwork already has the title/description baked in) and skips the title/subtitle text overlay. Requires mediaAssetId. Does NOT suppress the CTA link — see `link`'s description for how imageOnly affects whether the image or a button ends up clickable.
              * @default false
              */
             imageOnly: boolean;
             mediaAssetId?: string | null;
             mobileMediaAssetId?: string | null;
             listingTypeScope?: ("sale" | "rent" | "new")[] | null;
+            subtitle?: string | null;
+            ctaText?: string | null;
+            link?: string | null;
         };
         CreateInquiryDto: {
             /** @example Budi Santoso */
@@ -2667,6 +2772,8 @@ export interface components {
             bandPct: number;
             /** @description Fallback included-km when a truck class sets none */
             defaultIncludedKm: number;
+            /** @description WhatsApp number for Mandana Move, as typed by an admin. Null = not set. */
+            whatsappNumber: string | null;
         };
         MovingSettingsResponseDto: {
             data: components["schemas"]["MovingSettingsDto"];
@@ -3054,6 +3161,11 @@ export interface components {
              * @example 5
              */
             defaultIncludedKm?: number;
+            /**
+             * @description WhatsApp number for Mandana Move. Exactly as typed (the website normalizes it). An empty string clears it, which makes the website fall back to the General number.
+             * @example +6281234567890
+             */
+            whatsappNumber?: string;
         };
         MovingPointDto: {
             /** @example Jl. Sudirman No. 1, Jakarta Selatan */
@@ -3963,7 +4075,7 @@ export interface components {
             currency: string;
             /** Format: date-time */
             createdAt: string;
-            /** @description Pre-built Indonesian message text (not yet URL-encoded). The API has no business WhatsApp number of its own — combine this with the FE's existing NEXT_PUBLIC_MANDANA_WHATSAPP the same way lib/moving/whatsapp.ts's buildMovingWaLink() does: `https://wa.me/<number>?text=${encodeURIComponent(whatsappMessage)}`. */
+            /** @description Pre-built Indonesian message text (not yet URL-encoded). Combine this with the Mandana Space number from GET /site-config (whatsapp.storage) the same way lib/moving/whatsapp.ts's buildMovingWaLink() does: `https://wa.me/<number>?text=${encodeURIComponent(whatsappMessage)}`. */
             whatsappMessage: string;
         };
         StorageBookingResponseDto: {
@@ -4035,6 +4147,8 @@ export interface components {
         StorageSettingsDto: {
             /** @description Whole-percent insurance premium applied to every quote/booking subtotal — 20 means 20%. 0 disables the insurance line. */
             insurancePct: number;
+            /** @description WhatsApp number for Mandana Space, as typed by an admin. Null = not set. */
+            whatsappNumber: string | null;
         };
         StorageSettingsResponseDto: {
             data: components["schemas"]["StorageSettingsDto"];
@@ -4045,6 +4159,11 @@ export interface components {
              * @example 20
              */
             insurancePct?: number;
+            /**
+             * @description WhatsApp number for Mandana Space. Exactly as typed (the website normalizes it). An empty string clears it, which makes the website fall back to the General number.
+             * @example +6281234567890
+             */
+            whatsappNumber?: string;
         };
         EventImageDto: {
             url: string;
@@ -4076,6 +4195,8 @@ export interface components {
             /** @description Whether pricePerDay/eightHourRate already include Jabodetabek delivery */
             priceIncludesJabodetabekDelivery: boolean;
             outsideJabodetabekNote?: string | null;
+            /** @description WhatsApp number for Mandana Living (Event Support), as typed by an admin. Null = not set. */
+            whatsappNumber: string | null;
         };
         EventSupportSettingsResponseDto: {
             data: components["schemas"]["EventSupportSettingsDto"];
@@ -4205,7 +4326,7 @@ export interface components {
             total: number;
             /** @example IDR */
             currency: string;
-            /** @description Prefilled Indonesian WhatsApp message; the FE appends its own number */
+            /** @description Prefilled Indonesian WhatsApp message; the FE appends the Mandana Living number from GET /site-config */
             whatsappMessage: string;
         };
         EventQuoteResponseDto: {
@@ -4427,7 +4548,7 @@ export interface components {
             currency: string;
             /** Format: date-time */
             createdAt: string;
-            /** @description Prefilled Indonesian WhatsApp message, including the booking reference; the FE appends its own number */
+            /** @description Prefilled Indonesian WhatsApp message, including the booking reference; the FE appends the Mandana Living number from GET /site-config */
             whatsappMessage: string;
         };
         EventBookingPublicResponseDto: {
@@ -4547,6 +4668,11 @@ export interface components {
              * @example Lokasi di luar Jabodetabek dikenakan biaya pengiriman tambahan.
              */
             outsideJabodetabekNote?: Record<string, never>;
+            /**
+             * @description WhatsApp number for Mandana Living (Event Support). Exactly as typed (the website normalizes it). An empty string clears it, which makes the website fall back to the General number.
+             * @example +6281234567890
+             */
+            whatsappNumber?: string;
         };
         ArticleMediaImageDto: {
             url: string;
@@ -4690,6 +4816,7 @@ export interface components {
         SeoSettingsDto: {
             organizationName: string;
             contactPhone: string | null;
+            whatsappNumber: string | null;
             contactEmail: string | null;
             streetAddress: string | null;
             addressLocality: string | null;
@@ -4724,6 +4851,11 @@ export interface components {
             organizationName?: string;
             /** @example +6281234567890 */
             contactPhone?: string;
+            /**
+             * @description WhatsApp number for the General line (Beranda, Tentang Kami, Artikel, and the fallback for any business left empty). Exactly as typed (the website normalizes it). An empty string clears it, which makes the website fall back to the General number.
+             * @example +6281234567890
+             */
+            whatsappNumber?: string;
             /** @example hello@mandana.id */
             contactEmail?: string;
             /** @example Jl. Boulevard Raya No. 1, BSD City */
@@ -4787,6 +4919,71 @@ export interface components {
              * @example <p>Rumah <strong>modern</strong> di BSD dengan akses tol.</p><ul><li>3 kamar tidur</li></ul>
              */
             bodyHtml?: string;
+        };
+        PageImageImageDto: {
+            url: string;
+            srcset: string;
+            srcsetAvif: string;
+            placeholder: string | null;
+            alt: string | null;
+            width: number;
+            height: number;
+        };
+        PageImageDto: {
+            /** @enum {string} */
+            slotKey: "about_hero" | "about_story" | "about_help_cta" | "home_property_valuation" | "home_help_cta";
+            image?: components["schemas"]["PageImageImageDto"] | null;
+            mobileImage?: components["schemas"]["PageImageImageDto"] | null;
+            heading?: string | null;
+            subtitle?: string | null;
+            imageOnly: boolean;
+        };
+        PageImageListResponseDto: {
+            data: components["schemas"]["PageImageDto"][];
+        };
+        UpdatePageImageDto: {
+            /** @description Media asset UUID. Send null to clear this slot back to the web app's own hardcoded fallback image. */
+            mediaAssetId?: Record<string, never> | null;
+            /** @description Media asset UUID for the mobile (<1024px) crop, uploaded with purpose=hero_mobile. Only valid on a slot with supportsMobileImage: true — 400 otherwise. Send null to clear it back to the primary image rendering at every width. */
+            mobileMediaAssetId?: Record<string, never> | null;
+            /** @description Admin-configurable headline. Only valid on a slot with supportsHeading: true — 400 otherwise. null clears back to the web component's own hardcoded copy. */
+            heading?: Record<string, never> | null;
+            /** @description Same rules as heading, for the paragraph under it. */
+            subtitle?: Record<string, never> | null;
+            /** @description When true, suppresses the heading/subtitle overlay entirely — for a banner-style upload that already has its own text baked in. Only valid on a slot with supportsHeading: true — 400 otherwise if true. */
+            imageOnly?: boolean;
+        };
+        PageImageResponseDto: {
+            data: components["schemas"]["PageImageDto"];
+        };
+        SiteConfigWhatsappDto: {
+            /** @description General number (Beranda, Tentang Kami, Artikel). */
+            general: string | null;
+            /** @description Mandana Move */
+            moving: string | null;
+            /** @description Mandana Space */
+            storage: string | null;
+            /** @description Mandana Living */
+            event: string | null;
+        };
+        SiteConfigKprDto: {
+            /**
+             * @description Fixed rate, percent per year
+             * @example 1.75
+             */
+            annualRatePct: number;
+            /**
+             * @description Tenor in whole years
+             * @example 25
+             */
+            tenorYears: number;
+        };
+        SiteConfigDto: {
+            whatsapp: components["schemas"]["SiteConfigWhatsappDto"];
+            kpr: components["schemas"]["SiteConfigKprDto"];
+        };
+        SiteConfigResponseDto: {
+            data: components["schemas"]["SiteConfigDto"];
         };
     };
     responses: never;
@@ -5457,6 +5654,48 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    PropertySettingsAdminController_get_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PropertySettingsResponseDto"];
+                };
+            };
+        };
+    };
+    PropertySettingsAdminController_update_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePropertySettingsDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PropertySettingsResponseDto"];
+                };
             };
         };
     };
@@ -8491,6 +8730,88 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LegalPageResponseDto"];
+                };
+            };
+        };
+    };
+    PageImagesController_getPageImages_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageImageListResponseDto"];
+                };
+            };
+        };
+    };
+    PageImagesAdminController_getSlots_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageImageListResponseDto"];
+                };
+            };
+        };
+    };
+    PageImagesAdminController_updateSlot_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slotKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePageImageDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageImageResponseDto"];
+                };
+            };
+        };
+    };
+    SiteConfigController_getSiteConfig_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SiteConfigResponseDto"];
                 };
             };
         };

@@ -24,6 +24,9 @@ export interface AdminEventSupportSettings {
   /** Whether pricePerDay/eightHourRate already include Jabodetabek delivery. */
   priceIncludesJabodetabekDelivery: boolean;
   outsideJabodetabekNote: string | null;
+  /** WhatsApp number for Mandana Living, as typed by an admin. null = not set
+   *  (the public site then uses the General number). */
+  whatsappNumber: string | null;
 }
 
 /** cache() so generateMetadata() (if ever added) and the page share one request. */
@@ -37,6 +40,8 @@ export interface EventSupportSettingsInput {
   priceIncludesJabodetabekDelivery?: boolean;
   /** null clears the note. */
   outsideJabodetabekNote?: string | null;
+  /** Empty string clears the number. */
+  whatsappNumber?: string;
 }
 
 export async function updateEventSupportSettings(

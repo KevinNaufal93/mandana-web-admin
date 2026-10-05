@@ -4,6 +4,8 @@ import { useState, useTransition } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { WhatsappNumberField } from "@/components/settings/whatsapp-number-field";
+import { whatsappNumberError } from "@/lib/whatsapp-number";
 import { updateStorageSettingsAction } from "@/app/actions/storage-settings";
 import type { AdminStorageSettings } from "@/lib/api/storage-settings";
 
@@ -39,6 +41,7 @@ function Field({
  */
 export function StorageSettingsForm({ settings }: { settings: AdminStorageSettings }) {
   const [insurancePct, setInsurancePct] = useState(String(settings.insurancePct));
+  const [whatsappNumber, setWhatsappNumber] = useState(settings.whatsappNumber ?? "");
 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -53,9 +56,17 @@ export function StorageSettingsForm({ settings }: { settings: AdminStorageSettin
       setError("Persentase asuransi harus berupa bilangan bulat antara 0 dan 100.");
       return;
     }
+    const waError = whatsappNumberError(whatsappNumber);
+    if (waError) {
+      setError(waError);
+      return;
+    }
 
     startTransition(async () => {
-      const result = await updateStorageSettingsAction({ insurancePct: pct });
+      const result = await updateStorageSettingsAction({
+        insurancePct: pct,
+        whatsappNumber: whatsappNumber.trim(),
+      });
       if (!result.ok) {
         setError(result.error);
         return;
@@ -105,6 +116,21 @@ export function StorageSettingsForm({ settings }: { settings: AdminStorageSettin
             disabled={pending}
           />
         </Field>
+      </div>
+
+      <div className="flex flex-col gap-4">
+        <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Kontak</h3>
+        <WhatsappNumberField
+          id="settings-whatsapp-number"
+          label="Nomor WhatsApp Mandana Space (opsional)"
+          hint="Tujuan semua tombol WhatsApp di halaman Mandana Space (termasuk halaman lokasi dan konfirmasi booking). Contoh: +6281234567890. Kosongkan untuk memakai WhatsApp Umum (SEO → Pengaturan Umum)."
+          value={whatsappNumber}
+          onChange={(v) => {
+            setWhatsappNumber(v);
+            setSuccess(false);
+          }}
+          disabled={pending}
+        />
       </div>
 
       <div>

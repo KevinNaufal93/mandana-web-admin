@@ -25,6 +25,9 @@ export interface AdminMovingSettings {
   bandPct: number;
   /** Fallback included-km used when a truck class doesn't set its own. */
   defaultIncludedKm: number;
+  /** WhatsApp number for Mandana Move, as typed by an admin. null = not set
+   *  (the public site then uses the General number). */
+  whatsappNumber: string | null;
 }
 
 /** cache() so generateMetadata() (if ever added) and the page share one request. */
@@ -38,6 +41,8 @@ export interface MovingSettingsInput {
   roundToIdr?: number;
   bandPct?: number;
   defaultIncludedKm?: number;
+  /** Empty string clears the number. */
+  whatsappNumber?: string;
 }
 
 export async function updateMovingSettings(patch: MovingSettingsInput): Promise<ApiResult<AdminMovingSettings>> {

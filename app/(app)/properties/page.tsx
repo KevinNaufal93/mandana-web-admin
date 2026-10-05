@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Plus, Settings2 } from "lucide-react";
 import { requireModule } from "@/lib/auth/dal";
 import { listAdminProperties, listPropertyTypes } from "@/lib/api/properties";
 import { parsePropertyQuery, toSearchString } from "@/lib/properties/query";
@@ -41,12 +41,20 @@ export default async function PropertiesPage({
           <h1 className="text-2xl font-semibold text-primary">Mandana Property</h1>
           <p className="text-sm text-muted-foreground">Daftar seluruh listing properti Mandana.</p>
         </div>
-        <Button variant="secondary" asChild>
-          <Link href="/properties/new">
-            <Plus className="size-4" />
-            Properti baru
-          </Link>
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outlineSecondary" asChild>
+            <Link href="/properties/settings">
+              <Settings2 className="size-4" />
+              Pengaturan KPR
+            </Link>
+          </Button>
+          <Button variant="secondary" asChild>
+            <Link href="/properties/new">
+              <Plus className="size-4" />
+              Properti baru
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <PropertyFilters query={query} propertyTypes={propertyTypes} />
