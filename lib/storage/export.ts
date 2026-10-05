@@ -4,7 +4,7 @@
  * app/actions/booking-exports.ts for the paging/action layer that calls
  * this, and lib/bookings/csv.ts for the primitives used below.
  */
-import { csvDate, csvInt } from "@/lib/bookings/csv";
+import { csvDate, csvInt, csvNumber } from "@/lib/bookings/csv";
 import { STATUS_LABEL } from "@/components/storage/storage-booking-status-badge";
 import { toWaNumber } from "@/lib/format";
 import type { AdminStorageBooking } from "@/lib/api/storage-bookings";
@@ -26,9 +26,11 @@ export const STORAGE_BOOKING_CSV_HEADERS = [
   "Tarif per satuan",
   "Subtotal",
   "Diskon",
+  "Nilai barang (Rp)",
   "Asuransi (%)",
   "Asuransi (Rp)",
   "Total",
+  "Booking utama",
   "Catatan pelanggan",
   "Catatan admin",
   "Dikonfirmasi pada",
@@ -53,9 +55,13 @@ export function storageBookingCsvRow(b: AdminStorageBooking): string[] {
     csvInt(b.unitRate),
     csvInt(b.subtotal),
     csvInt(b.discountAmount),
-    csvInt(b.insurancePct),
+    csvInt(b.declaredValue),
+    // Not csvInt — insurancePct can be fractional (e.g. 0.5) and csvInt
+    // rounds, which would silently turn 0.5% into "1" or "0".
+    csvNumber(b.insurancePct),
     csvInt(b.insuranceAmount),
     csvInt(b.total),
+    b.primaryBookingReference ?? "",
     b.notes ?? "",
     b.adminNote ?? "",
     csvDate(b.confirmedAt),

@@ -16,9 +16,11 @@ import type { components } from "@/lib/api/schema";
  */
 
 export interface AdminStorageSettings {
-  /** Whole-percent insurance premium applied to every quote/booking's rent
-   *  subtotal — 20 means 20%, unlike Moving's addon percentBps, which is
-   *  basis points. Never share a formatter between the two. 0 disables the
+  /** Insurance premium as a percentage of the customer-DECLARED GOODS
+   *  VALUE, not the rent — 0.5 means 0.5%, may carry up to 2 decimal
+   *  places (the API stores it as basis points internally). Unlike
+   *  Moving's addon percentBps, which is basis points at the API boundary
+   *  too — never share a formatter between the two. 0 disables the
    *  insurance line entirely. */
   insurancePct: number;
   /** WhatsApp number for Mandana Space, as typed by an admin. null = not set

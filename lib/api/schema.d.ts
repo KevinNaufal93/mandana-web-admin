@@ -2352,6 +2352,11 @@ export interface components {
             createdAt: string;
             /** Format: date-time */
             updatedAt: string;
+            /**
+             * Format: date-time
+             * @description Null until the listing's first publish. Stable across an unpublish/republish cycle, unlike `updatedAt`.
+             */
+            publishedAt: string | null;
         };
         PropertyDetailResponseDto: {
             data: components["schemas"]["PropertyDetailDto"];
@@ -3575,6 +3580,11 @@ export interface components {
              * @example 3
              */
             duration?: number;
+            /**
+             * @description Customer-declared value (Rupiah) of the goods being stored — insurance is a percentage of THIS, not of the rent. Omit to quote with no insurance line regardless of the configured rate.
+             * @example 50000000
+             */
+            declaredValue?: number;
         };
         StorageQuoteFacilityDto: {
             slug: string;
@@ -3609,9 +3619,11 @@ export interface components {
             discountPct: number;
             /** @description Deprecated — always 0. See discountPct. */
             discountAmount: number;
-            /** @description Whole-percent insurance rate applied to subtotal, from the storage_settings singleton. */
+            /** @description Customer-declared value (Rupiah) of the goods being stored, echoed back from the request — the base insurance is computed against. Null when not provided on the request (insurance is then 0 regardless of insurancePct). */
+            declaredValue?: number | null;
+            /** @description Insurance rate (percent, may carry decimals, e.g. 0.5) applied to declaredValue — NOT to subtotal/rent — from the storage_settings singleton. */
             insurancePct: number;
-            /** @description Rupiah — round(subtotal * insurancePct / 100). */
+            /** @description Rupiah — round(declaredValue * insurancePct / 100), or 0 when declaredValue is absent. */
             insuranceAmount: number;
             /** @description Rupiah — subtotal + insuranceAmount */
             total: number;
@@ -4032,6 +4044,16 @@ export interface components {
              * @example 3
              */
             duration?: number;
+            /**
+             * @description Customer-declared value (Rupiah) of the goods being stored — insurance is a percentage of THIS, not of the rent. A cart with several sizes becomes several sibling booking requests (see primaryBookingReference); send this ONLY on the first one — it becomes the "primary" booking and carries the insurance for the whole cart. Mutually exclusive with primaryBookingReference.
+             * @example 50000000
+             */
+            declaredValue?: number;
+            /**
+             * @description Reference of an already-created PENDING booking from the same cart (same email, same facility) to link this one to as a sibling — see declaredValue above. That booking carries the declaredValue/insurance for the cart; this one is priced with no insurance of its own. Mutually exclusive with declaredValue.
+             * @example MDN-STG-A1B2C3
+             */
+            primaryBookingReference?: string;
         };
         StorageBookingDto: {
             id: string;
@@ -4065,12 +4087,16 @@ export interface components {
             subtotal: number;
             /** @description Deprecated — the duration-discount tiers were removed. Always 0. */
             discountAmount: number;
-            /** @description Whole-percent insurance rate applied to subtotal, at booking time. */
+            /** @description Customer-declared value (Rupiah) of the goods being stored, at booking time. Set only on a "primary" booking (see primaryBookingReference) — null on a sibling booking from the same cart. */
+            declaredValue?: number | null;
+            /** @description Insurance rate (percent, may carry decimals) applied to declaredValue — NOT to subtotal/rent — at booking time. */
             insurancePct: number;
-            /** @description Rupiah — round(subtotal * insurancePct / 100). */
+            /** @description Rupiah — round(declaredValue * insurancePct / 100), or 0 when declaredValue is null. */
             insuranceAmount: number;
             /** @description Rupiah — subtotal + insuranceAmount */
             total: number;
+            /** @description Reference of this cart's "primary" booking (see declaredValue) — null when THIS booking IS the primary. A multi-size cart books one request per size; every sibling after the first points back at the first via this field. */
+            primaryBookingReference?: string | null;
             /** @example IDR */
             currency: string;
             /** Format: date-time */
@@ -4083,6 +4109,16 @@ export interface components {
         };
         /** @enum {string} */
         StorageBookingSort: "createdAt" | "reference" | "total" | "startDate";
+        StorageLinkedBookingDto: {
+            id: string;
+            reference: string;
+            /** @enum {string} */
+            status: "pending" | "confirmed" | "rejected" | "cancelled" | "completed";
+            unitTypeName: string;
+            quantity: number;
+            /** @description True for the one booking in the group carrying declaredValue/insurance. */
+            isPrimary: boolean;
+        };
         StorageBookingAdminDto: {
             id: string;
             reference: string;
@@ -4116,12 +4152,18 @@ export interface components {
             subtotal: number;
             /** @description Deprecated — the duration-discount tiers were removed. Always 0. */
             discountAmount: number;
-            /** @description Whole-percent insurance rate applied to subtotal, at booking time. */
+            /** @description Customer-declared value (Rupiah) of the goods being stored, at booking time. Set only on a "primary" booking (see primaryBookingReference/linkedBookings) — null on a sibling booking from the same cart. */
+            declaredValue?: number | null;
+            /** @description Insurance rate (percent, may carry decimals) applied to declaredValue — NOT to subtotal/rent — at booking time. */
             insurancePct: number;
-            /** @description Rupiah — round(subtotal * insurancePct / 100). */
+            /** @description Rupiah — round(declaredValue * insurancePct / 100), or 0 when declaredValue is null. */
             insuranceAmount: number;
             /** @description Rupiah — subtotal + insuranceAmount */
             total: number;
+            /** @description Reference of this cart's "primary" booking (see declaredValue) — null when THIS booking IS the primary. */
+            primaryBookingReference?: string | null;
+            /** @description Every other booking from the same cart (the primary plus its siblings, minus this one) — empty when this booking was never part of a multi-size cart. */
+            linkedBookings: components["schemas"]["StorageLinkedBookingDto"][];
             adminNote?: string | null;
             confirmedAt?: string | null;
             confirmedByName?: string | null;
@@ -4145,7 +4187,7 @@ export interface components {
             adminNote?: string;
         };
         StorageSettingsDto: {
-            /** @description Whole-percent insurance premium applied to every quote/booking subtotal — 20 means 20%. 0 disables the insurance line. */
+            /** @description Insurance premium as a percent of the customer-DECLARED GOODS VALUE, not the rent — 0.5 means 0.5%, may carry decimals. 0 disables the insurance line. */
             insurancePct: number;
             /** @description WhatsApp number for Mandana Space, as typed by an admin. Null = not set. */
             whatsappNumber: string | null;
@@ -4155,8 +4197,8 @@ export interface components {
         };
         UpdateStorageSettingsDto: {
             /**
-             * @description Insurance premium as a whole percentage of the rent subtotal — 20 means 20%, not basis points. total = subtotal + round(subtotal * insurancePct / 100). 0 disables the insurance line entirely.
-             * @example 20
+             * @description Insurance premium as a percentage of the customer-DECLARED GOODS VALUE, not the rent — 0.5 means 0.5%, at most 2 decimal places. Stored internally as basis points (rounded: 0.5 -> 50 bps). total = subtotal + round(declaredValue * insurancePct / 100). 0 disables the insurance line entirely.
+             * @example 0.5
              */
             insurancePct?: number;
             /**

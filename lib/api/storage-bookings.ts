@@ -42,12 +42,36 @@ export interface AdminStorageBooking {
   /** Deprecated — the duration-discount tiers were removed. Always 0 on a
    *  booking created from now on; older bookings keep their real value. */
   discountAmount: number;
-  /** Whole-percent insurance rate applied to subtotal, at booking time. */
+  /** Rupiah — customer-declared value of the goods being stored, at
+   *  booking time. Set only on the "primary" booking of a multi-size cart
+   *  (see primaryBookingReference/linkedBookings below) — null on a
+   *  sibling booking, and on any booking from before this feature shipped. */
+  declaredValue: number | null;
+  /** Insurance rate (percent, may carry decimals, e.g. 0.5) applied to
+   *  declaredValue — NOT to subtotal/rent — at booking time. */
   insurancePct: number;
-  /** Rupiah — round(subtotal * insurancePct / 100). */
+  /** Rupiah — round(declaredValue * insurancePct / 100), or 0 when
+   *  declaredValue is null. */
   insuranceAmount: number;
   /** Rupiah — subtotal + insuranceAmount */
   total: number;
+  /** Reference of this cart's "primary" booking (see declaredValue) — null
+   *  when THIS booking IS the primary. */
+  primaryBookingReference: string | null;
+  /** Every other booking from the same multi-size cart (the primary plus
+   *  its siblings, minus this one) — empty when this booking was never
+   *  part of one. Only populated on the single-booking endpoints (this
+   *  getter and the four transitions below); listStorageBookings always
+   *  returns [] here — see StorageBookingsService.findLinked()'s doc
+   *  comment in mandana-api for why. */
+  linkedBookings: Array<{
+    id: string;
+    reference: string;
+    status: StorageBookingStatus;
+    unitTypeName: string;
+    quantity: number;
+    isPrimary: boolean;
+  }>;
   adminNote: string | null;
   confirmedAt: string | null;
   confirmedByName: string | null;

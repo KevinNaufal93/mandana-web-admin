@@ -35,9 +35,16 @@ export function StorageBookingPdfDocument({ booking }: { booking: AdminStorageBo
   if (booking.discountAmount > 0) {
     totalsRows.push({ label: "Diskon", value: `-${formatIDRFull(booking.discountAmount)}` });
   }
-  if (booking.insuranceAmount > 0) {
+  if (booking.declaredValue != null) {
     totalsRows.push({
-      label: `Asuransi (${booking.insurancePct}%)`,
+      label: `Asuransi (${booking.insurancePct.toLocaleString("id-ID")}% dari nilai barang)`,
+      value: `+${formatIDRFull(booking.insuranceAmount)}`,
+    });
+  } else if (booking.primaryBookingReference) {
+    totalsRows.push({ label: "Asuransi", value: `tercatat di ${booking.primaryBookingReference}` });
+  } else if (booking.insuranceAmount > 0) {
+    totalsRows.push({
+      label: `Asuransi (${booking.insurancePct.toLocaleString("id-ID")}% dari sewa)`,
       value: `+${formatIDRFull(booking.insuranceAmount)}`,
     });
   }
@@ -59,8 +66,23 @@ export function StorageBookingPdfDocument({ booking }: { booking: AdminStorageBo
           <Row label="Mulai" value={formatDateID(booking.startDate)} />
           <Row label="Durasi" value={`${booking.duration} ${booking.unitLabel}`} />
           <Row label="Berakhir" value={formatDateID(booking.endDate)} />
+          {booking.declaredValue != null && (
+            <Row label="Nilai barang" value={formatIDRFull(booking.declaredValue)} />
+          )}
           <TotalsBlock rows={totalsRows} />
         </Section>
+
+        {booking.linkedBookings.length > 0 && (
+          <Section title="Satu keranjang dengan">
+            {booking.linkedBookings.map((link) => (
+              <Row
+                key={link.id}
+                label={`${link.reference}${link.isPrimary ? " (utama)" : ""}`}
+                value={`${link.unitTypeName} ×${link.quantity} · ${STATUS_LABEL[link.status]}`}
+              />
+            ))}
+          </Section>
+        )}
 
         {booking.notes && (
           <Section title="Catatan pelanggan">

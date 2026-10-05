@@ -29,6 +29,17 @@ function Field({
   );
 }
 
+/** Staff may type "0,5" (Indonesian) or "0.5"; both mean 0.5%. Returns null
+ *  for anything that is not a plain non-negative number with at most 2
+ *  decimals. Copied from property-settings-form.tsx's parseRate (same
+ *  "text input, not type=number" reasoning — a number input reports "" for
+ *  a comma value in some browsers). */
+function parseRate(raw: string): number | null {
+  const normalized = raw.trim().replace(",", ".");
+  if (!/^\d+(\.\d{1,2})?$/.test(normalized)) return null;
+  return Number(normalized);
+}
+
 /**
  * Same shape as MovingSettingsForm — a bare GET/PATCH singleton, no
  * view/edit toggle. One field today (insurancePct), but kept as a form
@@ -40,7 +51,7 @@ function Field({
  * form simply always submits it.
  */
 export function StorageSettingsForm({ settings }: { settings: AdminStorageSettings }) {
-  const [insurancePct, setInsurancePct] = useState(String(settings.insurancePct));
+  const [insurancePct, setInsurancePct] = useState(String(settings.insurancePct).replace(".", ","));
   const [whatsappNumber, setWhatsappNumber] = useState(settings.whatsappNumber ?? "");
 
   const [error, setError] = useState<string | null>(null);
@@ -51,9 +62,9 @@ export function StorageSettingsForm({ settings }: { settings: AdminStorageSettin
     setError(null);
     setSuccess(false);
 
-    const pct = Number(insurancePct);
-    if (!Number.isInteger(pct) || pct < 0 || pct > 100) {
-      setError("Persentase asuransi harus berupa bilangan bulat antara 0 dan 100.");
+    const pct = parseRate(insurancePct);
+    if (pct === null || pct > 100) {
+      setError("Persentase asuransi harus berupa angka 0 sampai 100, maksimal 2 angka di belakang koma (contoh: 0,5).");
       return;
     }
     const waError = whatsappNumberError(whatsappNumber);
@@ -98,16 +109,14 @@ export function StorageSettingsForm({ settings }: { settings: AdminStorageSettin
 
       <div className="flex flex-col gap-4">
         <Field
-          label="Asuransi (%)"
+          label="Asuransi (% dari nilai barang)"
           htmlFor="settings-insurance-pct"
-          hint="Persen penuh, bukan basis points — 20 berarti 20%. 0 menonaktifkan asuransi. Ditambahkan ke total sewa: total = subtotal + (subtotal × persen ini)."
+          hint="Persen dari nilai barang yang dideklarasikan pelanggan saat booking — BUKAN dari harga sewa. 0,5 berarti 0,5%, maksimal 2 angka di belakang koma. 0 menonaktifkan asuransi. Rumus: total = subtotal sewa + (nilai barang × persen ini)."
         >
           <Input
             id="settings-insurance-pct"
-            type="number"
-            min={0}
-            max={100}
-            step={1}
+            type="text"
+            inputMode="decimal"
             value={insurancePct}
             onChange={(e) => {
               setInsurancePct(e.target.value);

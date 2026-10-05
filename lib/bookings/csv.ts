@@ -79,6 +79,15 @@ export function csvInt(n: number | null | undefined): string {
   return n == null ? "" : String(Math.round(n));
 }
 
+/** Bare decimal, never grouped — unlike csvInt, does NOT round, so a
+ *  fractional rate (Storage's insurancePct, e.g. 0.5) survives exactly.
+ *  Uses "." as the decimal separator regardless of locale — Excel reads
+ *  this correctly once it already honors this file's ";" delimiter (see
+ *  the header comment above), same as every other numeric column here. */
+export function csvNumber(n: number | null | undefined): string {
+  return n == null ? "" : String(n);
+}
+
 export function csvBool(b: boolean | null | undefined): string {
   return b == null ? "" : b ? "Ya" : "Tidak";
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { Mail, MessageCircle, Phone } from "lucide-react";
 import { StorageBookingStatusBadge } from "@/components/storage/storage-booking-status-badge";
 import { StorageBookingConflictPanel } from "@/components/storage/storage-booking-conflict-panel";
@@ -108,6 +109,9 @@ export function StorageBookingDetailView({
             <DetailRow label="Mulai" value={formatDateID(booking.startDate)} />
             <DetailRow label="Durasi" value={`${booking.duration} ${booking.unitLabel}`} />
             <DetailRow label="Berakhir" value={formatDateID(booking.endDate)} />
+            {booking.declaredValue != null && (
+              <DetailRow label="Nilai barang" value={formatIDRFull(booking.declaredValue)} />
+            )}
 
             <div className="mt-3 flex flex-col items-end gap-1 border-t border-border pt-3 text-sm">
               <div className="flex w-56 justify-between">
@@ -124,11 +128,23 @@ export function StorageBookingDetailView({
                   <span className="text-primary">-{formatIDRFull(booking.discountAmount)}</span>
                 </div>
               )}
-              {booking.insuranceAmount > 0 && (
+              {booking.declaredValue != null ? (
                 <div className="flex w-56 justify-between">
-                  <span className="text-muted-foreground">Asuransi ({booking.insurancePct}%)</span>
+                  <span className="text-muted-foreground">Asuransi ({booking.insurancePct.toLocaleString("id-ID")}% dari nilai barang)</span>
                   <span className="text-primary">+{formatIDRFull(booking.insuranceAmount)}</span>
                 </div>
+              ) : booking.primaryBookingReference ? (
+                <div className="flex w-56 justify-between">
+                  <span className="text-muted-foreground">Asuransi</span>
+                  <span className="text-primary">tercatat di {booking.primaryBookingReference}</span>
+                </div>
+              ) : (
+                booking.insuranceAmount > 0 && (
+                  <div className="flex w-56 justify-between">
+                    <span className="text-muted-foreground">Asuransi ({booking.insurancePct.toLocaleString("id-ID")}% dari sewa)</span>
+                    <span className="text-primary">+{formatIDRFull(booking.insuranceAmount)}</span>
+                  </div>
+                )
               )}
               <div className="flex w-56 justify-between font-semibold">
                 <span className="text-primary">Total</span>
@@ -171,6 +187,27 @@ export function StorageBookingDetailView({
               </a>
             )}
           </DetailCard>
+
+          {booking.linkedBookings.length > 0 && (
+            <DetailCard title="Satu keranjang dengan">
+              <ul className="flex flex-col gap-2.5">
+                {booking.linkedBookings.map((link) => (
+                  <li key={link.id} className="flex items-center justify-between gap-2">
+                    <Link href={`/storage/bookings/${link.id}`} className="text-sm text-primary hover:underline">
+                      {link.reference}
+                      {link.isPrimary && <span className="ml-1.5 text-xs text-muted-foreground">(utama)</span>}
+                    </Link>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <span className="text-xs text-muted-foreground">
+                        {link.unitTypeName} ×{link.quantity}
+                      </span>
+                      <StorageBookingStatusBadge status={link.status} />
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </DetailCard>
+          )}
 
           {booking.adminNote && (
             <DetailCard title="Catatan admin">
