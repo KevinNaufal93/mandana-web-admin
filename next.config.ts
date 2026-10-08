@@ -29,7 +29,8 @@ const nextConfig: NextConfig = {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [
       { protocol: "http", hostname: "localhost", port: "9000", pathname: "/**" }, // dev (MinIO)
-      { protocol: "https", hostname: "mandana-media-storage-dev.s3.ap-southeast-1.amazonaws.com", pathname: "/**" }, // deployed (S3)
+      { protocol: "https", hostname: "mandana-media-storage-dev.s3.ap-southeast-1.amazonaws.com", pathname: "/**" }, // deployed dev (S3)
+      { protocol: "https", hostname: "mandana-media-storage-prod.s3.ap-southeast-3.amazonaws.com", pathname: "/**" }, // prod (S3, Jakarta)
     ],
   },
   // The booking PDF export (lib/bookings/pdf/) renders with
