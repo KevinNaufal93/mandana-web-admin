@@ -149,7 +149,7 @@ export function StorageUnitForm(props: StorageUnitFormProps) {
           <Input
             id="unit-code"
             value={code}
-            onChange={(e) => setCode(e.target.value)}
+            onChange={(e) => setCode(e.target.value.toUpperCase())}
             placeholder="Contoh: M-13"
             disabled={pending}
           />
