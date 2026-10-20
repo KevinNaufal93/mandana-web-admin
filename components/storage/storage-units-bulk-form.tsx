@@ -149,7 +149,7 @@ export function StorageUnitsBulkForm({
             <Input
               id="bulk-code-prefix"
               value={codePrefix}
-              onChange={(e) => setCodePrefix(e.target.value)}
+              onChange={(e) => setCodePrefix(e.target.value.toUpperCase())}
               placeholder="Contoh: M"
               disabled={pending}
             />
